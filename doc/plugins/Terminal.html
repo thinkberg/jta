@@ -55,7 +55,8 @@ Test</a></font></b></td>
 The terminal plugin is a visual software component that acts as the front
 end. It displays the data that is transmitted by the remote host and translates
 keystrokes to be sent to the remote host. It implements an <b>ANSI</b>,
-<b>vt320/vt220/vt100</b> and <b>SCOANSI</b>&nbsp;compliant terminal.
+<b>vt320/vt220/vt100</b>
+and <b>SCOANSI</b> compliant terminal.
 <p>Most of the features of the terminal emulation can be configured using
 the properties explained below. Additionally it provides a plugin menu
 that can be operated if a menu bar is available.
@@ -185,7 +186,9 @@ Emulation Properties</font></font></b></center>
 <td>Used to identify the type of the terminal. This is the string that
 is sent to the remote host. Default is "<b>vt320</b>" but you may use any
 string, like "<tt>vt100</tt>", "<tt>vt220</tt>" or "<tt>xterm</tt>" if
-it suits you.</td>
+it suits you.
+<p>If you change it to <b>scoansi</b>, it will change the linedrawing characters
+to match the <b>scoansi</b> ones.</td>
 </tr>
 
 <tr>
@@ -325,6 +328,8 @@ character:</font></dt>
 
 <br>&nbsp;
 <p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
 <br>&nbsp;
 <br>&nbsp;
 <br>&nbsp;
