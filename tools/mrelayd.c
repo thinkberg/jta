@@ -192,6 +192,28 @@ fd_make_nonblocking(int fd) {
   return isnonblock;
 }
 
+/* Turn into a daemon. It is easy, isn't it? */
+void
+daemonize() {
+    switch (fork()) {
+    default:
+	exit(0);
+    case -1:
+    	perror("fork");
+	exit(1);
+    case 0: /* parent exits */
+	/* close all common descriptors and reopen them with /dev/null */
+	close(0);close(1);close(2);
+	open("/dev/null",O_RDONLY);
+	open("/dev/null",O_WRONLY);
+	open("/dev/null",O_WRONLY);
+
+	setsid();	/* become session leader to detach from controlling tty */
+	return;	/* and return */
+    }
+}
+
+
 void
 clean_connection(struct relay *relay) {
   if (!relay) return;
@@ -210,7 +232,7 @@ clean_connection(struct relay *relay) {
   relays = xrealloc(relays,sizeof(struct relay)*(--nrofrelays));
 }
 
-void
+int
 main(argc,argv)
 int argc;
 char  **argv;
@@ -227,8 +249,7 @@ char  **argv;
 	WSAStartup(0x0101,&wsad);
   }
 #else
-  close(0);
-  close(1);
+  daemonize();
 #endif
 #ifdef SIGPIPE
   signal(SIGPIPE,SIG_IGN);

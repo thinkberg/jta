@@ -71,7 +71,6 @@
 #include <sys/types.h>
 
 
-
 #if defined(sun) && defined(__GNUC__)
 int socket(int,int,int);
 int shutdown(int,int);
@@ -175,12 +174,34 @@ int i;
   outbuf[i][0]=inbuf[i][0]='\0';
 }
 
+/* Turn into a daemon. It is easy, isn't it? */
+void
+daemonize() {
+
+    switch (fork()) {
+    default: /* parent dies */
+	exit(0);
+    case -1:
+    	perror("fork");
+	exit(1);
+    case 0: /* son lives */
+	/* close all common descriptors and reopen them with /dev/null */
+	close(0);close(1);close(2);
+	open("/dev/null",O_RDONLY);
+	open("/dev/null",O_WRONLY);
+	open("/dev/null",O_WRONLY);
+
+	setsid();	/* become session leader to detach from controlling tty */
+	return;	/* and return */
+    }
+}
+
 void
 usage() {
    fprintf(stderr,"Usage: relayd <listenport> <targethost> [<targetport>]\n");
 }
 
-void
+int
 main(argc,argv)
 int argc;
 char  **argv;
@@ -193,6 +214,7 @@ char  **argv;
   struct  hostent *hp;
   char *targethost;
   int  port,targetport;
+
   
 #ifdef _WIN32 
   {
@@ -200,9 +222,6 @@ char  **argv;
 	
 	WSAStartup(0x0101,&wsad);
   }
-#else
-  close(0);
-  close(1);
 #endif
 
 #ifdef SIGPIPE
@@ -232,6 +251,12 @@ char  **argv;
     targethost=argv[2];
     break;
   }
+
+#ifndef _WIN32 
+  /* Turn into a daemon */
+  daemonize();
+#endif
+
   strcpy(relaystring,FAILMESSAGE);
   if (-1==(acfd=socket(PF_INET,SOCK_STREAM,0))) {
     perror("socket(accept_socket)");
