@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Test Page</title>
@@ -155,10 +155,28 @@ usually contain a piece of html text like the following:
 HEIGHT=360></font></tt></li>
 
 <li>
-<tt><font color="#000000">&nbsp; &lt;PARAM NAME="config" VALUE="applet.conf"></font></tt></li>
+<tt><font color="#000000">&nbsp; &lt;PARAM NAME="config" VALUE="http://server/applet.conf"></font></tt></li>
 
 <li>
-<tt><font color="#000000">&lt;/applet></font></tt></li>
+<tt><font color="#000000">&nbsp; </font><font color="#CC0000">&lt;!--&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Make sure
+the config value is a valid URL.</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The file
+<a href="../applet.conf">applet.conf</a> looks just like <a href="../defaults.opt">defaults.opt.</a></font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; applet.conf
+overrides settings in defaults.opt!&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp; --></font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp; </font><font color="#000000">&lt;/applet></font></tt></li>
 </ol>
 
 <dt>
@@ -196,8 +214,12 @@ a width of 590 pixels and a height of 360 pixels. Adapt this according
 to your needs. In general the applet adapts its font size to match the
 size of the applet.</font></dd>
 
-<p><br>Everything else will be explained below and finally you need to
-close the applet definition using the <tt>&lt;/applet></tt> tag.
+<br>&nbsp;
+<p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>Everything else will be explained below and finally you need to close
+the applet definition using the <tt>&lt;/applet></tt> tag.
 <p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
 and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
 tags.

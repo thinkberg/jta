@@ -910,6 +910,9 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    */
   public synchronized void paint(Graphics g) {
     if(screenLocked) return;
+
+    // System.err.println("Clip region: "+g.getClipBounds());
+
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
     int yoffset = (super.getSize().height - size.height * charHeight) / 2;
 
@@ -1078,6 +1081,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   public void setBounds(int x, int y, int w, int h) {
     if(debug > 0)
       System.err.println("VDU: setBounds("+x+","+y+","+w+","+h+")");
+
     super.setBounds(x, y, w, h);
 
     int xborder = 0, yborder = 0;

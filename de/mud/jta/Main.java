@@ -68,7 +68,7 @@ import java.awt.datatransfer.Clipboard;
  */
 public class Main {
 
-  private final static boolean personalJava = true;
+  private final static boolean personalJava = false;
 
   /** holds the last focussed plugin */
   private static Plugin focussedPlugin;

@@ -50,6 +50,14 @@ doc:	app
 	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
 	@echo Source documentation done.
 
+tex:	app
+	@echo Creating latex source documentation ...
+	@javadoc -docletpath ../tex -doclet TexDoclet \
+	  -output $(PKGNAME).tex \
+	  -docdir de/mud/jta `find de/mud -type d -print | \
+	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
+	@echo Source documentation done.
+
 jar:	app 
 	@echo Creating binary archive ...
 	@if [ ! -d jar ]; then mkdir jar; fi

@@ -72,7 +72,7 @@ import java.util.Enumeration;
 public class Terminal extends Plugin 
   implements FilterPlugin, VisualTransferPlugin, ClipboardOwner, Runnable {
 
-  private final static boolean personalJava = true;
+  private final static boolean personalJava = false;
 
   private final static int debug = 0;
   
@@ -130,8 +130,6 @@ public class Terminal extends Plugin
     
     } // !personalJava
 
-    try {
-
     // create the terminal emulation
     terminal = new vt320() {
       public void write(byte[] b) {
@@ -186,12 +184,6 @@ public class Terminal extends Plugin
         configure(config);
       }
     });
-
-    } catch(Exception e) {
-      System.err.println("--personal java");
-      e.printStackTrace();
-      System.err.println("--");
-    }
   }
 
   private void configure(Properties config) {
