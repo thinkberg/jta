@@ -26,10 +26,11 @@
  * Solaris: (g)cc -o relayd relayd.c -lsocket -lnsl
  */
 
-/* this program expects the string:
- * "relay <hostname> <port>" or "relay <hostname>"
- * after connecting. It will then try to connect to the specified host
- * if failures occur, it will terminate the connection.
+/* this program does not except any arguments, just start it:
+ * 	./mrelayd
+ * The applet will pass it "relay targethost targetport" as first line
+ * after which mrelayd will connect to the target host.
+ * mrelayd listens on port 31415 (think PI). this can only be changed below.
  */
 
 /* adjust this to a reasonable limit */
