@@ -955,7 +955,7 @@ public class VDU extends Component
             fg = Color.gray;
           else {
 	    fg = fg.brighter();
-	    bg = bg.brighter();
+	    // bg = bg.brighter(); -- make some programs ugly
 	  }
 
         if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }

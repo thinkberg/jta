@@ -447,7 +447,8 @@ public abstract class SshIO
 
    case SSH_MSG_DEBUG:
       str = SshMisc.getString(0, packetData);
-      System.out.println("SshIO.handlePacket : " + " DEBUG " + str );
+      if(debug > 0) {
+        System.out.println("SshIO.handlePacket : " + " DEBUG " + str );
 
       // bad bad bad bad bad. We should not do actions in DEBUG messages,
       // but apparently some SSH demons does not send SSH_SMSG_FAILURE for
@@ -458,7 +459,9 @@ public abstract class SshIO
         break;
       }
 */
-      return str.getBytes();
+        return str.getBytes();
+      } 
+      return "".getBytes();
 
     default: 
       System.err.print("SshIO.handlePacket : Packet Type unknown: "+packetType);
