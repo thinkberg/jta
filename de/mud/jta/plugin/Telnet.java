@@ -20,10 +20,12 @@
 package de.mud.jta.plugin;
 
 import de.mud.jta.Plugin;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 
 import de.mud.jta.event.OnlineStatusListener;
+import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
@@ -97,6 +99,21 @@ public class Telnet extends Plugin implements FilterPlugin {
         bus.broadcast(new LocalEchoRequest(true));
       }
     });
+
+    bus.registerPluginListener(new ConfigurationListener() {
+      public void setConfiguration(PluginConfig config) {
+        configure(config);
+      }
+    });
+
+  }
+
+  public void configure(PluginConfig cfg) {
+    String crlf = cfg.getProperty("Telnet",id,"crlf");	// on \n
+    if (crlf != null) handler.setCRLF(crlf);
+
+    String cr = cfg.getProperty("Telnet",id,"cr");	// on \r
+    if (cr != null) handler.setCR(cr);
   }
 
   public void setFilterSource(FilterPlugin source) {
