@@ -106,6 +106,7 @@ public class VDU extends Component
   private int resizeStrategy;                /* current resizing strategy */
 
   private int cursorX, cursorY;                /* current cursor position */
+  private boolean showcursor = true;		/* show cursor */
   private Point selectBegin, selectEnd;          /* selection coordinates */
   private String selection;                 /* contains the selected text */
 
@@ -643,6 +644,12 @@ public class VDU extends Component
     markLine(l, 1);
   }
 
+  public void showCursor(boolean doshow) {
+    if (doshow != showcursor)
+	markLine(cursorY,1);
+    showcursor = doshow;
+  }
+
   /**
    * Get the current cursor position.
    * @see java.awt.Dimension
@@ -992,8 +999,10 @@ public class VDU extends Component
       }
     }
 
-    if(screenBase + cursorY >= windowBase && 
-       screenBase + cursorY < windowBase + size.height) {
+    if(showcursor && (
+       screenBase + cursorY >= windowBase && 
+       screenBase + cursorY < windowBase + size.height)
+    ) {
       g.setColor(color[COLOR_FG_STD]);
       g.setXORMode(color[COLOR_BG_STD]);
       g.fillRect( cursorX * charWidth + xoffset, 
