@@ -74,7 +74,7 @@ public class Terminal extends Plugin
 
   private final static boolean personalJava = false;
 
-  private final static int debug = 0;
+  private final static int debug = 1;
   
   /** holds the actual terminal emulation */
   protected vt320 terminal;
@@ -141,7 +141,13 @@ public class Terminal extends Plugin
       }
     };
 
-    tPanel = new Panel(new BorderLayout());
+    // the container for our terminal must use double-buffering
+    // or at least reduce flicker by overloading update()
+    tPanel = new Panel(new BorderLayout()) {
+      public void update(java.awt.Graphics g) {
+        paint(g);
+      }
+    };
     tPanel.add("Center", terminal);
 
     // register an online status listener
@@ -208,11 +214,13 @@ public class Terminal extends Plugin
 	                     raised);
         } else if(key.equals("Terminal.scrollBar") && !personalJava) {
 	  String direction = config.getProperty(key);
-	  if(!direction.equals("East") && !direction.equals("West"))
-	    direction = "East";
-	  Scrollbar scrollBar = new Scrollbar();
-	  tPanel.add(direction, scrollBar);
-	  terminal.setScrollbar(scrollBar);
+	  if(!direction.equals("none")) {
+	    if(!direction.equals("East") && !direction.equals("West"))
+	      direction = "East";
+	    Scrollbar scrollBar = new Scrollbar();
+	    tPanel.add(direction, scrollBar);
+	    terminal.setScrollbar(scrollBar);
+	  }
 	} else if(key.equals("Terminal.id"))
 	  terminal.setTerminalID(config.getProperty(key));
 	else if(key.equals("Terminal.buffer"))

@@ -19,8 +19,8 @@
 
 package de.mud.terminal;
 
+import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -41,6 +41,10 @@ import java.awt.print.PrinterException;
 import java.awt.print.PageFormat;
 */
 
+import java.awt.AWTEvent;
+import java.awt.AWTEventMulticaster;
+import java.awt.event.KeyListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.MouseListener;
@@ -52,17 +56,29 @@ import java.awt.event.MouseEvent;
  * features of a character display unit, but not the actual terminal emulation.
  * It can be used as the base for terminal emulations of any kind.
  * <P>
+ * This is a lightweight component. It will render very badly if used
+ * in standard AWT components without overloaded update() method. The
+ * update() method must call paint() immediately without clearing the
+ * components graphics context or parts of the screen will simply
+ * disappear.
+ * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public class VDU extends Canvas implements MouseListener, MouseMotionListener {
+public class VDU extends Component 
+  implements MouseListener, MouseMotionListener {
   /** The current version id tag */
   public final static String ID = "$Id$";
 
   /** Enable debug messages. */
   public final static int debug = 0;
+
+  /** lightweight component definitions */
+  private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK 
+                                       | AWTEvent.MOUSE_MOTION_EVENT_MASK
+                                       | AWTEvent.MOUSE_EVENT_MASK;
   
   private Dimension size;                             /* rows and columns */
   private Insets insets;                            /* size of the border */
@@ -94,7 +110,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   private boolean screenLocked = false;      /* screen needs to be locked */
                                              /* because of paint requests */
                                              /*   during other operations */
-  private int update[];        /* contains the lines that need update */
+  private boolean update[];        /* contains the lines that need update */
   
   /**
    * Create a color representation that is brighter than the standard
@@ -166,6 +182,9 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * @param font the font to be used (usually Monospaced)
    */
   public VDU(int width, int height, Font font) {
+    // lightweight component handling
+    enableEvents(VDU_EVENTS);
+    
     // set the normal font to use
     setFont(font);
     // set the standard resize strategy
@@ -814,8 +833,8 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     size = new Dimension(width, height);
     topMargin = 0;
     bottomMargin = height - 1;
-    update = new int[height + 1];
-    for(int i = 0; i <= height; i++) update[i] = 1;
+    update = new boolean[height + 1];
+    for(int i = 0; i <= height; i++) update[i] = true;
     screenLocked = false;
   }
 
@@ -885,25 +904,27 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   public void markLine(int l, int n) {
     l = checkBounds(l, 0, size.height - 1);
     for(int i = 0; (i < n) && (l + i < size.height); i++)
-      update[l + i + 1] = 1;
+      update[l + i + 1] = true;
   }
   
   /**
    * Redraw marked lines.
    * @see #markLine
    */
-  public void redraw() {
-    update[0]=2;
+  public synchronized void redraw() {
+    if(debug > 0) System.err.println("redraw()");
+    update[0] = true;
     repaint();
   }
 
   /**
-   * Update the display. to reduce flashing we have overridden this method.
+   * Update the display. To reduce flashing we have overridden this method.
    */
   public void update(Graphics g) {
+    if(debug > 0) System.err.println("update()");
     paint(g);
   }
-  
+
   /**
    * Paint the current screen. All painting is done here. Only lines that have
    * changed will be redrawn!
@@ -911,7 +932,13 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   public synchronized void paint(Graphics g) {
     if(screenLocked) return;
 
-    // System.err.println("Clip region: "+g.getClipBounds());
+    if(debug > 0) {
+      System.err.println("Clip region: "+g.getClipBounds());
+      System.err.println("paint()");
+      for(int l = 0; l < size.height; l++) 
+        if(update[l])
+          System.err.println("update["+l+"] = "+update[l]);
+    }
 
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
     int yoffset = (super.getSize().height - size.height * charHeight) / 2;
@@ -922,8 +949,8 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     g.setFont(normalFont);
 
     for(int l = 0; l < size.height; l++) {
-      if((update[0]>0) && (0==update[l + 1])) continue;
-      update[l + 1] = 0;
+      if(update[0] && !update[l + 1]) continue;
+      update[l + 1] = false;
       for(int c = 0; c < size.width; c++) {
         int addr = 0;
         int currAttr = charAttributes[windowBase + l][c];
@@ -1039,7 +1066,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
                    charHeight);
       g.setPaintMode();
     }
-
+    
     if(insets != null) {
       g.setColor(getBackground());
       xoffset--; yoffset--;
@@ -1049,8 +1076,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
                      charHeight * size.height + 1 + i * 2,
                      raised);
     }
-
-    update[0]--;
+    update[0] = false;
   }
 
 /*
@@ -1064,7 +1090,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 */
 
   public void print(Graphics g) {
-    for(int i = 0; i <= size.height; i++) update[i] = 1;
+    for(int i = 0; i <= size.height; i++) update[i] = true;
     paint(g);
   }
 
@@ -1242,7 +1268,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   }
 
   /**
-   * Handle mouse pressed events for copy & paste
+   * Handle mouse pressed events for copy & paste.
    * @param evt the event that occured
    * @see java.awt.event.MouseEvent
    */
@@ -1257,6 +1283,10 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     }
   }
 
+  /**
+   * Handle mouse released events for copy & paste.
+   * @param evt the mouse event
+   */
   public void mouseReleased(MouseEvent evt) {
     if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
@@ -1285,7 +1315,132 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 	if(end == charArray[l].length - 1)
 	  selection += "\n";
       }
-      repaint();
+      //repaint();
     }
   } 
+
+  // lightweight component event handling
+
+  private MouseListener mouseListener;
+
+  /**
+   * Add a mouse listener to the VDU. This is the implementation for
+   * the lightweight event handling.
+   * @param listener the new mouse listener
+   */
+  public void addMouseListener(MouseListener listener) {
+    mouseListener = AWTEventMulticaster.add(mouseListener, listener);
+    enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+  }
+
+  /**
+   * Remove a mouse listener to the VDU. This is the implementation for
+   * the lightweight event handling.
+   * @param listener the mouse listener to remove
+   */
+  public void removeMouseListener(MouseListener listener) {
+    mouseListener = AWTEventMulticaster.remove(mouseListener, listener);
+  }
+
+  private MouseMotionListener mouseMotionListener;
+ 
+  /**
+   * Add a mouse motion listener to the VDU. This is the implementation for
+   * the lightweight event handling.
+   * @param listener the mouse motion listener
+   */
+  public void addMouseMotionListener(MouseMotionListener listener) {
+    mouseMotionListener = AWTEventMulticaster.add(mouseMotionListener,listener);
+    enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+  }
+
+  /**
+   * Remove a mouse motion listener to the VDU. This is the implementation for
+   * the lightweight event handling.
+   * @param listener the mouse motion listener to remove
+   */
+  public void removeMouseMotionListener(MouseMotionListener listener) {
+    mouseMotionListener = 
+      AWTEventMulticaster.remove(mouseMotionListener, listener);
+  }
+
+  /**
+   * Process mouse events for this component. It will call the 
+   * methods (mouseClicked() etc) in the added mouse listeners.
+   * @param evt the dispatched mouse event
+   */
+  public void processMouseEvent(MouseEvent evt) {
+    // handle simple mouse events
+    if(mouseListener != null)
+      switch(evt.getID()) {
+        case MouseEvent.MOUSE_CLICKED:
+          mouseListener.mouseClicked(evt); break;
+        case MouseEvent.MOUSE_ENTERED:
+          mouseListener.mouseEntered(evt); break;
+        case MouseEvent.MOUSE_EXITED:
+          mouseListener.mouseExited(evt); break;
+        case MouseEvent.MOUSE_PRESSED:
+          mouseListener.mousePressed(evt); break;
+        case MouseEvent.MOUSE_RELEASED:
+          mouseListener.mouseReleased(evt); break;
+      }
+     super.processMouseEvent(evt);
+   }
+
+  /**
+   * Process mouse motion events for this component. It will call the 
+   * methods (mouseDragged() etc) in the added mouse motion listeners.
+   * @param evt the dispatched mouse event
+   */
+   public void processMouseMotionEvent(MouseEvent evt) {
+    // handle mouse motion events
+    if(mouseMotionListener != null)
+      switch(evt.getID()) {
+        case MouseEvent.MOUSE_DRAGGED:
+          mouseMotionListener.mouseDragged(evt); break;
+        case MouseEvent.MOUSE_MOVED:
+          mouseMotionListener.mouseMoved(evt); break;
+      }
+    super.processMouseMotionEvent(evt);
+  }
+    
+  private KeyListener keyListener;
+
+  /**
+   * Add a key listener to the VDU. This is necessary to be able to receive
+   * keyboard input from this component. It is a prerequisite for a
+   * lightweigh component.
+   * @param listener the key listener
+   */
+  public void addKeyListener(KeyListener listener) {
+    keyListener = AWTEventMulticaster.add(keyListener, listener);
+    enableEvents(AWTEvent.KEY_EVENT_MASK);
+  }
+
+  /**
+   * Remove key listener from the VDU. It is a prerequisite for a
+   * lightweigh component.
+   * @param listener the key listener to remove
+   */
+  public void removeKeyListener(KeyListener listener) {
+    keyListener = AWTEventMulticaster.remove(keyListener, listener);
+  }
+
+  /**
+   * Process key events for this component.
+   * @param evt the dispatched key event
+   */
+  public void processKeyEvent(KeyEvent evt) {
+    if(keyListener != null) 
+      switch(evt.getID()) {
+        case KeyEvent.KEY_PRESSED:
+	  keyListener.keyPressed(evt); break;
+        case KeyEvent.KEY_RELEASED:
+	  keyListener.keyReleased(evt); break;
+        case KeyEvent.KEY_TYPED:
+	  keyListener.keyTyped(evt); break;
+      }
+
+    super.processKeyEvent(evt);
+  }
 }

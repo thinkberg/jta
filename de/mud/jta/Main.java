@@ -214,7 +214,7 @@ public class Main {
     tmp.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         final Dialog d = new Dialog(frame, "About JTA", true);
-	d.add("Center", new Label("Copyright (c) 1996-1999 "
+	d.add("Center", new Label("Copyright (c) 1996-2000 "
 	                         +"Matthias L Jugel, Marcus Meiﬂner"));
 	Button close = new Button("Close");
 	close.addActionListener(new ActionListener() {

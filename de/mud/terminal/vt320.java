@@ -303,6 +303,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     	putString(s);
     return true;
   }
+
   private boolean write(String s) { return write(s,localecho); }
 
   // ===================================================================

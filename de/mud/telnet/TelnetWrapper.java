@@ -31,7 +31,24 @@ import java.awt.Dimension;
 
 /**
  * The telnet wrapper is a sample class for how to use the telnet protocol
- * handler of the JTA source package.
+ * handler of the JTA source package. To write a program using the wrapper
+ * you may use the following piece of code as an example:
+ * <PRE>
+ *   TelnetWrapper telnet = new TelnetWrapper();
+ *   try {
+ *     telnet.connect(args[0], 23);
+ *     telnet.login("user", "password");
+ *     telnet.setPrompt("user@host");
+ *     telnet.waitfor("Terminal type?");
+ *     telnet.send("dumb");
+ *     System.out.println(telnet.send("ls -l"));
+ *   } catch(java.io.IOException e) {
+ *     e.printStackTrace();
+ *   }
+ * </PRE>
+ * Please keep in mind that the password is visible for anyone who can
+ * download the class file. So use this only for public accounts or if
+ * you are absolutely sure nobody can see the file.
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
