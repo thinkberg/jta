@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meißner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2004. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -129,10 +129,14 @@ public class TelnetWrapper extends Wrapper {
    * @return the amount of bytes read
    */
   public int read(byte[] b) throws IOException {
-    int n = handler.negotiate(b);
+    /* process all already read bytes */
+    int n;
 
-    if (n > 0)
-      return n;
+    do {
+      n = handler.negotiate(b);
+      if (n>0)
+        return n;
+    } while (n==0);
 
     while (n <= 0) {
       do {
