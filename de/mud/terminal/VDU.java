@@ -112,10 +112,8 @@ public class VDU extends Component
   private Scrollbar scrollBar;
   private SoftFont  sf = new SoftFont();
 
-  private boolean screenLocked = false;      /* screen needs to be locked */
-                                             /* because of paint requests */
-                                             /*   during other operations */
   private boolean update[];        /* contains the lines that need update */
+  private boolean colorPrinting = false;	/* print display in color */
   
   private Image backingStore = null;
 
@@ -449,8 +447,6 @@ public class VDU extends Component
    * @see #redraw
    */
   public synchronized void insertLine(int l, int n, boolean scrollDown) {
-    screenLocked = true;
-
     l = checkBounds(l, 0, size.height - 1);
 
     char cbuf[][] = null;
@@ -583,9 +579,6 @@ public class VDU extends Component
 
     if(scrollBar != null)
       scrollBar.setValues(windowBase, size.height, 0, bufSize);
-
-
-    screenLocked = false;
   }
   
   /**
@@ -711,8 +704,6 @@ public class VDU extends Component
    * @param amount new size of the buffer
    */
   public void setBufferSize(int amount) {
-    screenLocked = true;
-
     if(amount < size.height) amount = size.height;
     if(amount < maxBufSize) {
       char cbuf[][] = new char[amount][size.width];
@@ -731,8 +722,6 @@ public class VDU extends Component
     }
     maxBufSize = amount;
  
-    screenLocked = false;
-
     update[0] = true;
     redraw();
   }
@@ -807,8 +796,6 @@ public class VDU extends Component
     if(debug > 0)
       System.err.println("VDU: screen size ["+width+","+height+"]");
 
-    screenLocked = true;
-    
     if(height > maxBufSize) 
       maxBufSize = height;
 
@@ -835,7 +822,6 @@ public class VDU extends Component
     bottomMargin = height - 1;
     update = new boolean[height + 1];
     update[0] = true;
-    screenLocked = false;
   }
 
   /**
@@ -918,7 +904,7 @@ public class VDU extends Component
     }
   }
 
-  protected void redraw(Graphics g) {
+  protected synchronized void redraw(Graphics g) {
     if(debug > 0) System.err.println("redraw()");
 
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
@@ -951,7 +937,7 @@ public class VDU extends Component
           bg = color[((currAttr & COLOR_BG) >> 7)-1];
 
         if((currAttr & BOLD) != 0)
-          if(fg.equals(Color.black))
+          if(fg.equals(Color.black) && COLOR_FG_BOLD != 0)
             fg = Color.gray;
           else {
 	    fg = fg.brighter();
@@ -978,8 +964,7 @@ public class VDU extends Component
         // determine the maximum of characters we can print in one go
         while(c + addr < size.width && 
               charAttributes[windowBase + l][c + addr] == currAttr &&
-              !sf.inSoftFont(charArray[windowBase + l ][c+addr])
-        ) {
+              !sf.inSoftFont(charArray[windowBase + l ][c+addr])) {
           if(charArray[windowBase + l][c + addr] < ' ')
             charArray[windowBase + l][c + addr] = ' ';
           addr++;
@@ -1095,14 +1080,47 @@ public class VDU extends Component
   }
 */
 
+  /**
+   * Set default for printing black&amp;white or colorized as displayed on
+   * screen. 
+   * @param name colorPrint true = print in full color, default b&amp;w only
+   */
+  public void setColorPrinting(boolean colorPrint) {
+    colorPrinting = colorPrint;
+  }
+
   public void print(Graphics g) {
     for(int i = 0; i <= size.height; i++) update[i] = true;
-    Color fg = getForeground(), bg = getBackground();
-    setForeground(Color.black);
-    setBackground(Color.white);
+    Color fg = null, bg = null, colorSave[] = null;
+    int boldSave = 0;
+
+    if(!colorPrinting) {
+      fg = getForeground();
+      bg = getBackground();
+      setForeground(Color.black);
+      setBackground(Color.white);
+      boldSave = COLOR_FG_BOLD;
+      COLOR_FG_BOLD = 0;
+      colorSave = color;
+      color = new Color[] { Color.black, 
+                            Color.black, 
+			    Color.black,
+			    Color.black,
+			    Color.black,
+			    Color.black,
+			    Color.black,
+			    Color.white
+			  };
+    }
+
     redraw(g);
-    setForeground(fg);
-    setBackground(bg);
+
+    if(!colorPrinting) {
+      color = colorSave;
+      COLOR_FG_BOLD = boldSave;
+      setForeground(fg);
+      setBackground(bg);
+    }
   }
 
   private int checkBounds(int value, int lower, int upper) {

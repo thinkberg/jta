@@ -63,6 +63,7 @@ import java.net.URL;
 
 import java.util.Properties;
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 /**
  * The terminal plugin represents the actual terminal where the
@@ -92,16 +93,56 @@ public class Terminal extends Plugin
 
   private Thread reader = null;
 
+  private Hashtable colors = new Hashtable();
+
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
   public Terminal(final PluginBus bus, final String id) {
     super(bus, id);
+    // initialize colors
+    colors.put("black", Color.black);
+    colors.put("red", Color.red);
+    colors.put("green", Color.green);
+    colors.put("yellow", Color.yellow);
+    colors.put("blue", Color.blue);
+    colors.put("magenta", Color.magenta);
+    colors.put("orange", Color.orange);
+    colors.put("pink", Color.pink);
+    colors.put("cyan", Color.cyan);
+    colors.put("white", Color.white);
+    colors.put("gray", Color.white);
 
     if(!personalJava) {
 
     menu = new Menu("Terminal");
     MenuItem item;
+
+    Menu fgm = new Menu("Foreground");
+    Menu bgm = new Menu("Background");
+    Enumeration cols = colors.keys();
+    ActionListener fgl = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        terminal.setForeground((Color)colors.get(e.getActionCommand()));
+	terminal.repaint();
+      }
+    };
+    ActionListener bgl = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        terminal.setBackground((Color)colors.get(e.getActionCommand()));
+	terminal.repaint();
+      }
+    };
+    while(cols.hasMoreElements()) {
+      String color = (String)cols.nextElement();
+      fgm.add(item = new MenuItem(color));
+      item.addActionListener(fgl);
+      bgm.add(item = new MenuItem(color));
+      item.addActionListener(bgl);
+    }
+    menu.add(fgm);
+    menu.add(bgm);
+
     menu.add(item = new MenuItem("Smaller Font"));
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -238,6 +279,13 @@ public class Terminal extends Plugin
       terminal.setForeground(Color.decode(tmp));
     if((tmp = cfg.getProperty("Terminal", id, "background")) != null)
       terminal.setBackground(Color.decode(tmp));
+
+    if((tmp = cfg.getProperty("Terminal", id, "print.color")) != null)
+      try {
+        terminal.setColorPrinting(Boolean.valueOf(tmp).booleanValue());
+      } catch(Exception e) {
+        error("Terminal.color.print: must be either true or false, not "+tmp);
+      }
  
     if((tmp = cfg.getProperty("Terminal", id, "colorSet")) != null) {
       Properties colorSet = new Properties();
@@ -254,20 +302,6 @@ public class Terminal extends Plugin
 	  colorSet = null;
         }
       }
-
-      Hashtable colors = new Hashtable();
-      colors.put("black", Color.black);
-      colors.put("red", Color.red);
-      colors.put("green", Color.green);
-      colors.put("yellow", Color.yellow);
-      colors.put("blue", Color.blue);
-      colors.put("magenta", Color.magenta);
-      colors.put("orange", Color.orange);
-      colors.put("pink", Color.pink);
-      colors.put("cyan", Color.cyan);
-      colors.put("white", Color.white);
-      colors.put("gray", Color.white);
-        
 
       if(colorSet != null) {
         Color set[] = terminal.getColorSet();
@@ -374,7 +408,6 @@ public class Terminal extends Plugin
       terminal.setVMS((Boolean.valueOf(tmp)).booleanValue());
     if((tmp = cfg.getProperty("Terminal", id, "IBM")) != null)
       terminal.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
-
 
     tPanel.setBackground(terminal.getBackground());
   }
