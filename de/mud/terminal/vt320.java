@@ -107,8 +107,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     Remove[0]  = Remove[1]  = Remove[2]  = Remove[3]  = "\u001b[3~";
     PrevScn[0] = PrevScn[1] = PrevScn[2] = PrevScn[3] = "\u001b[5~";
     NextScn[0] = NextScn[1] = NextScn[2] = NextScn[3] = "\u001b[6~";
-    KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001bOH";
-    KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001bOF";
+    KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001b[H";
+    KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001b[F";
 
     Delete = "\u001b[3~";
 
