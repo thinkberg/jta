@@ -22,6 +22,7 @@ package de.mud.jta.plugin;
 import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.event.SocketListener;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatus;
@@ -30,8 +31,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-
-import java.util.Properties;
 
 import java.awt.Frame;
 import java.awt.Panel;
@@ -64,19 +63,22 @@ public class Socket extends Plugin
   /**
    * Create a new socket plugin.
    */
-  public Socket(final PluginBus bus) {
-    super(bus);
+  public Socket(final PluginBus bus, final String id) {
+    super(bus, id);
 
     // register socket listener
     bus.registerPluginListener(this);
 
      bus.registerPluginListener(new ConfigurationListener() {
-      public void setConfiguration(Properties config) {
-        if((relay = config.getProperty("Socket.relay")) != null)
-	  if(config.getProperty("Socket.relayPort") != null) try {
-	    relayPort=Integer.parseInt(config.getProperty("Socket.relayPort"));
+      public void setConfiguration(PluginConfig config) {
+        if((relay = config.getProperty("Socket", id, "relay")) 
+	   != null)
+	  if(config.getProperty("Socket", id, "relayPort") != null) 
+	    try {
+	      relayPort = Integer.parseInt(
+	         config.getProperty("Socket", id, "relayPort"));
 	  } catch(NumberFormatException e) {
-	    System.err.println("Socket: relayPort is not a number");
+	    Socket.this.error("relayPort is not a number");
 	  }
        }
     });
@@ -91,7 +93,7 @@ public class Socket extends Plugin
    */
   public void connect(String host, int port) throws IOException {
     if(host == null) return;
-    if(debug>0) System.err.println("Socket: connect("+host+","+port+")");
+    if(debug>0) error("connect("+host+","+port+")");
     try {
       // check the relay settings, this is for the mrelayd only!
       if(relay == null)
@@ -125,14 +127,14 @@ public class Socket extends Plugin
       frame.add("Center", p);
       frame.pack();
       frame.show();
-      System.err.println("Socket: "+e);
+      error("can't connect: "+e);
       disconnect();
     }
   }  
 
   /** Disconnect the socket and close the connection. */
   public void disconnect() throws IOException {
-    if(debug>0) System.err.println("Socket: disconnect()");
+    if(debug>0) error("disconnect()");
     bus.broadcast(new OnlineStatus(false));
     if(socket != null) socket.close();
   }
@@ -142,12 +144,14 @@ public class Socket extends Plugin
   }
 
   public int read(byte[] b) throws IOException {
+    if(in == null) return -1;
     int n = in.read(b);
     if(n < 0) disconnect();
     return n;
   }
 
   public void write(byte[] b) throws IOException {
+    if(out == null) return;
     try {
       out.write(b);
     } catch(IOException e) {

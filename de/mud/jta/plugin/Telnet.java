@@ -53,8 +53,8 @@ public class Telnet extends Plugin implements FilterPlugin {
   /**
    * Create a new telnet plugin.
    */
-  public Telnet(final PluginBus bus) {
-    super(bus);
+  public Telnet(final PluginBus bus, String id) {
+    super(bus, id);
 
     // create a new telnet protocol handler
     handler = new TelnetProtocolHandler() {

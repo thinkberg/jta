@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Test Page</title>
@@ -113,8 +113,8 @@ essential now ...</i>
 
 <li>
 <font color="#000000"><b>Important:</b> There is a problem with Netscape
-that forces you to put the <a href="../defaults.opt">defaults.opt</a> file
-in the same directory as the jar and the html file. Simply download <a href="../defaults.opt">defaults.opt</a>
+that forces you to put the <a href="../default.conf">default.conf</a> file
+in the same directory as the jar and the html file. Simply download <a href="../default.conf">default.conf</a>
 and put it there.</font></li>
 
 <li>
@@ -166,7 +166,8 @@ the config file is in the same directory.</font></tt></li>
 
 <li>
 <tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The file
-<a href="../applet.conf">applet.conf</a> looks just like <a href="../defaults.opt">defaults.opt.</a></font></tt></li>
+<a href="applet.conf">applet.conf</a>
+looks just like <a href="../default.conf">default.conf.</a></font></tt></li>
 
 <li>
 <tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; applet.conf
@@ -214,12 +215,8 @@ a width of 590 pixels and a height of 360 pixels. Adapt this according
 to your needs. In general the applet adapts its font size to match the
 size of the applet.</font></dd>
 
-<br>&nbsp;
-<p>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<p>Everything else will be explained below and finally you need to close
-the applet definition using the <tt>&lt;/applet></tt> tag.
+<p><br>Everything else will be explained below and finally you need to
+close the applet definition using the <tt>&lt;/applet></tt> tag.
 <p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
 and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
 tags.
@@ -233,48 +230,11 @@ tags.
 
 <tr NOSAVE>
 <td VALIGN=TOP NOSAVE><tt>NAME="config"</tt>
-<br><tt>VALUE="</tt><i>URL to configuration file</i><tt>"</tt></td>
+<br><tt>VALUE="</tt><i>configuration file</i><tt>"</tt></td>
 
 <td>The parameter points to the configuration file for the applet. It may
 be either a path relative to the <tt>CODEBASE</tt> or a fully qualified
-URL.
-<p><font color="#000000">This parameter replaces all following parameters
-that had only been</font> implemented for convenience.</td>
-</tr>
-
-<tr NOSAVE>
-<td VALIGN=TOP NOSAVE><tt>NAME="plugins"</tt>
-<br><tt>VALUE="</tt><i>pluginlist</i><tt>"</tt></td>
-
-<td NOSAVE><font color="#CC0000">(deprecated, use the config file)</font>
-Use this parameter to define a different list of plugins to be loaded on
-startup of the application. Plugins are always added from back to front
-and are separated by comma:&nbsp;
-<p><tt>&nbsp;&nbsp; Socket,Telnet,Terminal</tt>
-<p>The above <i>pluginlist</i> is the default. No whitespaces are allowed!</td>
-</tr>
-
-<tr NOSAVE>
-<td VALIGN=TOP NOSAVE><tt>NAME="layout.</tt><i>plugin</i><tt>"</tt>
-<br><tt>VALUE="</tt>direction<tt>"</tt></td>
-
-<td><font color="#CC0000">(deprecated, use the config file) </font>If a
-plugin is a visible component you can define where it will appear on the
-screen. At the moment only <tt>BorderLayout</tt> directions are understood.
-So you may place plugins at the <tt>Center</tt>, <tt>North</tt>,
-<tt>South</tt>,
-<tt>East</tt>
-and <tt>West</tt>. Usually you want to place the <a href="plugins/Terminal.html">Terminal</a>
-plugin in the center!</td>
-</tr>
-
-<tr NOSAVE>
-<td VALIGN=TOP NOSAVE><tt>NAME="port"</tt>
-<br><tt>VALUE="</tt><i>port number</i><tt>"</tt></td>
-
-<td><font color="#CC0000">(deprecated, use the config file) </font>Use
-this parameter to set a different port than 23. This may be necessary for
-the <a href="plugins/SSH.html">SSH</a> plugin.</td>
+URL.</td>
 </tr>
 </table></center>
 </td>

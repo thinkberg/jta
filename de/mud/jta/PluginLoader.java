@@ -42,10 +42,26 @@ public class PluginLoader implements PluginBus {
   private final static int debug = 0;
 
   /** the path to standard plugins */
-  private final static String PATH = "de.mud.jta.plugin.";
+  private Vector PATH = null;
 
   /** holds all the filters */
   private Vector filter = new Vector();
+
+  /**
+   * Create new plugin loader and set up with default plugin path.
+   */
+  public PluginLoader() {
+    PATH = new Vector();
+    PATH.addElement("de.mud.jta.plugin"); 
+  }
+
+  /**
+   * Create new plugin loader and set up with specified plugin path.
+   * @param path the default search path for plugins
+   */
+  public PluginLoader(Vector path) {
+    PATH = path;
+  }
 
   /**
    * Add a new plugin to the system and register the plugin load as its
@@ -55,14 +71,15 @@ public class PluginLoader implements PluginBus {
    * @param name the string name of the plugin
    * @return the newly created plugin or null in case of an error
    */
-  public Plugin addPlugin(String name) {
+  public Plugin addPlugin(String name, String id) {
     Plugin plugin = null;
 
     // load the plugin by name and instantiate it
     try {
-      Class c = Class.forName(PATH+name);
-      Constructor cc = c.getConstructor(new Class[] { PluginBus.class });
-      plugin = (Plugin)cc.newInstance(new Object[] { this });
+      Class c = Class.forName(PATH.elementAt(0)+"."+name);
+      Constructor cc = c.getConstructor(new Class[] { PluginBus.class, 
+                                                      String.class });
+      plugin = (Plugin)cc.newInstance(new Object[] { this, id });
     } catch(Exception e) {
       System.err.println("plugin loader: cannot load "+name);
       e.printStackTrace();

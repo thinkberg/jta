@@ -46,8 +46,8 @@ public class Shell extends Plugin implements FilterPlugin {
   protected InputStream in, err;
   protected OutputStream out;
 
-  public Shell(final PluginBus bus) {
-    super(bus);
+  public Shell(final PluginBus bus, final String id) {
+    super(bus, id);
 
     bus.registerPluginListener(new SocketListener() {
       public void connect(String host, int port) {
@@ -58,7 +58,7 @@ public class Shell extends Plugin implements FilterPlugin {
           out = p.getOutputStream();
           err = p.getErrorStream();
         } catch(Exception e) {
-          System.err.println("Shell: "+e);
+          Shell.this.error("error: "+e);
           e.printStackTrace();
         }
         bus.broadcast(new OnlineStatus(true));
@@ -74,13 +74,11 @@ public class Shell extends Plugin implements FilterPlugin {
   }
 
   public int read(byte[] b) throws IOException {
-    System.err.println("Shell: read()");
     if(err.available() > 0) return err.read(b);
     return in.read(b);
   }
 
   public void write(byte[] b) throws IOException {
-    System.err.println("Shell: write()");
     out.write(b);
     out.flush();
   }

@@ -28,6 +28,8 @@ import java.util.Enumeration;
 
 import java.io.IOException;
 
+import java.net.URL;
+
 import java.awt.Frame;
 import java.awt.Dialog;
 import java.awt.Label;
@@ -83,17 +85,25 @@ public class Main {
     Properties options = new Properties();
     try {
       options.load(options.getClass()
-                     .getResourceAsStream("/de/mud/jta/defaults.opt"));
+                     .getResourceAsStream("/de/mud/jta/default.conf"));
     } catch(IOException e) {
-      System.err.println("jta: cannot load defaults");
+      System.err.println("jta: cannot load default.conf");
     }
     String error = parseOptions(options, args);
     if(error != null) {
       System.err.println(error);
       System.err.println("usage: de.mud.jta.Main [-plugins pluginlist] "
                         +"[-addplugin plugin] "
+                        +"[-config url] "
                         +"[-term id] [host [port]]");
       System.exit(0);
+    }
+
+    String cfg = options.getProperty("Main.config");
+    if(cfg != null) try {
+      options.load(new URL(cfg).openStream());
+    } catch(IOException e) {
+      System.err.println("jta: cannot load "+cfg);
     }
 
     final String host = options.getProperty("Socket.host");
@@ -247,7 +257,12 @@ public class Main {
   private static String parseOptions(Properties options, String args[]) {
     boolean host = false, port = false;
     for(int n = 0; n < args.length; n++) {
-      if(args[n].equals("-plugins"))
+      if(args[n].equals("-config"))
+        if(!args[n+1].startsWith("-"))
+	  options.put("Main.config", args[++n]);
+	else
+	  return "missing parameter for -config";
+      else if(args[n].equals("-plugins"))
         if(!args[n+1].startsWith("-"))
 	  options.put("plugins", args[++n]);
         else

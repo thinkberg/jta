@@ -55,8 +55,8 @@ public class Status extends Plugin implements VisualPlugin {
 
   private Hashtable ports = new Hashtable();
 
-  public Status(PluginBus bus) {
-    super(bus);
+  public Status(PluginBus bus, String id) {
+    super(bus, id);
 
     // fill port hashtable
     ports.put("22", "ssh");

@@ -19,8 +19,8 @@
 package de.mud.jta.event;
 
 import de.mud.jta.PluginListener;
+import de.mud.jta.PluginConfig;
 
-import java.util.Properties;
 
 /**
  * Configuration listener will be notified of configuration events.
@@ -32,5 +32,5 @@ import java.util.Properties;
  */
 public interface ConfigurationListener extends PluginListener {
   /** Called for configuration changes. */
-  public void setConfiguration(Properties config);
+  public void setConfiguration(PluginConfig config);
 }

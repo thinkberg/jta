@@ -22,6 +22,7 @@ package de.mud.jta.plugin;
 import de.mud.jta.Plugin;
 import de.mud.jta.VisualPlugin;
 import de.mud.jta.PluginBus;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketListener;
 
@@ -31,7 +32,6 @@ import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 
 import java.util.Hashtable;
-import java.util.Properties;
 
 import java.net.URL;
 
@@ -107,20 +107,22 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
   /**
    * Create the list plugin and get the url to the actual list.
    */
-  public MudConnector(PluginBus bus) {
-    super(bus);
+  public MudConnector(PluginBus bus, final String id) {
+    super(bus, id);
+
     bus.registerPluginListener(new ConfigurationListener() {
-      public void setConfiguration(Properties config) {
-        String url = config.getProperty("MudConnector.listURL");
+      public void setConfiguration(PluginConfig config) {
+        String url = 
+	  config.getProperty("MudConnector", id, "listURL");
         if(url != null) {
           try {
             listURL = new URL(url);
           } catch(Exception e) {
-            System.err.println("MudConnector: "+e);
+            MudConnector.this.error(""+e);
 	    errorLabel.setText("Error: "+e);
           } 
         } else {
-          System.err.println("MudConnector: no listURL specified");
+          MudConnector.this.error("no listURL specified");
 	  errorLabel.setText("Missing list URL");
 	  layouter.show(mudListPanel, "ERROR");
 	}
@@ -163,7 +165,7 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
       try {
         mudCount = Integer.parseInt(line);
       } catch(NumberFormatException nfe) {
-        System.err.println("MudConnector: number of muds: "+nfe);
+        error("number of muds: "+nfe);
       }
       System.out.println("MudConnector: expecting "+mudCount+" mud entries");
       progress.setMax(mudCount);
@@ -183,20 +185,20 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 
         if((token = ts.nextToken()) != ts.TT_EOF) {
 	  if(token == ts.TT_EOL)
-	    System.err.println("MudConnector: "+name+": unexpected end of line"
+	    error(name+": unexpected end of line"
 	                      +", missing host and port");
           host = ts.sval;
           port = new Integer(23);
           if((token = ts.nextToken()) != ts.TT_EOF) try {
 	    if(token == ts.TT_EOL)
-	      System.err.println("MudConnector: "+name+": default port 23");
+	      error(name+": default port 23");
             port = new Integer(ts.sval);
           } catch(NumberFormatException nfe) {
-            System.err.println("MudConnector: port for "+name+": "+nfe);
+            error("port for "+name+": "+nfe);
           }
 
           if(debug > 0) 
-            System.err.println("MudConnector: "+name+" ["+host+","+port+"]");
+            error(name+" ["+host+","+port+"]");
           mudList.put(name, new Object[] { host, port });
           mudListSelector.add(name);
         }
@@ -207,7 +209,7 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
       }
       System.out.println("MudConnector: found "+mudList.size()+" entries");
     } catch(Exception e) {
-      System.err.println("MudConnector: error: "+e);
+      error("error: "+e);
       errorLabel.setText("Error: "+e);
       layouter.show(mudListPanel, "ERROR");
     }

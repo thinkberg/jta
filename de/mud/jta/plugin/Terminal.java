@@ -20,6 +20,7 @@
 package de.mud.jta.plugin;
 
 import de.mud.jta.Plugin;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.VisualTransferPlugin;
 import de.mud.jta.PluginBus;
@@ -61,7 +62,6 @@ import java.io.InputStream;
 import java.net.URL;
 
 import java.util.Properties;
-import java.util.Enumeration;
 
 /**
  * The terminal plugin represents the actual terminal where the
@@ -94,8 +94,8 @@ public class Terminal extends Plugin
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
-  public Terminal(final PluginBus bus) {
-    super(bus);
+  public Terminal(final PluginBus bus, final String id) {
+    super(bus, id);
 
     if(!personalJava) {
 
@@ -201,114 +201,111 @@ public class Terminal extends Plugin
     });
 
     bus.registerPluginListener(new ConfigurationListener() {
-      public void setConfiguration(Properties config) {
+      public void setConfiguration(PluginConfig config) {
         configure(config);
       }
     });
   }
 
-  private void configure(Properties config) {
-    Enumeration p = config.keys();
-
-    while(p.hasMoreElements()) {
-      String key = (String)p.nextElement();
-      if(key.startsWith("Terminal.")) {
-        if(key.equals("Terminal.foreground"))
-	  terminal.setForeground(Color.decode(config.getProperty(key)));
-	else if(key.equals("Terminal.background"))
-	  terminal.setBackground(Color.decode(config.getProperty(key)));
-	else if(key.equals("Terminal.colorSet"))
-	  System.out.println("Terminal.colorSet not implemented yet");
-	else if(key.equals("Terminal.borderRaised")) 
-	  /* do nothing */ ;
-	else if(key.equals("Terminal.border")) {
-	  boolean raised = false;
-	  if(config.containsKey("Terminal.borderRaised"))
-	    raised = Boolean.valueOf("Terminal.borderRaised").booleanValue();
-	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
-	                     raised);
-        } else if(key.equals("Terminal.scrollBar") && !personalJava) {
-	  String direction = config.getProperty(key);
-	  if(!direction.equals("none")) {
-	    if(!direction.equals("East") && !direction.equals("West"))
-	      direction = "East";
-	    Scrollbar scrollBar = new Scrollbar();
-	    tPanel.add(direction, scrollBar);
-	    terminal.setScrollbar(scrollBar);
-	  }
-	} else if(key.equals("Terminal.id"))
-	  terminal.setTerminalID(config.getProperty(key));
-	else if(key.equals("Terminal.buffer"))
-	  terminal.setBufferSize(Integer.parseInt(config.getProperty(key)));
-	else if(key.equals("Terminal.size")) {
-	  String size = config.getProperty(key);
-	  try {
-	    int idx = size.indexOf(',');
-	    int width = Integer.parseInt(size.substring(1, idx).trim());
-	    int height = Integer.parseInt(
-	      size.substring(idx+1, size.length()-1).trim());
-	    terminal.setScreenSize(width, height);
-	  } catch(Exception e) {
-	    System.err.println("Terminal: screen size is wrong: "+size);
-	    System.err.println("Terminal: "+e);
-	  }
-	} else if(key.equals("Terminal.resize")) {
-	  String resize = config.getProperty("Terminal.resize");
-	  if(resize.equals("font"))
-	    terminal.setResizeStrategy(terminal.RESIZE_FONT);
-	  else if(resize.equals("screen"))
-	    terminal.setResizeStrategy(terminal.RESIZE_SCREEN);
-	  else 
-	    terminal.setResizeStrategy(terminal.RESIZE_NONE);
-        } else if(key.equals("Terminal.fontSize") || 
-	          key.equals("Terminal.fontStyle"))
-          /* do nothing */ ;
-        else if(key.equals("Terminal.font")) {
-	  int style = Font.PLAIN, fsize = 12;
-	  if(config.containsKey("Terminal.fontSize"))
-	    fsize = Integer.parseInt(config.getProperty("Terminal.fontSize"));
-	  String fontStyle = config.getProperty("Terminal.fontStyle");
-	  if(fontStyle == null || fontStyle.equals("plain"))
-	    style = Font.PLAIN;
-	  else if(fontStyle.equals("bold"))
-	    style = Font.BOLD;
-	  else if(fontStyle.equals("italic"))
-	    style = Font.ITALIC;
-	  else if(fontStyle.equals("bold+italic"))
-	    style = Font.BOLD | Font.ITALIC;
-	  terminal.setFont(new Font(config.getProperty(key), style, fsize));
-	} else if(key.equals("Terminal.keyCodes")) {
-	  Properties keyCodes = new Properties();
-	  String file = config.getProperty(key);
-	  URL keyCodeURL = getClass().getResource(file);
-	    
-	  // if loading the file as resource does not work, try as URL
-	  if(keyCodeURL == null) try {
-	    keyCodeURL = new URL(config.getProperty(key));
-	  } catch(Exception e) {
-	    System.err.println("Terminal: "+e);
-	  }
-
-          // load the key codes if we got a URL
-          if(keyCodeURL != null) try {
-	    keyCodes.load(keyCodeURL.openStream());
-	    terminal.setKeyCodes(keyCodes);
-	  } catch(IOException e) {
-	    System.err.println("Terminal: cannot load keyCodes: "+e);
-	  } else
-	    System.err.println("Terminal: could not load "+file);
-	} else if(key.equals("Terminal.VMS"))
-	  terminal.setVMS(
-	    (Boolean.valueOf(config.getProperty(key))).booleanValue());
-	else if(key.equals("Terminal.IBM"))
-	  terminal.setIBMCharset(
-	    (Boolean.valueOf(config.getProperty(key))).booleanValue());
-        else
-	  System.err.println("Error: '"+key+"' is not a Terminal property");
+  private void configure(PluginConfig cfg) {
+    String tmp;
+    if((tmp = cfg.getProperty("Terminal", id, "foreground")) != null)
+      terminal.setForeground(Color.decode(tmp));
+    if((tmp = cfg.getProperty("Terminal", id, "background")) != null)
+      terminal.setBackground(Color.decode(tmp));
+ 
+    if((tmp = cfg.getProperty("Terminal", id, "colorSet")) != null)
+      error("colorSet not implemented yet");
+ 
+    if((tmp = cfg.getProperty("Terminal", id, "border")) != null) {
+      String size = tmp;
+      boolean raised = false;
+      if((tmp = cfg.getProperty("Terminal", id, "borderRaised")) != null)
+        raised = Boolean.valueOf(tmp).booleanValue();
+      terminal.setBorder(Integer.parseInt(size), raised);
+    }
+ 
+    if((tmp = cfg.getProperty("Terminal", id, "scrollBar")) != null && 
+       !personalJava) {
+      String direction = tmp;
+      if(!direction.equals("none")) {
+        if(!direction.equals("East") && !direction.equals("West"))
+          direction = "East";
+        Scrollbar scrollBar = new Scrollbar();
+        tPanel.add(direction, scrollBar);
+        terminal.setScrollbar(scrollBar);
       }
     }
+
+    if((tmp = cfg.getProperty("Terminal", id, "id")) != null)
+      terminal.setTerminalID(tmp);
+
+    if((tmp = cfg.getProperty("Terminal", id, "buffer")) != null) 
+      terminal.setBufferSize(Integer.parseInt(tmp));
+
+    if((tmp = cfg.getProperty("Terminal", id, "size")) != null) try {
+      int idx = tmp.indexOf(',');
+      int width = Integer.parseInt(tmp.substring(1, idx).trim());
+      int height = Integer.parseInt(tmp.substring(idx+1,tmp.length()-1).trim());
+      terminal.setScreenSize(width, height);
+    } catch(Exception e) {
+      error("screen size is wrong: "+tmp);
+      error("error: "+e);
+    }
+
+    if((tmp = cfg.getProperty("Terminal", id, "resize")) != null)
+      if(tmp.equals("font"))
+	terminal.setResizeStrategy(terminal.RESIZE_FONT);
+      else if(tmp.equals("screen"))
+        terminal.setResizeStrategy(terminal.RESIZE_SCREEN);
+      else 
+        terminal.setResizeStrategy(terminal.RESIZE_NONE);
+        
+	
+    if((tmp = cfg.getProperty("Terminal", id, "font")) != null) {
+      String font = tmp;
+      int style = Font.PLAIN, fsize = 12;
+      if((tmp = cfg.getProperty("Terminal", id, "fontSize")) != null)
+        fsize = Integer.parseInt(tmp);
+      String fontStyle = cfg.getProperty("Terminal", id, "fontStyle");
+      if(fontStyle == null || fontStyle.equals("plain"))
+        style = Font.PLAIN;
+      else if(fontStyle.equals("bold"))
+        style = Font.BOLD;
+      else if(fontStyle.equals("italic"))
+        style = Font.ITALIC;
+      else if(fontStyle.equals("bold+italic"))
+        style = Font.BOLD | Font.ITALIC;
+      terminal.setFont(new Font(font, style, fsize));
+    }
+
+    if((tmp = cfg.getProperty("Terminal", id, "keyCodes")) != null) {
+      Properties keyCodes = new Properties();
+      URL keyCodeURL = getClass().getResource(tmp);
+	    
+      // if loading the file as resource does not work, try as URL
+      if(keyCodeURL == null) try {
+        keyCodeURL = new URL(tmp);
+      } catch(Exception e) {
+        error(""+e);
+      }
+
+     // load the key codes if we got a URL
+     if(keyCodeURL != null) try {
+       keyCodes.load(keyCodeURL.openStream());
+       terminal.setKeyCodes(keyCodes);
+     } catch(IOException e) {
+       error("cannot load keyCodes: "+e);
+     } else
+       error("could not load "+tmp);
+    }
+
+    if((tmp = cfg.getProperty("Terminal", id, "VMS")) != null)
+      terminal.setVMS((Boolean.valueOf(tmp)).booleanValue());
+    if((tmp = cfg.getProperty("Terminal", id, "IBM")) != null)
+      terminal.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
   }
-	  
+
   /**
    * Continuously read from our back end and display the data on screen.
    */

@@ -22,6 +22,7 @@ package de.mud.jta.plugin;
 import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
+import de.mud.jta.PluginConfig;
 
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatusListener;
@@ -42,8 +43,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import java.io.IOException;
-
-import java.util.Properties;
 
 /**
  * Secure Shell plugin for the Java Telnet Application. This is a plugin
@@ -73,8 +72,8 @@ public class SSH extends Plugin implements FilterPlugin {
   /**
    * Create a new ssh plugin.
    */
-  public SSH(final PluginBus bus) {
-    super(bus);
+  public SSH(final PluginBus bus, final String id) {
+    super(bus, id);
 
     // create a new telnet protocol handler
     handler = new SshIO() {
@@ -97,9 +96,9 @@ public class SSH extends Plugin implements FilterPlugin {
     };
 
     bus.registerPluginListener(new ConfigurationListener() {
-      public void setConfiguration(Properties config) {
-        user = config.getProperty("SSH.user");
-	pass = config.getProperty("SSH.password");
+      public void setConfiguration(PluginConfig config) {
+        user = config.getProperty("SSH", id, "user");
+	pass = config.getProperty("SSH", id, "password");
       }
     });
 

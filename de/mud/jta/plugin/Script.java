@@ -22,12 +22,12 @@ package de.mud.jta.plugin;
 import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 
 import java.io.IOException;
 
 import java.util.Vector;
-import java.util.Properties;
 
 /**
  * The script plugin takes a series of match and answer pairs to compare
@@ -53,20 +53,20 @@ public class Script extends Plugin implements FilterPlugin {
   /**
    * Create a new scripting plugin.
    */
-  public Script(PluginBus bus) {
-    super(bus);
+  public Script(PluginBus bus, final String id) {
+    super(bus, id);
+
     bus.registerPluginListener(new ConfigurationListener() {
-      public void setConfiguration(Properties config) {
+      public void setConfiguration(PluginConfig config) {
         Vector script = new Vector();
-        if(config.containsKey("Script.script")) {
-	  String s = config.getProperty("Script.script");
+        String s = config.getProperty("Script", id, "script");
+        if(s != null) {
 	  // check if the script is stored in a file
 	  if(s.charAt(0) == '@') {
-	    System.out.println("Script.script: @file not implemented yet");
+	    Script.this.error("@file not implemented yet");
 	  }
 	  // parse the script and set up  
-	  if(debug > 0) 
-	    System.err.println("Script: "+s);
+	  if(debug > 0) Script.this.error(s);
 	  String pair[] = null;
           int old = -1, idx = s.indexOf('|');
           while(idx >= 0) {
@@ -88,7 +88,7 @@ public class Script extends Plugin implements FilterPlugin {
 	    script.addElement(pair);
 	    if(debug > 0) System.out.print(pair[1]);
 	  } else
-	    System.err.println("Script: unmatched pairs of script elements");
+	    Script.this.error("unmatched pairs of script elements");
 	  // set up the script
 	  setup(script);
         }

@@ -65,18 +65,28 @@ public class Common extends PluginLoader {
     Enumeration e = names.elements();
     while(e.hasMoreElements()) {
       String name = (String)e.nextElement();
-      System.out.println("jta: loading plugin '"+name+"' ...");
-      Plugin plugin = addPlugin(name);
+      String id = null; int idx;
+      if((idx = name.indexOf("(")) > 1) {
+        if(name.indexOf(")", idx) > idx)
+          id = name.substring(idx + 1, name.indexOf(")", idx));
+	else
+	  System.err.println("jta: missing ')' for plugin '"+name+"'");
+        name = name.substring(0, idx);
+      }
+      System.out.println("jta: loading plugin '"+name+"'"
+                        +(id != null && id.length() > 0 ? 
+			    ", ID: '"+id+"'" : ""));
+      Plugin plugin = addPlugin(name, id);
       plugins.put(name, plugin);
       if(plugin instanceof VisualPlugin) {
         Component c = ((VisualPlugin)plugin).getPluginVisual();
-	if(c != null) components.put(name, c);
+	if(c != null) components.put(name+(id != null ? "("+id+")" : ""), c);
 	Menu menu = ((VisualPlugin)plugin).getPluginMenu();
-	if(menu != null) menus.put(name, menu);
+	if(menu != null) menus.put(name+(id != null ? "("+id+")" : ""), menu);
       }
     }
 
-    broadcast(new ConfigurationRequest(config));
+    broadcast(new ConfigurationRequest(new PluginConfig(config)));
   }
 
   public Hashtable getPlugins() {

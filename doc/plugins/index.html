@@ -24,7 +24,8 @@ Telnet Application/Applet: Plugins</font></font></h1></div>
 <a href="mailto:marcus@mud.de">Marcus
 Mei&szlig;ner</a></i>
 <p><b>Version 2.0 <i>RC1 </i>/ Java 2 and 1.1.x</b>
-<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+<br>Available under <a href="../../license/COPYING">GNU General Public
+License</a></td>
 </tr>
 
 <tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
@@ -55,8 +56,30 @@ The Java Telnet Application uses a pugin scheme to allow easy addition
 of software modules to the whole framework. These plugins may either be
 used to work on the data streams, display additional information to the
 user or be bywork. A few standard plugins are provided with the package.
-These plugins are desribed here.
-<br>&nbsp;
+These plugins are desribed here. J<a href="#PLUGINLIST">ump down to the
+list.</a>
+<p>In contrast to the old version we have introduced a new scheme for loading
+plugins. It is now possible to have <b>two or more plugins</b> of the same
+name <b>with several different configurations</b> used in one application.
+<p>To accomplish that we have introduced identifier for the plugins. A
+normal plugin list would look like:<tt></tt>
+<p><tt>plugins =&nbsp;Socket,Telnet,ButtonBar,Terminal</tt><tt></tt>
+<p><tt>If you wanted to set up another button bar you are in trouble because
+it would read the same options twice. So when setting up two plugins of
+the same name you do as follows:</tt><tt></tt>
+<p><tt>plugins =&nbsp;Socket,Telnet,ButtonBar(one),ButtonBar(two),Terminal</tt>
+<p>You give both plugins a unique name (<tt>one</tt> and <tt>two</tt>)
+and use this name in any following configuration properties:
+<p><tt>layout.ButtonBar(one) = North</tt>
+<br><tt>layout.ButtonBar(two)&nbsp;=&nbsp;South</tt>
+<br><tt>ButtonBar(one).setup = http://server/one.conf</tt>
+<br><tt>ButtonBar(two).setup =&nbsp;http://server/two.conf</tt>
+<p>And that is it! If you define properties without the unique name they
+will be used as fallback values in case a needed property is not set for
+a specific plugin.&nbsp;
+<p>Have a look at the <a href="../../html/index.html">example page</a>
+and the <a href="../../html/applet.conf">applet.conf </a>used there.
+<br><a NAME="PLUGINLIST"></a>
 <center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
 <tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
 <td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Plugin</font></font></b></td>
@@ -113,6 +136,15 @@ can see what you do. It implements an ANSI/VT320 compatible terminal emulation.<
 
 <td>A useful plugin for Applet users. It will allow you to define an idle
 timeout to close the connection.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="ButtonBar.html">ButtonBar</a></b></center>
+</td>
+
+<td>The new implemenation of our well known button bar module. With new
+configuration options and better look than ever.</td>
 </tr>
 </table></center>
 </td>

@@ -21,7 +21,10 @@ package de.mud.jta;
 import java.io.IOException;
 
 /**
- * Plugin base class for the Java Telnet Application. 
+ * Plugin base class for the Java Telnet Application. A plugin is a component
+ * for the PluginBus and may occur several times. If we have more than one
+ * plugin of the same type the protected value id contains the unique plugin
+ * id as configured in the configuration.
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
@@ -31,12 +34,32 @@ import java.io.IOException;
 public class Plugin {
   /** holds the plugin bus used for communication between plugins */
   protected PluginBus bus;
+  /** 
+   * in case we have several plugins of the same type this contains their
+   * unique id
+   */
+  protected String id;
 
   /**
-   * Create a new plugin and set the plugin bus used by this plugin.
+   * Create a new plugin and set the plugin bus used by this plugin and
+   * the unique id. The unique id may be null if there is only one plugin
+   * used by the system.
    * @param bus the plugin bus
+   * @param id the unique plugin id
    */
-  public Plugin(PluginBus bus) {
+  public Plugin(PluginBus bus, String id) {
     this.bus = bus;
+    this.id = id;
+  }
+
+  /**
+   * Print an error message to stderr prepending the plugin name. This method
+   * is public due to compatibility with Java 1.1
+   * @param msg the error message
+   */
+  public void error(String msg) {
+    String name = getClass().toString();
+    name = name.substring(name.lastIndexOf('.')+1);
+    System.err.println(name + (id != null ? "("+id+")" : "") +": "+msg);
   }
 }

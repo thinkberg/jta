@@ -20,9 +20,9 @@ package de.mud.jta.event;
 
 import de.mud.jta.PluginMessage;
 import de.mud.jta.PluginListener;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 
-import java.util.Properties;
 
 /**
  * Configuration request message. Subclassing this message can be used to
@@ -34,9 +34,9 @@ import java.util.Properties;
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
 public class ConfigurationRequest implements PluginMessage {
-  Properties config;
+  PluginConfig config;
 
-  public ConfigurationRequest(Properties config) {
+  public ConfigurationRequest(PluginConfig config) {
     this.config = config;
   }
 

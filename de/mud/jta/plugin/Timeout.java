@@ -22,13 +22,12 @@ package de.mud.jta.plugin;
 import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
+import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketListener;
 import de.mud.jta.event.SocketRequest;
 
 import java.io.IOException;
-
-import java.util.Properties;
 
 /**
  * The timeout plugin looks at the incoming and outgoing data stream and
@@ -55,24 +54,26 @@ public class Timeout extends Plugin
   /**
    * Create the new timeout plugin.
    */
-  public Timeout(final PluginBus bus) {
-    super(bus);
+  public Timeout(final PluginBus bus, final String id) {
+    super(bus, id);
 
     // register socket listener
     bus.registerPluginListener(this);
 
      bus.registerPluginListener(new ConfigurationListener() {
-       public void setConfiguration(Properties config) {
-	 String tos = config.getProperty("Timeout.seconds");
+       public void setConfiguration(PluginConfig config) {
+	 String tos = config.getProperty("Timeout", id, "seconds");
 	 if(tos != null) {
 	   try {
 	     timeout = Integer.parseInt(tos);
            } catch(Exception e) {
-	     System.err.println("Timeout: timeout ("+timeout+") "
+	     Timeout.this.error("timeout ("+timeout+") "
 	                       +"is not an integer, timeout disabled");
 	   }
-	   timeoutCommand = config.getProperty("Timeout.command");
-	   timeoutWarning = config.getProperty("Timeout.warning");
+	   timeoutCommand = 
+	     config.getProperty("Timeout", id, "command");
+	   timeoutWarning = 
+	     config.getProperty("Timeout", id, "warning");
 	 }
        }
      });
@@ -98,15 +99,15 @@ public class Timeout extends Plugin
 
       // if the timeout finished sucessfully close the connection
       if(!ok) {
-        System.err.println("Timeout: data connection timeout, shutting down");
+        error("data connection timeout, shutting down");
 
 	// first try it gracefully by sending the configured exit command
 	if(timeoutCommand != null) {
-	  System.err.println("Timeout: sending graceful exit command ...");
+	  error("sending graceful exit command ...");
 	  try {
 	    write(timeoutCommand.getBytes());
 	  } catch(IOException e) {
-	    System.err.println("Timeout: could not send exit command");
+	    error("could not send exit command");
 	  }
 	  timeoutThread = null;
 	  final Thread grace = new Thread(new Runnable() {

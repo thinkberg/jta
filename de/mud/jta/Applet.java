@@ -83,17 +83,16 @@ public class Applet extends java.applet.Applet {
     if(pluginLoader == null) {
       try {
         options.load(getClass()
-	  .getResourceAsStream("/de/mud/jta/defaults.opt"));
+	  .getResourceAsStream("/de/mud/jta/default.conf"));
       } catch(Exception e) {
-        System.err.println("jta: cannot load defaults from classpath");
-        System.err.println("-- This may be due to a security restriction in\n"
-	                  +"-- Netscape. Trying to load alternative ...");
 	try {
-          URL url = new URL(getCodeBase() + "defaults.opt");
-	  System.err.println("-- loading "+url);
+          URL url = new URL(getCodeBase() + "default.conf");
           options.load(url.openStream());
 	} catch(Exception e1) {
-	  System.err.println("jta: alternative defaults file not found");
+	  System.err.println("jta: cannot load default.conf");
+	  System.err.println("jta: try extracting it from the jar file");
+	  System.err.println("jta: expected file here: "
+	                    +getCodeBase()+ "default.conf");
         }
       }
 
@@ -112,19 +111,6 @@ public class Applet extends java.applet.Applet {
 	} catch(Exception e) {
 	  System.err.println("jta: could not load config file: "+e);
 	}
-      }
-
-      if((value = getParameter("plugins")) != null) {
-        System.err.println("jta: 'plugins' is deprecated, use config!");
-        options.put("plugins", value);
-      }
-      if((value = getParameter("port")) != null) {
-        System.err.println("jta: 'Socket.port' is deprecated, use config!");
-        options.put("Socket.port", value);
-      }
-      if((value = getParameter("layout")) != null) {
-        System.err.println("jta: 'layout' is deprecated, use config!");
-        options.put("layout", value);
       }
 
       // let the terminal resize to the max possible
@@ -154,10 +140,7 @@ public class Applet extends java.applet.Applet {
       while(names.hasMoreElements()) {
         String name = (String)names.nextElement();
         Component c = (Component)componentList.get(name);
-	if(getParameter("layout."+name) != null)
-	  System.err.println("jta: 'layout.*' is deprecated use config!");
-        if((value = getParameter("layout."+name)) != null ||
-	   (value = options.getProperty("layout."+name)) != null) {
+        if((value = options.getProperty("layout."+name)) != null) {
           appletFrame.add(value, c);
         } else {
           System.err.println("jta: no layout property set for '"+name+"'");
