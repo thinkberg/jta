@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0</title>
@@ -47,13 +47,13 @@ Mei&szlig;ner</a></i>
 <tr NOSAVE>
 <td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
 <center>
-<h2>
-<font color="#CC0000">Version 2.0 <i>beta</i> now available!</font></h2></center>
+<h1>
+<font color="#CC0000">Version 2.0 <i>alpha</i>&nbsp;</font></h1></center>
 
-<center><font color="#CC0000"><b>Important:</b> this is a beta version,
-some of the functionality is still missing and the documentation may not
-reflect the actual development state.</font></center>
-
+<center><font color="#CC0000"><b>Important:</b> this is an alpha version,
+most of the functionality is implemented but some features may still be
+missing. Have a look at the <a href="#STATUS">Status Report</a>!</font></center>
+<font color="#000000"></font>
 <p><font color="#000000">The software has been rewritten and comes with
 a complete new base system. Apart from changes to the event handling in
 our
@@ -97,103 +97,35 @@ Java runtime environment (e.g. 1.0) please go to the <b><a href="http://www.firs
 Java 1 version</a></b> that will work with most currently available browsers.</font>
 <center>
 <h1>
-<font color="#CC0000">Status Report</font></h1></center>
+<a NAME="STATUS"></a><font color="#CC0000">Status Report</font></h1></center>
+We are coming toward a release but cannot say when this will be. The currently
+available package is already usable for those would like to upgrade from
+the old version. What has not yet been implemented is stated below:
+<br>&nbsp;
+<blockquote>
+<li>
+<i>ButtonBar</i> like in the old version is still missing</li>
 
-<table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=3 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
-<tr BGCOLOR="#333333" NOSAVE>
-<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Application
-Part</font></font></b></td>
+<li>
+<i>cut&amp;paste</i> is still somewhat messy</li>
 
-<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Status</font></font></b></td>
+<li>
+<i>application menus</i> are still under development</li>
+</blockquote>
+Under some circumstances you may experience difficulties with some of the
+plugins:
+<blockquote>
+<li>
+<b><a href="doc/plugins/SSH.html">SSH</a></b> may work or it may not. We
+had reports that it works beautifully but we also had people who had <i>crc
+errors </i>en-masse and we simply don't know why.</li>
 
-<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Remarks</font></font></b></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/index.html">Base
-System</a></font>
-<br><font color="#000099">(Bus + plugin loader)</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port complete.</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">The integrative
-part of the software that handles plugins and their communication. It is
-the common part for both application and applet.</font></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/terminal/VDU.html">Terminal
-Hardware</a></font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port complete.</font>
-<br><font color="#CC0000">copy &amp; paste </font><font color="#006600">works
-within the <a href="doc/Main.html">application</a></font><font color="#CC0000">,</font>
-<br><font color="#CC0000">printing </font><font color="#006600">works in
-applets (print page)</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">The hardware part
-that is the base for all terminal emulations is now Java 2 compliant.&nbsp;</font></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/terminal/vt320.html">Terminal
-Emulation</a></font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port done.</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">The terminal emulation
-has been split from the other sources to be available for usage by other
-programmers and is now Java 2 (event handling) compliant.</font></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/telnet/TelnetProtocolHandler.html">Telnet
-Protocol Handler</a></font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port done.</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Just like the Terminal
-Emulation, the telnet protocol handler has been taken from the main source
-of the application and is now provided as a library class for further use.</font></td>
-</tr>
-
-<tr ALIGN=LEFT VALIGN=TOP NOSAVE>
-<td><font color="#000099"><a href="doc/Main.html">Application</a></font></td>
-
-<td NOSAVE><font color="#006600">Java 2 implementation.</font>
-<br><font color="#CC0000">Menu in progress.</font></td>
-
-<td><font color="#000099">This is the code for the Java Telnet Application
-as opposite to the applet.</font></td>
-</tr>
-
-<tr ALIGN=LEFT VALIGN=TOP NOSAVE>
-<td><font color="#000099"><a href="doc/Applet.html">Applet</a></font></td>
-
-<td NOSAVE><font color="#006600">Configuration file done.</font></td>
-
-<td><font color="#000099">This will be the code for use in browser environments.</font></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/plugins/index.html">Plugins</a></font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600"><b><a href="doc/plugins/Socket.html">Socket</a></b>
-plugin done.</font>
-<br><font color="#006600"><b><a href="doc/plugins/Telnet.html">Telnet</a></b>
-plugin done.</font>
-<br><font color="#006600"><b><a href="doc/plugins/Terminal.html">Terminal</a></b>
-plugin done.</font>
-<br><font color="#006600"><b><a href="doc/plugins/Script.html">Script</a></b>
-plugin done.</font>
-<br><font color="#006600"><b><a href="doc/plugins/SSH.html">SSH</a></b>
-plugin done.</font></td>
-
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">These are the most
-common plugins that will be delivered with the software. <i>The SSH plugin
-is a lightweight component. It does not support all ssh features!</i></font></td>
-</tr>
-</table>
+<li>
+While running the <b><a href="doc/Main.html">application version</a></b>
+you may experience very slow screen updates with <b>Java 2</b> (all&nbsp;<b>Linux</b>
+JDK/JRE). We found that the string display is very slow and it definitely
+is a Java problem.</li>
+</blockquote>
 </td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Did
