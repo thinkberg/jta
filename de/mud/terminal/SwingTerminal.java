@@ -64,7 +64,7 @@ import java.awt.event.MouseMotionListener;
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
 public class SwingTerminal extends Component
-        implements VDUDisplay, KeyListener, MouseListener, MouseMotionListener {
+  implements VDUDisplay, KeyListener, MouseListener, MouseMotionListener {
 
   private final static int debug = 0;
 
@@ -73,10 +73,10 @@ public class SwingTerminal extends Component
 
   /** lightweight component definitions */
   private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK
-          | AWTEvent.FOCUS_EVENT_MASK
-          | AWTEvent.ACTION_EVENT_MASK
-          | AWTEvent.MOUSE_MOTION_EVENT_MASK
-          | AWTEvent.MOUSE_EVENT_MASK;
+    | AWTEvent.FOCUS_EVENT_MASK
+    | AWTEvent.ACTION_EVENT_MASK
+    | AWTEvent.MOUSE_MOTION_EVENT_MASK
+    | AWTEvent.MOUSE_EVENT_MASK;
 
   private Insets insets;                            /* size of the border */
   private boolean raised;            /* indicator if the border is raised */
@@ -157,11 +157,11 @@ public class SwingTerminal extends Component
   private Color cursorColorBG = null;
 
   protected double max(double f1, double f2) {
-    return (f1 < f2)?f2:f1;
+    return (f1 < f2) ? f2 : f1;
   }
 
   protected double min(double f1, double f2) {
-    return (f1 < f2)?f1:f2;
+    return (f1 < f2) ? f1 : f2;
   }
 
   /**
@@ -321,7 +321,7 @@ public class SwingTerminal extends Component
   }
 
   public void updateScrollBar() {
-    if(scrollBar == null) return;
+    if (scrollBar == null) return;
     scrollBar.setValues(buffer.windowBase, buffer.height, 0, buffer.bufSize);
   }
 
@@ -415,7 +415,7 @@ public class SwingTerminal extends Component
           g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
                      charWidth, charHeight);
           g.setColor(fg);
-	  if ((currAttr & VDUBuffer.INVISIBLE) == 0)
+          if ((currAttr & VDUBuffer.INVISIBLE) == 0)
             sf.drawChar(g, buffer.charArray[buffer.windowBase + l][c], xoffset + c * charWidth,
                         l * charHeight + yoffset, charWidth, charHeight);
           if ((currAttr & VDUBuffer.UNDERLINE) != 0)
@@ -428,9 +428,9 @@ public class SwingTerminal extends Component
 
         // determine the maximum of characters we can print in one go
         while ((c + addr < buffer.width) &&
-                ((buffer.charArray[buffer.windowBase + l][c + addr] < ' ') ||
-                (buffer.charAttributes[buffer.windowBase + l][c + addr] == currAttr)) &&
-                !sf.inSoftFont(buffer.charArray[buffer.windowBase + l][c + addr])) {
+          ((buffer.charArray[buffer.windowBase + l][c + addr] < ' ') ||
+          (buffer.charAttributes[buffer.windowBase + l][c + addr] == currAttr)) &&
+          !sf.inSoftFont(buffer.charArray[buffer.windowBase + l][c + addr])) {
           if (buffer.charArray[buffer.windowBase + l][c + addr] < ' ') {
             buffer.charArray[buffer.windowBase + l][c + addr] = ' ';
             buffer.charAttributes[buffer.windowBase + l][c + addr] = 0;
@@ -447,10 +447,10 @@ public class SwingTerminal extends Component
         g.setColor(fg);
 
         // draw the characters, if not invisible.
-	if ((currAttr & VDUBuffer.INVISIBLE) == 0)
+        if ((currAttr & VDUBuffer.INVISIBLE) == 0)
           g.drawChars(buffer.charArray[buffer.windowBase + l], c, addr,
-                    c * charWidth + xoffset,
-                    (l + 1) * charHeight - charDescent + yoffset);
+                      c * charWidth + xoffset,
+                      (l + 1) * charHeight - charDescent + yoffset);
 
         if ((currAttr & VDUBuffer.UNDERLINE) != 0)
           g.drawLine(c * charWidth + xoffset,
@@ -466,9 +466,9 @@ public class SwingTerminal extends Component
       if (l >= selectStartLine && l <= selectEndLine) {
         int selectStartColumn = (l == selectStartLine ? selectBegin.x : 0);
         int selectEndColumn =
-                (l == selectEndLine ?
-                (l == selectStartLine ? selectEnd.x - selectStartColumn :
-                selectEnd.x) : buffer.width);
+          (l == selectEndLine ?
+          (l == selectStartLine ? selectEnd.x - selectStartColumn :
+          selectEnd.x) : buffer.width);
         if (selectStartColumn != selectEndColumn) {
           if (debug > 0)
             System.err.println("select(" + selectStartColumn + "-"
@@ -486,8 +486,8 @@ public class SwingTerminal extends Component
 
     // draw cursor
     if (buffer.showcursor && (
-            buffer.screenBase + buffer.cursorY >= buffer.windowBase &&
-            buffer.screenBase + buffer.cursorY < buffer.windowBase + buffer.height)
+      buffer.screenBase + buffer.cursorY >= buffer.windowBase &&
+      buffer.screenBase + buffer.cursorY < buffer.windowBase + buffer.height)
     ) {
       g.setColor(cursorColorFG);
       g.setXORMode(cursorColorBG);
@@ -677,8 +677,8 @@ public class SwingTerminal extends Component
             fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
                                                       --charHeight));
           } while (charHeight > 1 &&
-                  (fm.getHeight() > height ||
-                  fm.charWidth('@') > width));
+            (fm.getHeight() > height ||
+            fm.charWidth('@') > width));
 
         if (charHeight <= 1) {
           System.err.println("VDU: error during resize, resetting");
@@ -761,8 +761,8 @@ public class SwingTerminal extends Component
 
   public void mouseDragged(MouseEvent evt) {
     if (buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK) ||
-            // Windows NT/95 etc: returns 0, which is a bug
-            evt.getModifiers() == 0) {
+      // Windows NT/95 etc: returns 0, which is a bug
+      evt.getModifiers() == 0) {
       int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
       int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
       int x = (evt.getX() - xoffset) / charWidth;
@@ -856,26 +856,26 @@ public class SwingTerminal extends Component
       // NOTE: Selection includes invisible text as spaces!
       // (also leaves invisible non-whitespace selection ending as spaces)
       StringBuffer selectionBuf =
-	new StringBuffer(buffer.charArray[0].length*(selectEnd.y-selectBegin.y+1));
+        new StringBuffer(buffer.charArray[0].length * (selectEnd.y - selectBegin.y + 1));
 
       for (int l = selectBegin.y; l <= selectEnd.y; l++) {
         int start, end;
         start = (l == selectBegin.y ? start = selectBegin.x : 0);
         end = (l == selectEnd.y ? end = selectEnd.x : buffer.charArray[l].length);
 
-	boolean newlineFound = false;
-	char ch = ' ';
-	for(int i = start; i < end; i++) {
-	  if((buffer.charAttributes[l][i] & VDUBuffer.INVISIBLE) != 0)
-	    ch = ' ';
-	  else
-	    ch = buffer.charArray[l][i];
-	  if(ch == '\n')
-	    newlineFound = true;
-	  selectionBuf.append(ch);
-	}
-	if(!newlineFound)
-	  selectionBuf.append('\n');
+        boolean newlineFound = false;
+        char ch = ' ';
+        for (int i = start; i < end; i++) {
+          if ((buffer.charAttributes[l][i] & VDUBuffer.INVISIBLE) != 0)
+            ch = ' ';
+          else
+            ch = buffer.charArray[l][i];
+          if (ch == '\n')
+            newlineFound = true;
+          selectionBuf.append(ch);
+        }
+        if (!newlineFound)
+          selectionBuf.append('\n');
         // Trim all spaces from end of line, like xterm does.
         selection += ("-" + (selectionBuf.toString())).trim().substring(1);
         if (end == buffer.charArray[l].length)
@@ -885,12 +885,12 @@ public class SwingTerminal extends Component
   }
 
   public void keyTyped(KeyEvent e) {
-    if (buffer != null)
+    if (buffer != null && buffer instanceof VDUInput)
       ((VDUInput) buffer).keyTyped(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
   }
 
   public void keyPressed(KeyEvent e) {
-    if (buffer != null)
+    if (buffer != null && buffer instanceof VDUInput)
       ((VDUInput) buffer).keyPressed(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
   }
 
@@ -940,7 +940,7 @@ public class SwingTerminal extends Component
    */
   public void removeMouseMotionListener(MouseMotionListener listener) {
     mouseMotionListener =
-            AWTEventMulticaster.remove(mouseMotionListener, listener);
+      AWTEventMulticaster.remove(mouseMotionListener, listener);
   }
 
   /**
@@ -1060,10 +1060,10 @@ public class SwingTerminal extends Component
 
   private int getModifiers(KeyEvent e) {
     return
-            (e.isControlDown() ? VDUInput.KEY_CONTROL : 0) |
-            (e.isShiftDown() ? VDUInput.KEY_SHIFT : 0) |
-            (e.isAltDown() ? VDUInput.KEY_ALT : 0) |
-            (e.isActionKey() ? VDUInput.KEY_ACTION : 0);
+      (e.isControlDown() ? VDUInput.KEY_CONTROL : 0) |
+      (e.isShiftDown() ? VDUInput.KEY_SHIFT : 0) |
+      (e.isAltDown() ? VDUInput.KEY_ALT : 0) |
+      (e.isActionKey() ? VDUInput.KEY_ACTION : 0);
 
   }
 }
