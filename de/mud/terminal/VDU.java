@@ -1430,7 +1430,8 @@ public class VDU extends Component
         int start, end;
 	start = (l == selectBegin.y ? start = selectBegin.x : 0);
 	end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length );
-        selection += (new String(charArray[l])).substring(start, end);
+	// Trim all spaces from end of line, like xterm does.
+	selection += ("-" + (new String(charArray[l])).substring(start,end)).trim().substring(1);
 	if(end == charArray[l].length)
 	  selection += "\n";
       }
