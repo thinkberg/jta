@@ -690,7 +690,6 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_UP: writeSpecial(PrevScn[xind]); break;
       case KeyEvent.VK_INSERT: writeSpecial(Insert[xind]); break;
       case KeyEvent.VK_DELETE: writeSpecial(Remove[xind]); break;
-      case KeyEvent.VK_ESCAPE: writeSpecial(Escape[xind]); break;
       case KeyEvent.VK_BACK_SPACE: writeSpecial(BackSpace[xind]); break;
       case KeyEvent.VK_HOME: writeSpecial(KeyHome[xind]); break;
       case KeyEvent.VK_END: writeSpecial(KeyEnd[xind]); break;
@@ -757,9 +756,6 @@ public abstract class vt320 extends VDU implements KeyListener {
       if (localecho) putString("\r\n"); // bad hack
     }
 
-    if (keyCode == KeyEvent.VK_ESCAPE) // handled in keyPressed
-      return;
-
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
     // so we can't just use it here... will probably break some other VMS
     // codes.  -Marcus
@@ -816,6 +812,10 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(control) { fmap = FunctionKeyCtrl; xind=2; }
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
 
+    if (keyCode == KeyEvent.VK_ESCAPE) {
+      writeSpecial(Escape[xind]);
+      return;
+    }
     if(evt.isActionKey()) switch(keyCode) {
       case KeyEvent.VK_NUMPAD0: writeSpecial(Numpad[0]); return;
       case KeyEvent.VK_NUMPAD1: writeSpecial(Numpad[1]); return;
