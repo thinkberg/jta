@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.73C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.0 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Telnet Plugin</title>
@@ -23,8 +23,9 @@ Telnet Application/Applet: Telnet Plugin</font></font></h1></div>
 <i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
 <a href="mailto:marcus@mud.de">Marcus
 Mei&szlig;ner</a></i>
-<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
-<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="../../license/COPYING">GNU General Public
+License</a></td>
 </tr>
 
 <tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
@@ -59,7 +60,32 @@ not actually have to know about that.
 <p>There is nothing you could configure in the telnet layer. Make sure
 you put this plugin in between a <a href="Socket.html">Socket</a>-like
 plugin and other <a href="index.html">plugins</a> that operate above the
-telnet protocol layer, like the <a href="Script.html">Script</a> plugin.</td>
+telnet protocol layer, like the <a href="Script.html">Script</a> plugin.
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Property</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr>
+<td>Telnet.crlf</td>
+
+<td>The Request for Comments defining the Telnet protocol suite (RFC&nbsp;854
+mostly), define the carriage return linefeed value to be the bytevalues
+13,10. (\r\n).
+<br>This is the default as sent by the applet, which you can redefine it
+using this property.</td>
+</tr>
+
+<tr>
+<td><tt>&nbsp;Telnet.cr</tt></td>
+
+<td>The RFC defines this to be 13,0 (\r\0). You can redefine it it with
+this property&nbsp;</td>
+</tr>
+</table></center>
+</td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Additional
 Programmer Documentation is available:</font>
