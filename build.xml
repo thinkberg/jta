@@ -25,7 +25,11 @@
   </target>
 
   <target name="compile">
-    <javac srcdir="." includes="de/mud/**" debug="${debug}"/>
+    <javac srcdir="." includes="de/mud/**" debug="${debug}">
+      <classpath>
+        <pathelement location="jar/jdom.jar"/>
+      </classpath>
+    </javac>
   </target>
 
   <target name="compile-contrib">

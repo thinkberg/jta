@@ -49,12 +49,12 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
    * send terminal answers requests like status and type information.
    * @param b the array of bytes to be sent
    */
-  protected abstract void write(byte[] b);
+  public abstract void write(byte[] b);
 
   /**
    * Play the beep sound ...
    */
-  protected void beep() { /* do nothing by default */
+  public void beep() { /* do nothing by default */
   }
 
   /**

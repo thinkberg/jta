@@ -39,6 +39,13 @@ public interface VDUInput {
   public final static int KEY_ALT = 0x04;
   public final static int KEY_ACTION = 0x08;
 
+
+  /**
+   * Direct access to writing data ...
+   * @param b
+   */
+  void write(byte b[]);
+
   /**
    * Terminal is mouse-aware and requires (x,y) coordinates of
    * on the terminal (character coordinates) and the button clicked.

@@ -29,10 +29,8 @@ import de.mud.terminal.FlashTerminal;
 import de.mud.terminal.vt320;
 
 import java.awt.Dimension;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
@@ -72,7 +70,7 @@ public class FlashTest implements Runnable {
    * do initializations for the plugins and the applet.
    */
   public static void main(String args[]) {
-    if (debug > 0) System.err.println("jta: init()");
+    if (debug > 0) System.err.println("FlashTest: main(" + args + ")");
     new FlashTest(args[0], args[1]);
   }
 
@@ -86,11 +84,12 @@ public class FlashTest implements Runnable {
       /** before sending data transform it using telnet (which is sending it) */
       public void write(byte[] b) {
         try {
-          if (localecho)
-            emulation.putString(new String(b));
+          if (localecho) {
+            emulation.putString(new String(b) + "\r");
+          }
           telnet.transpose(b);
         } catch (IOException e) {
-          System.err.println("jta: error sending data: " + e);
+          System.err.println("FlashTest: error sending data: " + e);
         }
       }
     };
@@ -119,30 +118,19 @@ public class FlashTest implements Runnable {
       /** notify about EOR end of record */
       public void notifyEndOfRecord() {
         // only used when EOR needed, like for line mode
+        System.err.println("FlashTest: EOR");
+        terminal.redraw();
       }
 
       /** write data to our back end */
       public void write(byte[] b) throws IOException {
-        System.err.println("writing: "+new String(b));
+        System.err.println("FlashTest: writing " + Integer.toHexString(b[0]) + " " + new String(b));
         os.write(b);
       }
     };
 
-    start();
-  }
-
-  boolean running = false;
-
-  /**
-   * Start the applet. Connect to the remote host.
-   */
-  public void start() {
-    if (debug > 0)
-      System.err.println("jta: start()");
-    // disconnect if we are already connected
-    if (socket != null) stop();
-
     try {
+      System.err.println("FlashTest: trying to connect " + host + " " + port);
       // open new socket and get streams
       socket = new Socket(host, Integer.parseInt(port));
       is = socket.getInputStream();
@@ -152,42 +140,32 @@ public class FlashTest implements Runnable {
       running = true;
       reader.start();
 
-      Thread writer = new Thread() {
-        public void run() {
-          BufferedReader keyb = new BufferedReader(new InputStreamReader(System.in));
-          String line;
-          try {
-            while ((line = keyb.readLine()) != null) {
-              System.err.println("got: "+line);
-              emulation.putString(line+"\r");
-              telnet.transpose((line+"\r").getBytes());
-            }
-          } catch (IOException e) {
-            System.err.println("end of keyboard input");
-          }
-        }
-      };
-      writer.start();
-
     } catch (Exception e) {
-      System.err.println("jta: error connecting: " + e);
+      System.err.println("FlashTest: error connecting: " + e);
       e.printStackTrace();
       stop();
     }
+
+    while (true) {
+      System.err.println("FlashTest: Terminal restarted ...");
+      terminal.start();
+    }
   }
+
+  boolean running = false;
 
   /**
    * Stop the applet and disconnect.
    */
   public void stop() {
     if (debug > 0)
-      System.err.println("jta: stop()");
+      System.err.println("FlashTest: stop()");
     // when applet stops, disconnect
     if (socket != null) {
       try {
         socket.close();
       } catch (Exception e) {
-        System.err.println("jta: could not cleanly disconnect: " + e);
+        System.err.println("FlashTest: could not cleanly disconnect: " + e);
       }
       socket = null;
       try {
@@ -203,31 +181,38 @@ public class FlashTest implements Runnable {
    * Continuously read from remote host and display the data on screen.
    */
   public void run() {
-    if (debug > 0)
-      System.err.println("jta: run()");
+    if (debug > 0) System.err.println("FlashTest: run()");
+
     byte[] b = new byte[4096];
     int n = 0;
     while (running && n >= 0) {
       try {
-        do {
-          System.err.println("negotiating: "+n);
-          n = telnet.negotiate(b);
-          if (debug > 0 && n > 0)
-            System.err.println("jta: \"" + (new String(b, 0, n)) + "\"");
-          if (n > 0) emulation.putString(new String(b, 0, n));
-        } while (running && n > 0);
-        System.err.println("waiting for input ...." +is.available());
-        n = is.read(b);
-        System.err.println("n="+n);
-        telnet.inputfeed(b, n);
+        n = telnet.negotiate(b);	// we still have stuff buffered ...
+        if (n > 0)
+          emulation.putString(new String(b, 0, n));
+
+        while (true) {
+          n = is.read(b);
+          System.err.println("FlashTest: got " + n + " bytes");
+          if (n <= 0)
+            emulation.putString(new String(b, 0, n));
+
+          telnet.inputfeed(b, n);
+          n = 0;
+          while (true) {
+            n = telnet.negotiate(b);
+            if (n > 0)
+              emulation.putString(new String(b, 0, n));
+            if (n == -1) // buffer empty.
+              break;
+          }
+        }
       } catch (IOException e) {
         e.printStackTrace();
         stop();
         break;
       }
-      System.err.println("check: "+running+" n="+n);
     }
-    System.err.println("THE END");
+    System.err.println("FlashTest: finished reading from remote host");
   }
-
 }
