@@ -2015,7 +2015,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>2)
           System.out.println("ESC [ "+DCEvars[0]+";"+DCEvars[1]+" f");
         break;
-      case 'S': /* used by 97801 */
+      case 'S': /* ind aka 'scroll forward' */
+        if (DCEvars[0]==0)
+          insertLine(rows-1,SCROLL_UP);
+        else
+          insertLine(rows-1,DCEvars[0],SCROLL_UP);
+        break;
       case 'L':
         /* insert n lines */
         if (DCEvars[0]==0)
@@ -2025,7 +2030,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+""+(c)+" (at R "+R+")");
         break;
-      case 'T':
+      case 'T': /* 'ri' aka scroll backward */
+        if (DCEvars[0]==0)
+          insertLine(0,SCROLL_DOWN);
+        else
+          insertLine(0,DCEvars[0],SCROLL_DOWN);
+        break;
       case 'M':
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+""+(c)+" at R="+R);
