@@ -149,6 +149,7 @@ public class SSH extends Plugin implements FilterPlugin {
 	  frame.pack();
 	  frame.show();
 	} else {
+	  error(user+":"+pass);
 	  handler.setLogin(user);
 	  handler.setPassword(pass);
 	  auth = true;

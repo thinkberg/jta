@@ -447,8 +447,8 @@ public abstract class SshIO
       break;
 
    case SSH_MSG_DEBUG:
-      str = "Error: " + SshMisc.getString(0, packetData);
-      System.out.println("SshIO.handlePacket : " + "STDERR_DATA " + str );
+      str = SshMisc.getString(0, packetData);
+      System.out.println("SshIO.handlePacket : " + " DEBUG " + str );
 
       if(lastPacketSentType==SSH_CMSG_USER) { 
         Send_SSH_CMSG_REQUEST_PTY(); //request a pseudo-terminal
