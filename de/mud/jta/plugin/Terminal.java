@@ -291,6 +291,7 @@ public class Terminal extends Plugin
     if((tmp = cfg.getProperty("Terminal", id, "background")) != null)
       terminal.setBackground(Color.decode(tmp));
 
+
     if((tmp = cfg.getProperty("Terminal", id, "print.color")) != null)
       try {
         terminal.setColorPrinting(Boolean.valueOf(tmp).booleanValue());
@@ -339,6 +340,9 @@ public class Terminal extends Plugin
         raised = Boolean.valueOf(tmp).booleanValue();
       terminal.setBorder(Integer.parseInt(size), raised);
     }
+
+    if((tmp = cfg.getProperty("Terminal", id, "localecho")) != null)
+      terminal.setLocalEcho(Boolean.valueOf(tmp).booleanValue());
  
     if((tmp = cfg.getProperty("Terminal", id, "scrollBar")) != null && 
        !personalJava) {
