@@ -303,10 +303,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     	putString(s);
     return true;
   }
-  private boolean write(String s) {
-  	System.out.println("localecho is "+localecho);
-  	return write(s,localecho);
-  }
+  private boolean write(String s) { return write(s,localecho); }
 
   // ===================================================================
   // the actual terminal emulation code comes here:
@@ -542,6 +539,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 	crnul[0] = 13;
 	crnul[1] = 0;
 	write(crnul); /* YES, see RFC 854 */
+
+	if (localecho) putString("\r\n"); /* hack */
       }
     } 
     
@@ -646,7 +645,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       	capslock = !capslock;
         break;
       default:
-	if(debug > 0)
+	if(debug > 2)
 	  System.out.println("vt320: unknown event: "+evt);
 	break;
     }
@@ -1863,8 +1862,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         term_state = TSTATE_DATA;
         break;
       default:
-        if (debug>0)
-          System.out.println("ESC [ unknown letter:"+c+" ("+((int)c)+")");
+        System.out.println("ESC [ unknown letter:"+c+" ("+((int)c)+")");
         term_state = TSTATE_DATA;
         break;
       }
