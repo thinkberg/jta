@@ -324,7 +324,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   int  vt52mode  = 0;
   int  normalcursor  = 0;
   boolean moveoutsidemargins = true;
-  boolean sendcrlf = false;
+  boolean sendcrlf = true;
   boolean capslock = false;
   boolean numlock = false;
 
