@@ -439,13 +439,16 @@ public abstract class vt320 extends VDU implements KeyListener {
   private boolean  useibmcharset = false;
 
   private  static  int  lastwaslf = 0;
+  private boolean  usedcharsets  = false;
   private static  int i;
   private final static char ESC = 27;
   private final static char IND = 132;
   private final static char NEL = 133;
   private final static char RI  = 141;
-  private final static char HTS = 136;
+  private final static char SS2 = 142;
+  private final static char SS3 = 143;
   private final static char DCS = 144;
+  private final static char HTS = 136;
   private final static char CSI = 155;
   private final static char OSC = 157;
   private final static int TSTATE_DATA  = 0;
@@ -461,22 +464,24 @@ public abstract class vt320 extends VDU implements KeyListener {
   private final static int TSTATE_SETG3= 10;    /* ESC +? */
   private final static int TSTATE_CSI_DOLLAR  = 11; /* ESC [ Pn $ */
   private final static int TSTATE_CSI_EX  = 12; /* ESC [ ! */
+  private final static int TSTATE_ESCSPACE  = 13; /* ESC <space> */
 
   /* The graphics charsets
    * B - default ASCII
-   * A - default UK
+   * A - ISO Latin 1
    * 0 - DEC SPECIAL
    * < - User defined
    * ....
    */
-  private static char gx[] = {
+  private static char gx[] = { // same initial set as in XTERM.
     'B',      // g0
     '0',      // g1
-    'A',      // g2
-    '<',      // g3
+    'B',      // g2
+    'B',      // g3
   };
-  private static char gr = 1;  // default GR to G1
-  private static char gl = 0;  // default GL to G0
+  private static char gl = 0;		// default GL to G0
+  private static char gr = 2;		// default GR to G2
+  private static int onegl = -1;	// single shift override for GL.
 
   // array to store DEC Special -> Unicode mapping
   //  Unicode   DEC  Unicode name    (DEC name)
@@ -1095,6 +1100,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     int  tm = getTopMargin();
     int  bm = getBottomMargin();
     byte  msg[];
+    boolean mapped = false;
 
     if (debug>4) System.out.println("putChar("+c+" ["+((int)c)+"]) at R="+R+" , C="+C+", columns="+columns+", rows="+rows);
     markLine(R,1);
@@ -1160,6 +1166,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (doneflag) break;
       }
       switch (c) {
+      case SS3:
+        onegl = 3;
+        break;
+      case SS2:
+        onegl = 2;
+        break;
       case CSI: // should be in the 8bit section, but some BBS use this
         DCEvar    = 0;
         DCEvars[0]  = 0;
@@ -1217,77 +1229,97 @@ public abstract class vt320 extends VDU implements KeyListener {
       case '\016': /* SMACS , as */
         /* ^N, Shift out - Put G1 into GL */
         gl = 1;
+	usedcharsets = true;
         break;
       case '\017': /* RMACS , ae */
         /* ^O, Shift in - Put G0 into GL */
         gl = 0;
+	usedcharsets = true;
         break;
-      default:
-        lastwaslf=0;
-        if (c<32) {
-          if (c!=0)
-            if (debug>0)
-              System.out.println("TSTATE_DATA char: "+((int)c));
-          /*break; some BBS really want those characters, like hearst etc. */
-	  if (c==0) /* print 0 ... you bet */
-	   break;
-        }
-        if(C >= columns) {
-	  if (wraparound) {
-	    if(R < rows - 1)
-	      R++;
-	    else
-	      insertLine(R,1,SCROLL_UP);
-	    C = 0;
-	  } else {
-	    // cursor stays on last character.
-	    C = columns-1;
-	  }
-        }
+      default: {
+	  int thisgl = gl;
 
-        // Mapping if DEC Special is chosen charset
-        if ( gx[gl] == '0' ) {
-          if ( c >= '\u005f' && c <= '\u007e' ) {
-	    if (debug>3)
-	      System.out.print("Mapping "+c+" (index "+((short)c-0x5f)+" to ");
-	    c = DECSPECIAL[(short)c - 0x5f];
-	    if (debug>3)
-	      System.out.println(c+" ("+(int)c+")");
-          }
-        }
-	if (!useibmcharset) { /* Not a IBM Charset BBS, use DEC magic */
-	  if ( gx[gr] == '0' ) {
-	    if ( c >= '\u00df' && c <= '\u00fe' ) {
-	      if (debug>2)
-		  System.out.print("Mapping "+c+", value is "+(c-'\u00df'));
-	      c = DECSPECIAL[c-'\u00df'];
-	      if (debug>2)
-		System.out.println("to "+c);
+	  if (onegl>=0) { thisgl = onegl; onegl = -1; }
+	  lastwaslf	= 0;
+	  if (c<32) {
+	    if (c!=0)
+	      if (debug>0)
+		System.out.println("TSTATE_DATA char: "+((int)c));
+	    /*break; some BBS really want those characters, like hearst etc. */
+	    if (c==0) /* print 0 ... you bet */
+	     break;
+	  }
+	  if(C >= columns) {
+	    if (wraparound) {
+	      if(R < rows - 1)
+		R++;
+	      else
+		insertLine(R,1,SCROLL_UP);
+	      C = 0;
+	    } else {
+	      // cursor stays on last character.
+	      C = columns-1;
 	    }
 	  }
-	}
-	if (debug>4) System.out.println("output "+c+" at "+C+","+R);
-        if (useibmcharset)
-          c = map_cp850_unicode(c);
 
-	/*if(true || (statusmode == 0)) { */
-	if (debug>4) System.out.println("output "+c+" at "+C+","+R);
-	if (insertmode==1) {
-	  insertChar(C, R, c, attributes);
-	} else {
-	  putChar(C, R, c, attributes);
-	}
-	/*
-	  } else {
+	  // Mapping if DEC Special is chosen charset
+	  if ( usedcharsets ) {
+	    if ( c >= '\u0020' && c <= '\u007f' ) {
+	      switch (gx[thisgl]) {
+	      case '0':
+		if ( c >= '\u005f' && c <= '\u007e' ) {
+		  c = DECSPECIAL[(short)c - 0x5f];
+		  mapped = true;
+		}
+		break;
+	      case '<': // 'user preferred' is currently 'ISO Latin-1 suppl
+		c = (char)(((int)c & 0x7f)|0x80);
+		mapped = true;
+		break;
+	      case 'A': case 'B': // Latin-1 , ASCII -> fall through
+	        mapped = true;
+	        break;
+	      default:
+		System.out.println("Unsupported GL mapping: "+gx[thisgl]+"\n");
+		break;
+	      }
+	    }
+	    if ( !mapped && (c >= '\u0080' && c <= '\u00ff' )) {
+	      switch (gx[gr]) {
+	      case '0':
+		if ( c >= '\u00df' && c <= '\u00fe' ) {
+		  c = DECSPECIAL[c-'\u00df'];
+		  mapped = true;
+		}
+		break;
+	      case 'A':case 'B': mapped = true; break;
+	      default:
+		System.out.println("Unsupported GR mapping: "+gx[thisgl]+"\n");
+		break;
+	      }
+	    }
+	  }
+	  if (!mapped && useibmcharset)
+	    c = map_cp850_unicode(c);
+
+	  /*if(true || (statusmode == 0)) { */
 	  if (insertmode==1) {
-	  insertChar(C, rows, c, attributes);
+	    insertChar(C, R, c, attributes);
 	  } else {
-	  putChar(C, rows, c, attributes);
+	    putChar(C, R, c, attributes);
 	  }
-	  }
-	*/
-        C++;
-        break;
+	  /*
+	    } else {
+	    if (insertmode==1) {
+	    insertChar(C, rows, c, attributes);
+	    } else {
+	    putChar(C, rows, c, attributes);
+	    }
+	    }
+	  */
+	  C++;
+	  break;
+	}
       } /* switch(c) */
       break;
     case TSTATE_OSC:
@@ -1304,9 +1336,18 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       osc = osc + c;
       break;
+    case TSTATE_ESCSPACE:
+      term_state = TSTATE_DATA;
+      switch (c) {
+      default: System.out.println("ESC <space> "+c+" unhandled.");
+      }
+      break;
     case TSTATE_ESC:
       term_state = TSTATE_DATA;
       switch (c) {
+      case ' ':
+        term_state = TSTATE_ESCSPACE;
+	break;
       case '#':
         term_state = TSTATE_ESCSQUARE;
         break;
@@ -1314,9 +1355,9 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* Hard terminal reset */
 	/* reset character sets */
 	gx[0] = 'B';
-	gx[1] = '0';
+	gx[1] = 'B';
 	gx[2] = 'A';
-	gx[3] = '<';
+	gx[3] = 'A';
 	gl = 0;  // default GL to G0
 	gr = 1;  // default GR to G1
 	/* reset tabs */
@@ -1381,6 +1422,12 @@ public abstract class vt320 extends VDU implements KeyListener {
           C=columns-1;
         Tabs[C] = 1;
         break;
+      case 'N': // SS2
+         onegl = 2;
+	 break;
+      case 'O': // SS3
+         onegl = 3;
+	 break;
       case '=':
         /*application keypad*/
         if (debug>0)
@@ -1411,30 +1458,39 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case '(': /* Designate G0 Character set (ISO 2022) */
         term_state = TSTATE_SETG0;
+	usedcharsets = true;
         break;
       case ')': /* Designate G1 character set (ISO 2022) */
         term_state = TSTATE_SETG1;
+	usedcharsets = true;
         break;
       case '*': /* Designate G2 Character set (ISO 2022) */
         term_state = TSTATE_SETG2;
+	usedcharsets = true;
         break;
       case '+': /* Designate G3 Character set (ISO 2022) */
         term_state = TSTATE_SETG3;
+	usedcharsets = true;
         break;
       case '~': /* Locking Shift 1, right */
         gr = 1;
+	usedcharsets = true;
         break;
       case 'n': /* Locking Shift 2 */
         gl = 2;
+	usedcharsets = true;
         break;
       case '}': /* Locking Shift 2, right */
         gr = 2;
+	usedcharsets = true;
         break;
       case 'o': /* Locking Shift 3 */
         gl = 3;
+	usedcharsets = true;
         break;
       case '|': /* Locking Shift 3, right */
         gr = 3;
+	usedcharsets = true;
         break;
       default:
         System.out.println("ESC unknown letter: ("+((int)c)+")");
@@ -1442,7 +1498,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       break;
     case TSTATE_SETG0:
-      if(c!='0' && c!='A' && c!='B')
+      if(c!='0' && c!='A' && c!='B' && c!='<')
         System.out.println("ESC ( "+c+": G0 char set?  ("+((int)c)+")");
       else {
         if (debug>2) System.out.println("ESC ( : G0 char set  ("+c+" "+((int)c)+")");
@@ -1451,7 +1507,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     case TSTATE_SETG1:
-      if(c!='0' && c!='A' && c!='B') {
+      if(c!='0' && c!='A' && c!='B' && c!='<') {
         System.out.println("ESC ) " + c + " ("+ ((int)c) + ") :G1 char set?");
       } else {
         if (debug>2) System.out.println("ESC ) :G1 char set  ("+c+" "+((int)c)+")");
@@ -1460,7 +1516,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     case TSTATE_SETG2:
-      if(c!='0' && c!='A' && c!='B')
+      if(c!='0' && c!='A' && c!='B' && c!='<')
         System.out.println("ESC*:G2 char set?  ("+((int)c)+")");
       else {
         if (debug>2) System.out.println("ESC*:G2 char set  ("+c+" "+((int)c)+")");
@@ -1469,7 +1525,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     case TSTATE_SETG3:
-      if(c!='0' && c!='A' && c!='B')
+      if(c!='0' && c!='A' && c!='B' && c!='<')
         System.out.println("ESC+:G3 char set?  ("+((int)c)+")");
       else {
         if (debug>2) System.out.println("ESC+:G3 char set  ("+c+" "+((int)c)+")");
@@ -2152,9 +2208,9 @@ public abstract class vt320 extends VDU implements KeyListener {
   /* hard reset the terminal */
   public void reset() {
     gx[0] = 'B';
-    gx[1] = '0';
+    gx[1] = 'B';
     gx[2] = 'A';
-    gx[3] = '<';
+    gx[3] = 'A';
     gl = 0;  // default GL to G0
     gr = 1;  // default GR to G1
     /* reset tabs */
