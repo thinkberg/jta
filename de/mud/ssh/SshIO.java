@@ -2,7 +2,9 @@
  * SshIO 
  * --
  * 
- * This file implments the SSH prtotocol 1.5
+ * This file implments the SSH protocol 1.5
+ *
+ * $Id$
  *
  * The protocol version used in this document is SSH protocol version 1.5.
  * This file is part of "The Java Ssh Applet".
@@ -69,16 +71,11 @@ public abstract class SshIO
   SshPacket lastPacketReceived;
 	
 					
-
-  boolean ScreenUpdateForEachPacket = false;
-	
-
   private String login = "", password = ""; 
   //nobody is to access those fields  : better to use pivate, nobody knows :-)
 
-
   public String dataToSend = null;
-	
+
   public String hashHostKey = null;  // equals to the applet parameter if any 
 
   byte lastPacketSentType;
@@ -166,50 +163,34 @@ public abstract class SshIO
    */
   synchronized public byte[] handleSSH(byte[] b) throws IOException {
 		
-    byte[] rest = null;
+    byte[] result = packetDone(handleBytes(b, 0, b.length));
 
     while(lastPacketReceived != null && lastPacketReceived.toBeFinished) {
       byte[] buff = lastPacketReceived.unfinishedBuffer;
       int start = lastPacketReceived.positionInUnfinishedBuffer;
+
       if(buff != null) {
-        byte[] result = packetDone(handleBytes(buff, start, buff.length));
+        byte[] rest = packetDone(handleBytes(buff, start, buff.length));
 	if(rest != null) {
 	  if(result != null) {
 	    byte[] tmp = new byte[rest.length + result.length];
-	    System.arraycopy(rest, 0, tmp, 0, rest.length);
-	    System.arraycopy(result, 0, tmp, rest.length, result.length);
-	    rest = tmp;
-	  }
+	    			System.arraycopy(result, 0, tmp, 0, result.length);
+	    			System.arraycopy(rest, 0, tmp, result.length , rest.length);
+	    			result = tmp;
 	} else
-	  rest = result;
+							result=rest;
       }
     }
-
-    byte[] result = packetDone(handleBytes(b, 0, b.length));
-
-    if(rest != null) 
-      if(result != null) {
-        byte[] cat = new byte[rest.length + result.length];
-        System.arraycopy(rest, 0, cat, 0, rest.length);
-        System.arraycopy(result, 0, cat, rest.length, result.length);
-        return cat;
-      } else 
-        return rest;
-
+    } // while
     return result;
   }
+
 
   private byte[] packetDone(SshPacket packet) throws IOException {
     if(packet == null) return null;
     lastPacketReceived = packet;
     byte result[] = handlePacket(lastPacketReceived.getType(),
                                  lastPacketReceived.getData());
-
-    /*
-    if (!ScreenUpdateForEachPacket) 
-     if (lastPacketReceived.toBeFinished)
-       return SshMisc.addArrayOfBytes(result, receive());
-    */
     return result;
  }
 
@@ -324,14 +305,21 @@ public abstract class SshIO
 			
       for(int i=0;i<=7;i++) anti_spoofing_cookie[i] = packetData[boffset++];
       for(int i=0;i<=3;i++) server_key_bits[i] = packetData[boffset++];
+
+
       server_key_public_exponent = SshMisc.getMpInt(boffset,packetData); //boffset is not modified :-(
       boffset += server_key_public_exponent.length+2;
+
       server_key_public_modulus = SshMisc.getMpInt(boffset,packetData);
       boffset += server_key_public_modulus.length+2;
+
       for(int i=0;i<=3;i++) host_key_bits[i] = packetData[boffset++];
+
       host_key_public_exponent = SshMisc.getMpInt(boffset,packetData);
       boffset += host_key_public_exponent.length+2;
+
       host_key_public_modulus = SshMisc.getMpInt(boffset,packetData); // boffset can not be modified (Java = crap Language)
+
       boffset += host_key_public_modulus.length+2;
       for(int i=0;i<4;i++) protocol_flags[i] = packetData[boffset++];
       for(int i=0;i<4;i++) supported_ciphers_mask[i] = packetData[boffset++];
@@ -496,7 +484,6 @@ public abstract class SshIO
     String str;
     int boffset;
 		
-    String session_id;		//
     byte cipher_type;		//encryption types
     byte[] session_key;		//mp-int
 
@@ -504,13 +491,17 @@ public abstract class SshIO
     //	session_id = MD5(hostkey->n || servkey->n || cookie) //protocol V 1.5. (we use this one)
     //	session_id = MD5(servkey->n || hostkey->n || cookie) //protocol V 1.1.(Why is it different ??)
     //
-    session_id = new String(host_key_public_modulus);
-    session_id += new String(server_key_public_modulus);
-    session_id += new String(anti_spoofing_cookie);
 		
-    byte[] hash_md5 = MD5.hash(session_id); 
+    byte[] session_id_byte = new byte[host_key_public_modulus.length+server_key_public_modulus.length+anti_spoofing_cookie.length];
 
-    byte[] session_id_byte = session_id.getBytes();
+		System.arraycopy(host_key_public_modulus,0,session_id_byte,0,host_key_public_modulus.length);
+
+		System.arraycopy(server_key_public_modulus,0,session_id_byte,host_key_public_modulus.length,server_key_public_modulus.length);
+
+		System.arraycopy(anti_spoofing_cookie,0,session_id_byte,host_key_public_modulus.length+server_key_public_modulus.length,anti_spoofing_cookie.length);
+
+    byte[] hash_md5 = MD5.hash(session_id_byte); 
+
 
     //	SSH_CMSG_SESSION_KEY : Sent by the client
     //	    1 byte       cipher_type (must be one of the supported values)
@@ -536,10 +527,12 @@ public abstract class SshIO
     byte[] random_bits1 = new byte[16], random_bits2 = new byte[16];
 		
 
-    java.util.Date date = new java.util.Date(); ////the number of milliseconds since January 1, 1970, 00:00:00 GMT. 
+    /// java.util.Date date = new java.util.Date(); ////the number of milliseconds since January 1, 1970, 00:00:00 GMT. 
     //Math.random()   a pseudorandom double between 0.0 and 1.0. 
     random_bits2 = random_bits1 =
-      MD5.hash("" + Math.random() * (new java.util.Date()).getDate());
+      // MD5.hash("" + Math.random() * (new java.util.Date()).getDate());
+      MD5.hash("" + Math.random() * (new java.util.Date()).getTime());
+
     random_bits1 = MD5.hash(SshMisc.addArrayOfBytes(MD5.hash(password+login), 
                             random_bits1));
     random_bits2 = MD5.hash(SshMisc.addArrayOfBytes(MD5.hash(password+login),
