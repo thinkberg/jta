@@ -4,7 +4,7 @@
 
   <target name="init">
     <property name="name" value="jta"/>
-    <property name="version" value="25b"/>
+    <property name="version" value="25"/>
     <property name="target.dir" value="jar"/>
     <property name="debug" value="true"/>
     <tstamp>

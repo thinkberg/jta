@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -34,6 +34,7 @@ import java.util.Vector;
 import java.util.Properties;
 
 import java.awt.Dimension;
+
 import de.mud.jta.Wrapper;
 
 /**
@@ -68,33 +69,40 @@ public class TelnetWrapper extends Wrapper {
   /** debugging level */
   private final static int debug = 0;
 
-  TelnetWrapper() {
-	handler = new TelnetProtocolHandler() {
-	  /** get the current terminal type */
-	  public String getTerminalType() {
-	    return "vt320";
-	  }
-	  /** get the current window size */
-	  public Dimension getWindowSize() {
-	    return new Dimension(80,25);
-	  }
-	  /** notify about local echo */
-	  public void setLocalEcho(boolean echo) {
-	    /* EMPTY */
-	  }
-	  /** write data to our back end */
-	  public void write(byte[] b) throws IOException {
-	    out.write(b);
-	  }
+  public TelnetWrapper() {
+    handler = new TelnetProtocolHandler() {
+      /** get the current terminal type */
+      public String getTerminalType() {
+        return "vt320";
+      }
 
-	  /** sent on IAC EOR (prompt terminator for remote access systems). */
-	  public void notifyEndOfRecord() {
-	  }
-	};
+      /** get the current window size */
+      public Dimension getWindowSize() {
+        return new Dimension(80, 25);
+      }
+
+      /** notify about local echo */
+      public void setLocalEcho(boolean echo) {
+        /* EMPTY */
+      }
+
+      /** write data to our back end */
+      public void write(byte[] b) throws IOException {
+        out.write(b);
+      }
+
+      /** sent on IAC EOR (prompt terminator for remote access systems). */
+      public void notifyEndOfRecord() {
+      }
+    };
   }
 
+  public TelnetProtocolHandler getHandler() {
+    return handler;
+  }
+  
   public void connect(String host, int port) throws IOException {
-    super.connect(host,port);
+    super.connect(host, port);
     handler.reset();
   }
 
@@ -106,10 +114,10 @@ public class TelnetWrapper extends Wrapper {
    * @return output of the command or null if no prompt is set
    */
   public String send(String cmd) throws IOException {
-    byte arr[]; 
-    arr = (cmd+"\n").getBytes();
+    byte arr[];
+    arr = (cmd + "\n").getBytes();
     handler.transpose(arr);
-    if(getPrompt() != null)
+    if (getPrompt() != null)
       return waitfor(getPrompt());
     return null;
   }
@@ -123,19 +131,19 @@ public class TelnetWrapper extends Wrapper {
   public int read(byte[] b) throws IOException {
     int n = handler.negotiate(b);
 
-    if (n>0)
+    if (n > 0)
       return n;
 
-    while (n<=0) {
+    while (n <= 0) {
       do {
-	n = handler.negotiate(b);
-	if (n>0)
-	  return n;
-      } while (n==0);
+        n = handler.negotiate(b);
+        if (n > 0)
+          return n;
+      } while (n == 0);
       n = in.read(b);
-      if (n<0)
+      if (n < 0)
         return n;
-      handler.inputfeed(b,n);
+      handler.inputfeed(b, n);
       n = handler.negotiate(b);
     }
     return n;

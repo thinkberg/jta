@@ -461,10 +461,7 @@ public class VDUBuffer {
     else
       markLine(top, l - top + 1);
 
-/*  FIXME: needs to be in VDU
-    if(scrollBar != null)
-      scrollBar.setValues(windowBase, height, 0, bufSize);
-*/
+    display.updateScrollBar();
   }
 
   /**

@@ -320,6 +320,11 @@ public class SwingTerminal extends Component
     }
   }
 
+  public void updateScrollBar() {
+    if(scrollBar == null) return;
+    scrollBar.setValues(buffer.windowBase, buffer.height, 0, buffer.bufSize);
+  }
+
   protected void redraw(Graphics g) {
     if (debug > 0) System.err.println("redraw()");
 
