@@ -132,7 +132,7 @@ public class Applet extends java.applet.Applet {
       pluginLoader = new Common(options);
 
       // set the host to our code base, no other hosts are allowed anyway
-      host = options.getProperty("Socket.host")
+      host = options.getProperty("Socket.host");
       if(host == null)
         host = getCodeBase().getHost();
       port = options.getProperty("Socket.port");
