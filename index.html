@@ -100,6 +100,11 @@ available package is already usable for those would like to upgrade from
 the old version. What has not yet been implemented is stated below:
 <blockquote>
 <li>
+<font color="#CC0000">[important] </font>The <b>terminal display </b>is
+now <b>FAST</b> in Java 1 and 2! We introduced <i>double buffering</i>
+for the VDU and you can see the difference.</li>
+
+<li>
 Together with the ButtonBar we have managed to make the plugins more useful
 by allowing <i>more than one of the same plugins</i> to be used. Have a
 look at the <a href="doc/plugins/index.html">plugin documentation</a> page.</li>
@@ -117,16 +122,6 @@ plugins:
 <b><a href="doc/plugins/SSH.html">SSH</a></b> may work or it may not. We
 had reports that it works beautifully but we also had people who had <i>crc
 errors </i>en-masse and we simply don't know why.</li>
-
-<li>
-<font color="#CC0000">[investigated]</font> While running the <b><a href="doc/Main.html">application
-version</a></b> you may experience very slow screen updates with <b>Java
-2</b> (all <b>Linux/SUN/Win32</b> JDK/JRE). We found that the string display
-is very slow and it definitely is a Java problem.<br>
-<font color="#CC0000">FIX:&nbsp;</font>To fix the problem for now you can
-use the following hack: Set the environment variable <b><tt>JAVA2D_USEPLATFORMFONT=1</tt></b>
-and you will see that the terminal screen is as fast as with 1.1. We are
-looking for other solutions but for the moment this seems to help.</li>
 </ul>
 </td>
 
