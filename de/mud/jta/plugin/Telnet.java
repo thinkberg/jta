@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -27,6 +27,7 @@ import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
+import de.mud.jta.event.EndOfRecordRequest;
 
 import de.mud.telnet.TelnetProtocolHandler;
 
@@ -70,6 +71,10 @@ public class Telnet extends Plugin implements FilterPlugin {
       public void setLocalEcho(boolean echo) {
         bus.broadcast(new LocalEchoRequest(echo));
       }
+      /** notify about EOR end of record */
+      public void EndOfRecord() {
+        bus.broadcast(new EndOfRecordRequest());
+      }
       /** write data to our back end */
       public void write(byte[] b) throws IOException {
         source.write(b);
@@ -80,6 +85,11 @@ public class Telnet extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
         handler.reset();
+        try {
+          handler.startup();
+        } catch(java.io.IOException e) {
+        }
+
         bus.broadcast(new LocalEchoRequest(true));
       }
       public void offline() {
@@ -89,7 +99,7 @@ public class Telnet extends Plugin implements FilterPlugin {
     });
   }
 
-  public void setFilterSource(FilterPlugin source) { 
+  public void setFilterSource(FilterPlugin source) {
     if(debug>0) System.err.println("Telnet: connected to: "+source);
     this.source = source;
   }
