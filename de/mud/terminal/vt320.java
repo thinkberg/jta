@@ -746,9 +746,17 @@ public abstract class vt320 extends VDU implements KeyListener {
       return;
     }
 
-    if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
+    if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10))
+       && !control) {
       write("\n",false);
       if (localecho) putString("\r\n"); // bad hack
+      return;
+    }
+
+    if ((keyCode == 10) && !control) {
+      System.out.println("Sending \\r");
+      write("\r",false);
+      return;
     }
 
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
