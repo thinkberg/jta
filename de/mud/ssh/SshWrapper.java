@@ -77,7 +77,7 @@ public class SshWrapper {
   protected int port = 23;
   protected Vector script = new Vector();
 
-  SshWrapper() {
+  public SshWrapper() {
     handler = new SshIO() {
       /** get the current terminal type */
       public String getTerminalType() {
