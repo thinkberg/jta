@@ -32,10 +32,8 @@ jar:	app
 
 dist:	clean doc
 	-mkdir jar
-	(src=`pwd`; cd /tmp; rm -rf telnet; \
-	  cvs -Q -d $(CVSROOT) export -D now telnet && \
-	  $(JAR) cvMf $$src/jar/jta-20-source.jar telnet; \
-	  rm -rf telnet)
+	(cvs -Q -d $(CVSROOT) export -D now -d telnet-v20 telnet && \
+	  $(JAR) cvMf jar/jta-20-source.jar telnet-v20; rm -rf telnet-v20)
 # 
 # application dependencies
 #
