@@ -1322,7 +1322,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       break;
     case TSTATE_SETG0:
       if(c!='0' && c!='A' && c!='B')
-        System.out.println("ESC ( : G0 char set?  ("+((int)c)+")");
+        System.out.println("ESC ( "+c+": G0 char set?  ("+((int)c)+")");
       else {
         if (debug>2) System.out.println("ESC ( : G0 char set  ("+c+" "+((int)c)+")");
         gx[0] = c;
@@ -1417,6 +1417,8 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 12:/* local echo off */
           break;
+	default:
+          System.out.println("ESC [ ? "+DCEvars[0]+" r, unimplemented!");
         }
         break;
       case 'h': // DECSET
@@ -1436,6 +1438,10 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 6: /* move inside margins ? */
           moveoutsidemargins = false;
+          break;
+        case 25: /* turn cursor on */
+	  showCursor(true);
+          redraw();
           break;
 
 	/* unimplemented stuff, fall through */
@@ -1486,6 +1492,10 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 6: /* move outside margins ? */
           moveoutsidemargins = true;
+          break;
+        case 25: /* turn cursor off */
+	  showCursor(false);
+          redraw();
           break;
 	/* Unimplemented stuff: */
         /* 4  - scrolling mode, jump */
@@ -1640,6 +1650,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  if (debug>1)
 	    System.out.println("CSI 4/5 i:  Disable Transparent Printing, not implemented.");
           break;
+	default:
+          System.out.println("ESC [ "+DCEvars[0]+" i, unimplemented!");
 	}
         break;
       case 'l':
@@ -1651,9 +1663,10 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.println("Setting CRLF to FALSE");
           sendcrlf = false;
           break;
+        default:
+          System.out.println("ESC [ "+DCEvars[0]+" l, unimplemented!");
+	  break;
         }
-        if (debug>1)
-          System.out.println("ESC [ "+DCEvars[0]+" l");
         break;
       case 'A': // CUU
 	{
