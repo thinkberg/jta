@@ -112,18 +112,22 @@ look at the <a href="doc/plugins/index.html">plugin documentation</a> page.</li>
 </blockquote>
 Under some circumstances you may experience difficulties with some of the
 plugins:
-<blockquote>
+<ul>
 <li>
 <b><a href="doc/plugins/SSH.html">SSH</a></b> may work or it may not. We
 had reports that it works beautifully but we also had people who had <i>crc
 errors </i>en-masse and we simply don't know why.</li>
 
 <li>
-While running the <b><a href="doc/Main.html">application version</a></b>
-you may experience very slow screen updates with <b>Java 2</b> (all <b>Linux</b>
-JDK/JRE). We found that the string display is very slow and it definitely
-is a Java problem.</li>
-</blockquote>
+<font color="#CC0000">[investigated]</font> While running the <b><a href="doc/Main.html">application
+version</a></b> you may experience very slow screen updates with <b>Java
+2</b> (all <b>Linux/SUN/Win32</b> JDK/JRE). We found that the string display
+is very slow and it definitely is a Java problem.<br>
+<font color="#CC0000">FIX:&nbsp;</font>To fix the problem for now you can
+use the following hack: Set the environment variable <b><tt>JAVA2D_USEPLATFORMFONT=1</tt></b>
+and you will see that the terminal screen is as fast as with 1.1. We are
+looking for other solutions but for the moment this seems to help.</li>
+</ul>
 </td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Did
