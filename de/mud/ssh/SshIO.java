@@ -533,7 +533,8 @@ public abstract class SshIO
 	}
       }
     }
-    System.out.println("SshIO: Using "+cipher_type+" blockcipher.\n");
+    if (debug>0)
+	System.out.println("SshIO: Using "+cipher_type+" blockcipher.\n");
 
 
     // 	anti_spoofing_cookie : the same 
