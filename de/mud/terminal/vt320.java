@@ -110,6 +110,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001bOH";
     KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001bOF";
 
+    Delete = "\u001b[3~";
+
     /* some more VT100 keys */
     Find   = "\u001b[1~";
     Select = "\u001b[4~";
@@ -416,6 +418,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String Help, Do, Find, Select;
 
   private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[];
+  private String Delete;
 
   private String osc,dcs;  /* to memorize OSC & DCS control sequence */
 
@@ -475,13 +478,23 @@ public abstract class vt320 extends VDU implements KeyListener {
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
 
-    if(shift && (keyChar == '\t')) 
+    if (keyChar == 0x7f) {
+      write(Delete);
+      return;
+    }
+    if(shift && (keyChar == '\t')) {
       write(KeyBacktab);
-    else if (alt)
+      return;
+    }
+    if (alt) {
       write(""+((char)(keyChar|0x80)));
-    else if(capslock && !shift) 
+      return;
+    }
+    if(capslock && !shift) {
       write((""+keyChar).toUpperCase());
-    else if(!(keyChar == '\r' || keyChar == '\n') || control)
+      return;
+    }
+    if(!(keyChar == '\r' || keyChar == '\n') || control)
       write(""+keyChar);
   }
 
