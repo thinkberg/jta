@@ -460,6 +460,9 @@ public class VDU extends Component
     int abuf[][] = null;
     int offset = 0;
     int oldBase = screenBase;
+
+    if (l > bottomMargin) /* We do not scroll below bottom margin (below the scrolling region). */
+	return;
     int top = (l < topMargin ? 
                0 : (l > bottomMargin ?
                     (bottomMargin + 1 < size.height ?
@@ -468,7 +471,8 @@ public class VDU extends Component
                   size.height - 1 : (l < topMargin ? 
                                      (topMargin > 0 ?
                                       topMargin - 1 : 0) : bottomMargin));
-    
+
+    // System.out.println("l is "+l+", top is "+top+", bottom is "+bottom+", bottomargin is "+bottomMargin+", topMargin is "+topMargin);
     
     if(scrollDown) {
       if(n > (bottom - top)) n = (bottom - top);
