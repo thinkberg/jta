@@ -146,7 +146,7 @@ public class Common extends PluginLoader {
    * @param s the string to be split up
    * @return an array of strings
    */
-  private static Vector split(String s, char separator) {
+  public static Vector split(String s, char separator) {
     if(s == null) return null;
     Vector v = new Vector();
     int old = -1, idx = s.indexOf(separator);

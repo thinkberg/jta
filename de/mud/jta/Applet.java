@@ -228,26 +228,41 @@ public class Applet extends java.applet.Applet {
 	final String stopText = options.getProperty("Applet.detach.stopText");
 	final Button close =  new Button();
 
-        // set up the clipboard
+	// this works for Netscape only!
+        Vector privileges = 
+	  Common.split(options.getProperty("Applet.Netscape.privilege"), ',');
+	Class privilegeManager = null;
+	Method enable = null;
         try {
-	  // this works for Netscape only!
-	  Class privilegeManager = 
+	  privilegeManager = 
 	    Class.forName("netscape.security.PrivilegeManager");
-	  Method enable = privilegeManager
+	  enable = privilegeManager
 	    .getMethod("enablePrivilege", new Class[] { String.class });
-	  enable.invoke(privilegeManager, 
-	                new Object[] { 
-			  options.getProperty("Applet.Netscape.privilege")
-			});
+	} catch(Exception e) {
+	  System.err.println("Applet: This is not Netscape ...");
+        }
+
+	if(privilegeManager != null && enable != null)
+	  for(int i = 0; i < privileges.size(); i++) try {
+	    enable.invoke(privilegeManager, 
+	                  new Object[] { privileges.elementAt(i) });
+	    System.out.println("Applet: access for '"+
+	                       privileges.elementAt(i)+"' allowed");
+
+	   } catch(Exception e) {
+	     System.err.println("Applet: access for '"+
+	                        privileges.elementAt(i)+"' denied");
+	   }
+
+        // set up the clipboard
+	try {
           clipboard = appletFrame.getToolkit().getSystemClipboard();
 	  System.err.println("Applet: acquired system clipboard: "+clipboard);
-	} catch(NoClassDefFoundError nc) {
-	  System.err.println("Applet: This is not Netscape ...");
         } catch(Exception e) {
           System.err.println("Applet: system clipboard access denied: "+
 	    ((e instanceof InvocationTargetException) ? 
 	      ((InvocationTargetException)e).getTargetException() : e));
-	  e.printStackTrace();
+	  // e.printStackTrace();
         } finally {
 	  if(clipboard == null) {
             System.err.println("Applet: copy & paste only within the JTA");
