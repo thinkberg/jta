@@ -386,6 +386,8 @@ public abstract class SshIO
       break;
 
     case SSH_SMSG_SUCCESS:
+      if(debug > 0)
+        System.out.println("SSH_SMSG_SUCCESS (last packet was "+lastPacketSentType+")");
       if (lastPacketSentType==SSH_CMSG_SESSION_KEY) { 
         //we have succefully sent the session key !! (at last :-) )
 	Send_SSH_CMSG_USER();
@@ -402,15 +404,17 @@ public abstract class SshIO
       }
 
       if (lastPacketSentType==SSH_CMSG_REQUEST_PTY) {// pty accepted !!
-	Send_SSH_CMSG_EXEC_SHELL(); //we start a shell
-	break;
-      }
-      if (lastPacketSentType==SSH_CMSG_EXEC_SHELL) {// shell is running ...
+        /* we can send data with a pty accepted ... no need for a shell. */
         cansenddata = true;
 	if (dataToSend != null ) {
 	    Send_SSH_CMSG_STDIN_DATA(dataToSend);
 	    dataToSend = null;
 	}
+	Send_SSH_CMSG_EXEC_SHELL(); //we start a shell
+	break;
+      }
+      if (lastPacketSentType==SSH_CMSG_EXEC_SHELL) {// shell is running ...
+        /* empty */
       }
 
       break;
