@@ -221,18 +221,13 @@ public abstract class TelnetProtocolHandler {
   }
 
   /**
-   * kickstart the protocol handler to begin option negotiation by
-   * sending a harmless option. Some hosts don't do any negotiation
-   * if they don't first receive an option.
+   * Do not send any notifications at startup. We do not know,
+   * whether the remote client understands telnet protocol handling,
+   * so we are silent.
+   * (This used to send IAC WILL SGA, but this is false for a compliant
+   *  client.)
    */
   public void startup() throws IOException {
-    byte sendbuf[] = new byte[3];
-
-    sendbuf[0]=IAC;
-    sendbuf[1]=DO;
-    sendbuf[2]=TELOPT_SGA;
-    write(sendbuf);
-    sentDX[TELOPT_SGA] = DO;
   }
   /**
    * Transpose special telnet codes like 0xff or newlines to values
@@ -358,6 +353,7 @@ public abstract class TelnetProtocolHandler {
         case EOR:
           if(debug > 1) System.err.print("EOR ");
   	  notifyEndOfRecord();
+	  dobreak = true; // leave the loop so we can sync.
           neg_state = STATE_DATA;
           break;
         case SB:
