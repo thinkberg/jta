@@ -101,15 +101,28 @@ public class Applet extends java.applet.Applet {
       // try to load the local configuration and merge it with the defaults
       if((value = getParameter("config")) != null) {
         Properties appletParams = new Properties();
+	URL url = null;
 	try {
-	  appletParams.load((new URL(getCodeBase() + value)).openStream());
-	  Enumeration ape = appletParams.keys();
-	  while(ape.hasMoreElements()) {
-	    String key = (String)ape.nextElement();
-	    options.put(key, appletParams.getProperty(key));
-	  }
+	  url = new URL(value);
 	} catch(Exception e) {
-	  System.err.println("jta: could not load config file: "+e);
+	  try {
+	    url = new URL(getCodeBase() + value);
+	  } catch(Exception ce) { 
+	    System.err.println("jta: could not find config file: "+ce);
+	  }
+	} 
+
+	if(url != null) {
+	  try {
+	    appletParams.load(url.openStream());
+	    Enumeration ape = appletParams.keys();
+	    while(ape.hasMoreElements()) {
+	      String key = (String)ape.nextElement();
+	      options.put(key, appletParams.getProperty(key));
+	    }
+	  } catch(Exception e) {
+	    System.err.println("jta: could not load config file: "+e);
+	  }
 	}
       }
 
@@ -121,10 +134,11 @@ public class Applet extends java.applet.Applet {
 
       // set the host to our code base, no other hosts are allowed anyway
       host = options.getProperty("Socket.host");
-      if(host == null)
+      if(host == null && (host = getParameter("Socket.host")) == null)
         host = getCodeBase().getHost();
       port = options.getProperty("Socket.port");
-      if(port == null) port = "23";
+      if(port == null && (port = getParameter("Socket.port")) == null)
+        port = "23";
 
       final java.awt.Container appletFrame;
 
