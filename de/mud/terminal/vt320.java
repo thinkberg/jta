@@ -42,7 +42,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   public final static String ID = "$Id$";
 
   /** the debug level */
-  private final static int debug = 0;
+  private final static int debug = 3;
 
   /**
    * Write an answer back to the remote host. This is needed to be able to
@@ -1911,7 +1911,6 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                   break;
                 case 25: /* turn cursor on */
                   showCursor(true);
-                  redraw();
                   break;
                 case 9: 	/* X10 mouse */
                 case 1000:	/* xterm style mouse report on */
@@ -1979,7 +1978,6 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                   break;
                 case 25: /* turn cursor off */
                   showCursor(false);
-                  redraw();
                   break;
                   /* Unimplemented stuff: */
                   /* 4  - scrolling mode, jump */
