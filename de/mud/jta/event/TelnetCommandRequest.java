@@ -22,6 +22,8 @@ import de.mud.jta.PluginMessage;
 import de.mud.jta.PluginListener;
 import de.mud.jta.event.TelnetCommandListener;
 
+import java.io.IOException;
+
 /**
  * Notification of the end of record event
  * <P>
@@ -41,8 +43,14 @@ public class TelnetCommandRequest implements PluginMessage {
    * @return always null
    */
   public Object firePluginMessage(PluginListener pl) {
-    if(pl instanceof TelnetCommandListener)
-      ((TelnetCommandListener)pl).telnetSendCommand(cmd);
+    if(pl instanceof TelnetCommandListener) {
+      try {
+	  ((TelnetCommandListener)pl).sendTelnetCommand(cmd);
+      } catch (IOException io) {
+      	System.err.println("io exception caught:"+io);
+	io.printStackTrace();
+      }
+    }
     return null;
   }
 }
