@@ -19,6 +19,7 @@
 package de.mud.jta;
 
 import de.mud.jta.event.OnlineStatusListener;
+import de.mud.jta.event.FocusStatusListener;
 import de.mud.jta.event.SocketRequest;
 
 import java.util.Properties;
@@ -67,6 +68,8 @@ import java.awt.datatransfer.Clipboard;
  * @author Matthias L. Jugel, Marcus Meißner
  */
 public class Main {
+
+  private final static int debug = 0;
 
   private final static boolean personalJava = false;
 
@@ -119,35 +122,25 @@ public class Main {
       }
     });
 
-    FocusListener focusListener = new FocusListener() {
-      public void focusGained(FocusEvent e) {
-        Component c = e.getComponent();
-        Hashtable components = setup.getComponents();
-        Enumeration ce = components.keys();
-        while(ce.hasMoreElements()) {
-          String key = (String)ce.nextElement();
-          if(c == components.get(key)) {
-            focussedPlugin = (Plugin)setup.getPlugins().get(key);
-	    return;
-          }
-        }
+    // register a focus status listener, so we know when a plugin got focus
+    setup.registerPluginListener(new FocusStatusListener() {
+      public void pluginGainedFocus(Plugin plugin) {
+        if(Main.debug > 0)
+	  System.err.println("Main: "+plugin+" got focus");
+        focussedPlugin = plugin;
       }
-      public void focusLost(FocusEvent e) {
-        /** we do nothing and keep the last focussed component */
+      public void pluginLostFocus(Plugin plugin) {
+        // we ignore the lost focus
+        if(Main.debug > 0)
+          System.err.println("Main: "+plugin+" lost focus");
       }
-    };
+    });
 
     Hashtable componentList = setup.getComponents();
     Enumeration names = componentList.keys();
     while(names.hasMoreElements()) {
       String name = (String)names.nextElement();
       Component c = (Component)componentList.get(name);
-      c.addFocusListener(focusListener);
-      c.addMouseListener(new java.awt.event.MouseAdapter() {
-        public void mouseEntered(java.awt.event.MouseEvent evt) {
-	  evt.getComponent().requestFocus();
-	}
-      });
       if(options.getProperty("layout."+name) == null) {
         System.err.println("jta: no layout property set for '"+name+"'");
 	frame.add("South", c);

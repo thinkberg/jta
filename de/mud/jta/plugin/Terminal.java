@@ -31,6 +31,7 @@ import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeListener;
 import de.mud.jta.event.WindowSizeListener;
 import de.mud.jta.event.LocalEchoListener;
+import de.mud.jta.event.FocusStatus;
 
 import java.awt.Component;
 import java.awt.Panel;
@@ -41,9 +42,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Scrollbar;
+import java.awt.Cursor;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -90,7 +94,7 @@ public class Terminal extends Plugin
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
-  public Terminal(PluginBus bus) {
+  public Terminal(final PluginBus bus) {
     super(bus);
 
     if(!personalJava) {
@@ -149,6 +153,17 @@ public class Terminal extends Plugin
       }
     };
     tPanel.add("Center", terminal);
+
+    terminal.addFocusListener(new FocusListener() {
+      public void focusGained(FocusEvent evt) {
+	terminal.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+        bus.broadcast(new FocusStatus(Terminal.this, evt));
+      }
+      public void focusLost(FocusEvent evt) {
+	terminal.setCursor(Cursor.getDefaultCursor());
+        bus.broadcast(new FocusStatus(Terminal.this, evt));
+      }
+    });
 
     // register an online status listener
     bus.registerPluginListener(new OnlineStatusListener() {

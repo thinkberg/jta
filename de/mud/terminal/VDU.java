@@ -50,6 +50,8 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
 
 /**
  * Video Display Unit emulation. This class implements all necessary
@@ -77,6 +79,7 @@ public class VDU extends Component
 
   /** lightweight component definitions */
   private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK 
+                                       | AWTEvent.FOCUS_EVENT_MASK
                                        | AWTEvent.MOUSE_MOTION_EVENT_MASK
                                        | AWTEvent.MOUSE_EVENT_MASK;
   
@@ -1257,6 +1260,7 @@ public class VDU extends Component
 
   public void mouseClicked(MouseEvent evt) {
     /* nothing yet we do here */
+    requestFocus();
   }
 
   public void mouseEntered(MouseEvent evt) {
@@ -1440,7 +1444,27 @@ public class VDU extends Component
         case KeyEvent.KEY_TYPED:
 	  keyListener.keyTyped(evt); break;
       }
-
     super.processKeyEvent(evt);
+  }
+
+  FocusListener focusListener;
+
+  public void addFocusListener(FocusListener listener) {
+    focusListener = AWTEventMulticaster.add(focusListener, listener);
+  }
+
+  public void removeFocusListener(FocusListener listener) {
+    focusListener = AWTEventMulticaster.remove(focusListener, listener);
+  }
+
+  public void processFocusEvent(FocusEvent evt) {
+    if(focusListener != null)
+      switch(evt.getID()) {
+        case FocusEvent.FOCUS_GAINED:
+	  focusListener.focusGained(evt); break;
+	case FocusEvent.FOCUS_LOST:
+	  focusListener.focusLost(evt); break;
+      }
+    super.processFocusEvent(evt);
   }
 }

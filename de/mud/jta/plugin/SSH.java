@@ -23,6 +23,7 @@ import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 
+import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
@@ -42,6 +43,8 @@ import java.awt.event.ActionEvent;
 
 import java.io.IOException;
 
+import java.util.Properties;
+
 /**
  * Secure Shell plugin for the Java Telnet Application. This is a plugin
  * to be used instead of Telnet for secure remote terminal sessions over
@@ -60,6 +63,8 @@ public class SSH extends Plugin implements FilterPlugin {
 
   protected FilterPlugin source;
   protected SshIO handler;
+
+  protected String user, pass;
 
   private final static int debug = 0;
 
@@ -91,51 +96,64 @@ public class SSH extends Plugin implements FilterPlugin {
       }
     };
 
+    bus.registerPluginListener(new ConfigurationListener() {
+      public void setConfiguration(Properties config) {
+        user = config.getProperty("SSH.user");
+	pass = config.getProperty("SSH.password");
+      }
+    });
+
     // reset the protocol handler just in case :-)
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
-        final Frame frame = new Frame("SSH User Authentication");
-        Panel panel = new Panel(new GridLayout(3,1));
-	panel.add(new Label("SSH Authorization required"));
-	panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
-        panel.add(new Label("Adapted 1999 to the JTA by Matthias L. Jugel"));
-	frame.add("North", panel);
-        panel = new Panel(new GridLayout(2,2));
-	final TextField login = new TextField(10);
-	final TextField passw = new TextField(10);
-	login.addActionListener(new ActionListener() {
-	  public void actionPerformed(ActionEvent evt) {
-	    passw.requestFocus();
-	  }
-	});
-	passw.setEchoChar('*');
-	panel.add(new Label("User name")); panel.add(login);
-	panel.add(new Label("Password")); panel.add(passw);
-	frame.add("Center", panel);
-	panel = new Panel();
-	Button cancel = new Button("Cancel");
-	Button ok = new Button("Login");
-	ActionListener enter = new ActionListener() {
-	  public void actionPerformed(ActionEvent evt) {
-	    handler.setLogin(login.getText());
-	    handler.setPassword(passw.getText());
-	    frame.dispose();
-	    auth = true;
-	  }
-	};
-	ok.addActionListener(enter);
-	passw.addActionListener(enter);
-	cancel.addActionListener(new ActionListener() {
-	  public void actionPerformed(ActionEvent evt) {
-	    frame.dispose();
-	  }
-	});
-	panel.add(cancel);
-	panel.add(ok);
-	frame.add("South", panel);
-
-	frame.pack();
-	frame.show();
+	if(pass == null) {
+          final Frame frame = new Frame("SSH User Authentication");
+          Panel panel = new Panel(new GridLayout(3,1));
+	  panel.add(new Label("SSH Authorization required"));
+	  panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
+          panel.add(new Label("Adapted 1999 to the JTA by Matthias L. Jugel"));
+	  frame.add("North", panel);
+          panel = new Panel(new GridLayout(2,2));
+	  final TextField login = new TextField(user, 10);
+	  final TextField passw = new TextField(10);
+	  login.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent evt) {
+	      passw.requestFocus();
+	    }
+	  });
+	  passw.setEchoChar('*');
+	  panel.add(new Label("User name")); panel.add(login);
+	  panel.add(new Label("Password")); panel.add(passw);
+	  frame.add("Center", panel);
+	  panel = new Panel();
+	  Button cancel = new Button("Cancel");
+	  Button ok = new Button("Login");
+	  ActionListener enter = new ActionListener() {
+	    public void actionPerformed(ActionEvent evt) {
+	      handler.setLogin(login.getText());
+	      handler.setPassword(passw.getText());
+	      frame.dispose();
+	      auth = true;
+	    }
+	  };
+	  ok.addActionListener(enter);
+	  passw.addActionListener(enter);
+	  cancel.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent evt) {
+	      frame.dispose();
+	    }
+	  });
+	  panel.add(cancel);
+	  panel.add(ok);
+	  frame.add("South", panel);
+  
+	  frame.pack();
+	  frame.show();
+	} else {
+	  handler.setLogin(user);
+	  handler.setPassword(pass);
+	  auth = true;
+	}
       }
       public void offline() {
         // handler.reset();
