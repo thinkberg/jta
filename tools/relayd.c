@@ -39,7 +39,7 @@
 #define FAILMESSAGE "Sorry, all slots are full.\r\n"
 
 /* string printed before connection */
-#define RELAYHEADER "Relayd (c) Marcus Meissner\r\n"
+#define RELAYHEADER ""
 
 #include <stdio.h>
 #ifdef _WIN32

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jta" basedir="." default="build">
+
+  <target name="init">
+    <property name="version" value="20"/>
+    <property name="target.dir" value="jar"/>
+  </target>
+
+  <target name="build" depends="init">
+    <javac srcdir="." includes="de/mud/**"/>
+  </target>
+
+  <target name="jar" depends="build">
+    <jar basedir="." includes="de/**" jarfile="${target.dir}/jta20.jar"/>
+  </target>
+  
+</project>
