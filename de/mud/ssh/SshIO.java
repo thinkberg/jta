@@ -51,7 +51,7 @@ public abstract class SshIO {
    * variables for the connection
    */
   private String idstr = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
-  private String idstr_sent = "SSH/JTA (c) Marcus Meissner, Matthias L. Jugel";
+  private String idstr_sent = "SSH/JTA (c) Marcus Meissner, Matthias L. Jugel\n";
 
   /**
    * Debug level. This results in additional diagnostic messages on the
