@@ -310,8 +310,8 @@ public class Applet extends JApplet {
           }
         });
 
-        setLayout(new BorderLayout());
-        add("Center", close);
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add("Center", close);
 
         // add a menu bar
         MenuBar mb = new MenuBar();

@@ -71,6 +71,8 @@
         <exclude name="**/CVS"/>
         <exclude name="**/.*"/>
         <exclude name="jar/**"/>
+        <exclude name="tmp/**"/>
+        <exclude name="bin/dist.sh"/>
         <exclude name="${name}${version}"/>
       </fileset>
     </copy>
