@@ -819,6 +819,13 @@ public class VDU extends Component
       windowBase = 0;
     }
 
+    if(windowBase+height >= bufSize)
+      windowBase = bufSize-height;
+
+    if(screenBase+height >= bufSize)
+      screenBase = bufSize-height;
+
+
     cbuf = new char[bufSize][width];
     abuf = new int[bufSize][width];
     
