@@ -2157,27 +2157,32 @@ public abstract class vt320 extends VDU implements KeyListener {
         for (int i=0;i<=DCEvar;i++) {
           switch (DCEvars[i]) {
           case 0:
-            if (DCEvar>0)
-              attributes =0;
+            if (DCEvar>0) {
+	      if (terminalID.equals("scoansi")) {
+	        attributes &= COLOR; /* Keeps color. Strange but true. */
+	      } else {
+                attributes  = 0;
+	      }
+	    }
             break;
           case 1:
 	    attributes |= BOLD;
 	    attributes &= ~LOW;
 	    break;
 	  case 2:
-	    if ((DCEvar >= 2) && (i==0)) {
-	      /* SCO mode */
+	    /* SCO color hack mode */
+	    if (terminalID.equals("scoansi") && ((DCEvar-i)>=2)) {
 	      int ncolor;
-              attributes &= ~(0x7f8|BOLD);
+              attributes &= ~(COLOR|BOLD);
 
-	      ncolor = DCEvars[1];
-	      ncolor = ((ncolor&1)<<2)|(ncolor&2)|((ncolor&4)>>2);
-              attributes |= ((ncolor)+1)<<3;
-	      if ((ncolor & 8)==8)
+	      ncolor = DCEvars[i+1];
+	      if ((ncolor & 8) == 8)
 	        attributes |= BOLD;
-	      ncolor = DCEvars[2];
-	      ncolor = ((ncolor&1)<<2)|(ncolor&2)|((ncolor&4)>>2);
-              attributes |= ((ncolor)+1)<<7;
+	      ncolor = ((ncolor&1)<<2) | (ncolor&2) | ((ncolor&4)>>2);
+              attributes |= ((ncolor)+1)<<4;
+	      ncolor = DCEvars[i+2];
+	      ncolor = ((ncolor&1)<<2) | (ncolor&2) | ((ncolor&4)>>2);
+              attributes |= ((ncolor)+1)<<8;
 	      i+=2;
 	    } else {
 	      attributes |= LOW;
@@ -2224,11 +2229,11 @@ public abstract class vt320 extends VDU implements KeyListener {
           case 35:
           case 36:
           case 37:
-            attributes &= ~(0xf<<3);
-            attributes |= ((DCEvars[i]-30)+1)<<3;
+            attributes &= ~COLOR_FG;
+            attributes |= ((DCEvars[i]-30)+1)<<4;
             break;
           case 39:
-            attributes &= ~(0xf<<3);
+            attributes &= ~COLOR_FG;
             break;
           case 40:
           case 41:
@@ -2238,11 +2243,11 @@ public abstract class vt320 extends VDU implements KeyListener {
           case 45:
           case 46:
           case 47:
-            attributes &= ~(0xf<<7);
-            attributes |= ((DCEvars[i]-40)+1)<<7;
+            attributes &= ~COLOR_BG;
+            attributes |= ((DCEvars[i]-40)+1)<<8;
             break;
           case 49:
-            attributes &= ~(0xf<<7);
+            attributes &= ~COLOR_BG;
             break;
 
           default:
