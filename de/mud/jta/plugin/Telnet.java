@@ -80,9 +80,11 @@ public class Telnet extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
         handler.reset();
+        bus.broadcast(new LocalEchoRequest(true));
       }
       public void offline() {
         handler.reset();
+        bus.broadcast(new LocalEchoRequest(true));
       }
     });
   }
