@@ -1,6 +1,6 @@
 # This file is part of "The Java Telnet Application".
 #
-# (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+# (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
 #
 # Please visit http://javatelnet.org/ for updates and contact.
 #
@@ -43,6 +43,10 @@ all:  jtapty.dll
 #                    -LD HelloWorldImp.c -Fehello.dll
 #
 # On Linux libutil contains forkpty()
+#
+#
+# This will most likely not be easily portable to Win32, except probably
+# using cygwin. Do not expect it to work.
 
 clean:
 
