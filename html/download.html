@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="download java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: download</title>
@@ -72,7 +72,7 @@ before asking for help.</font>
 
 <tr NOSAVE>
 <td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="../jar/jta20.jar">jta20.jar</a></tt>
-<br><tt>(<!-- DATE -->)</tt></td>
+<br><tt>(<!-- DATE -->,&nbsp;<!-- SIZE-jta20.jar -->)</tt></td>
 
 <td>Class <b>binary</b> package to be put into your classpath. The archive
 contains the classes, readme and the license, but no documentation or source
@@ -81,11 +81,23 @@ code.</td>
 
 <tr NOSAVE>
 <td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="../jar/jta20-src.jar">jta20-src.jar</a></tt>
-<br><tt>(<!-- DATE -->)</tt></td>
+<br><tt>(<!-- DATE -->,&nbsp;<!-- SIZE-jta20-src.jar -->)</tt></td>
 
 <td><b>Source</b> package with no classes included. If you have a JDK you
 can download this package to create your own binary packages. We recommend
 the usage of the included Makefile. It contains also the source code <b><a href="../doc/source/index.html">documentation</a></b>.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><i><font color="#CC0000">coming soon</font></i>
+<br><tt>jta20-pj.jar</tt>
+<br><tt>(<!-- DATE -->,&nbsp;<!-- SIZE-jta20-se.jar -->)</tt></td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE>Class <b>binary</b> package that contains
+the Java Telnet Applet and the Application suitable for the <b><a href="http://java.sun.com/products/personaljava">PersonalJava<sup>tm</sup>
+Application Environment</a></b>. So if you have a PDA or Personal Java
+enabled device you can use that version of the applet to telnet from that
+device.</td>
 </tr>
 </table>
 
@@ -99,19 +111,47 @@ location</a> for download!</font></td>
 <p><font face="Arial,Helvetica"><font color="#CC0000">These extra packages
 <i>may
 not </i>be available under <a href="../license/COPYING">GPL</a> and may
-have restrictions. So may <i>cryptographic</i> packages <i>not be used</i>
-within the <i>USA</i> without a valid license if applicable. Read the documentation
-for the packages or look at their home page for further information.</font></font>
+have restrictions. Read the documentation for the packages or look at their
+home page for further information.</font></font>
 <br>&nbsp;
 <table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
 <tr BGCOLOR="#FFFFFF" NOSAVE>
-<td NOSAVE><b><font face="Arial,Helvetica"><a href="../jar/cryptix.jar">Cryptix</a></font></b></td>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../jar/cryptix.jar">Cryptix</a></font></b>
+(<!-- SIZE-cryptix.jar -->)</td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>[<font color="#CC0000">Non-GPL</font>] This is a modified version
+of the original <a href="http://www.cryptix.org/">Cryptix</a> cryptography
+package that is needed for the <b><a href="../doc/plugins/SSH.html">SSH</a></b>
+plugin.</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../jar/relay.jar">Connection
+Relay </a></font></b>(<!-- SIZE-relay.jar -->)</td>
 </tr>
 
 <tr>
-<td>This is a modified version of the original <a href="http://www.cryptix.org/">Cryptix</a>
-cryptography package that is needed for the <b><a href="../doc/plugins/SSH.html">SSH</a></b>
-plugin.</td>
+<td>[<font color="#CC0000">GPL</font>] This package contains two relay
+daemons to be installed on the web server. They forward applet connections
+to other hosts and thus allow you to navigate around the applet security
+restrictions.
+<dt>
+<b>relayd:</b> A program that will forward to one specific host only.</dt>
+
+<dt>
+<b>mrelayd:</b> A program that uses the relay settings of the Socket plugin
+and allows connections to any host, so <i>be careful</i>!</dt>
+
+<dt>
+If you have a UNIX box, compile the source files. For NT users we</dt>
+
+<dt>
+have provided executables in the package.</dt>
+
+<br>The package can be unpacked with any ZIP compatible program (like <a href="http://www.winzip.com">winzip</a>)
+or the Java jar utility.&nbsp;</td>
 </tr>
 </table>
 </td>

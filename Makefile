@@ -35,7 +35,7 @@ DATE	=	`date +%Y%m%d-%H%M`
 #
 # major rules to create files
 #
-all: 	app doc jar
+all: 	app doc jar tools/mrelayd tools/relayd
 
 run:	app
 	$(JAVA) $(JFLAGS) de.mud.jta.Main
@@ -81,12 +81,19 @@ dist:	jar doc revision changes
 	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/index.html \
 	                                  > $(PKGNAME)/index.new && \
 	  mv $(PKGNAME)/index.new $(PKGNAME)/index.html && \
-	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/html/download.html \
-	                                  > $(PKGNAME)/html/download.new && \
+	  echo "s/<!-- DATE -->/$(DATE)/g" > /tmp/jta.sed \
+	  (cd jar; for i in *.jar; do; \
+	    echo 's/<!-- SIZE-'$i' -->/'`\ls -l $i | \
+	          awk '{printf("%dk", $5/1024);}' `'/g'; done) >> /tmp/jta.sed \
+	  sed -f /tmp/jta.sed < $(PKGNAME)/html/download.html \
+	                      > $(PKGNAME)/html/download.new && \
 	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
+	  rm -f $(PKGNAME)/tools/* \
 	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
 	 @rm -rf $(PKGNAME) 
 	 @echo Created jar/$(PKGNAME)-src.jar
+	 @jar cvMf jar/relay.jar \
+	   tools/relayd tools/mrelayd tools/*.c tools/*.exe
 
 changes:
 	@rcs2log > CHANGES
@@ -116,6 +123,7 @@ app:
 clean:
 	-find . -name *.class -print | xargs rm > /dev/null 2>&1
 	-find . -name *~ -print | xargs rm > /dev/null 2>&1
+	-rm tools/relayd tools/mrelayd
 
 realclean: clean
 	-rm -f jar/$(PKGNAME).jar jar/$(PKGNAME)-src.jar

@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Socket Plugin</title>
@@ -77,6 +77,23 @@ URL.</td>
 <td>This is the port you want to connect to on the remote host. The default
 value is 23 (telnet) but you may use any integer value. The port for <a href="SSH.html">ssh</a>
 is 22.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>Socket.relay</tt></td>
+
+<td>Use this property if you plan to use the <b>mrelayd</b> (see <a href="../html/download.html">download</a>
+page). It will allow applets to connect to <i>any</i> host!
+<br><i><font color="#CC0000">Do not</font></i> use this property if you
+installed <i>relayd</i> on your web server!</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>Socket.relayPort</tt></td>
+
+<td>In connection with <tt>Socket.relay</tt> this can be used to specify
+the port on which the mrelay daemon is listening on the web server. It
+defaults to 31415.</td>
 </tr>
 </table></center>
 </td>

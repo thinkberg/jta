@@ -23,12 +23,15 @@ import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.event.SocketListener;
+import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatus;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+
+import java.util.Properties;
 
 /**
  * The socket plugin acts as the data source for networked operations.
@@ -46,6 +49,9 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
   protected InputStream in;
   protected OutputStream out;
 
+  protected String relay = null;
+  protected int relayPort = 31415;
+
   /**
    * Create a new socket plugin.
    */
@@ -54,15 +60,39 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
 
     // register socket listener
     bus.registerPluginListener(this);
+
+     bus.registerPluginListener(new ConfigurationListener() {
+      public void setConfiguration(Properties config) {
+        if((relay = config.getProperty("Socket.relay")) != null)
+	  if(config.getProperty("Socket.relayPort") != null) try {
+	    relayPort=Integer.parseInt(config.getProperty("Socket.relayPort"));
+	  } catch(NumberFormatException e) {
+	    System.err.println("Socket: relayPort is not a number");
+	  }
+      }
+    });
   }
 
-  /** Connect to the host and port passed. */
+  /** 
+   * Connect to the host and port passed. If the multi relayd (mrelayd) is
+   * used to allow connections to any host and the Socket.relay property
+   * is configured this method will connect to the relay first, send
+   * off the string "relay host port\n" and then the real connection will
+   * be published to be online.
+   */
   public void connect(String host, int port) throws IOException {
     if(debug>0) System.err.println("Socket: connect("+host+","+port+")");
     try {
-      socket = new java.net.Socket(host, port);
+      // check the relay settings, this is for the mrelayd only!
+      if(relay == null)
+        socket = new java.net.Socket(host, port);
+      else
+        socket = new java.net.Socket(relay, relayPort);
       in = socket.getInputStream();
       out = socket.getOutputStream();
+      // send the string to relay to the target host, port
+      if(relay != null)
+        write(("relay "+host+" "+port+"\n").getBytes());
       bus.broadcast(new OnlineStatus(true));
     } catch(Exception e) {
       System.err.println("Socket: "+e);
