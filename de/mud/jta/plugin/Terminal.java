@@ -74,7 +74,7 @@ public class Terminal extends Plugin
 
   private final static boolean personalJava = false;
 
-  private final static int debug = 1;
+  private final static int debug = 0;
   
   /** holds the actual terminal emulation */
   protected vt320 terminal;

@@ -39,7 +39,7 @@ import java.io.IOException;
 
 class SshPacket {
 
-  private final static boolean debug = true;
+  private final static boolean debug = false;
 
   //SSH_RECEIVE_PACKET
   private byte[] packet_length_array = new byte[4];				// 4 bytes

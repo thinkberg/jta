@@ -41,6 +41,8 @@ import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.MenuShortcut;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -138,7 +140,14 @@ public class Applet extends java.applet.Applet {
       port = options.getProperty("Socket.port");
       if(port == null) port = "23";
 
-      setLayout(new BorderLayout());
+      final java.awt.Container appletFrame;
+
+      if(options.getProperty("Applet.detach") != null)
+        appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
+      else
+        appletFrame = this;
+
+      appletFrame.setLayout(new BorderLayout());
 
       Hashtable componentList = pluginLoader.getComponents();
       Enumeration names = componentList.keys();
@@ -149,11 +158,23 @@ public class Applet extends java.applet.Applet {
 	  System.err.println("jta: 'layout.*' is deprecated use config!");
         if((value = getParameter("layout."+name)) != null ||
 	   (value = options.getProperty("layout."+name)) != null) {
-          add(value, c);
+          appletFrame.add(value, c);
         } else {
           System.err.println("jta: no layout property set for '"+name+"'");
           System.err.println("jta: ignoring '"+name+"'");
 	}
+      }
+
+      if(appletFrame != this) {
+        ((Frame)appletFrame).addWindowListener(new WindowAdapter() {
+	  public void windowClosing(WindowEvent evt) {
+	    Applet.this.stop();
+            ((Frame)appletFrame).hide();
+            ((Frame)appletFrame).dispose();
+	  }
+	});
+        ((Frame)appletFrame).pack();
+	((Frame)appletFrame).show();
       }
     }
   }
@@ -171,5 +192,11 @@ public class Applet extends java.applet.Applet {
    */
   public void stop() {
     pluginLoader.broadcast(new SocketRequest());
+  }
+
+  public void paint(java.awt.Graphics g) {
+    g.drawString("The Java Telnet Applet", 3, 10);
+    g.drawString("(c) 1996-2000 Matthias L. Jugel & Marcus Meiﬂner", 3, 20);
+    g.drawString("[telnet window detached]", 3, 30);
   }
 }
