@@ -612,6 +612,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind]); break;
       case KeyEvent.VK_PAGE_UP: write(PrevScn[xind]); break;
       case KeyEvent.VK_INSERT: write(Insert[xind]); break;
+      case KeyEvent.VK_DELETE: write(Delete); break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8);

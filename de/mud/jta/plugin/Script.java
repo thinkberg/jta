@@ -24,6 +24,7 @@ import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
+import de.mud.jta.event.SocketListener;
 
 import java.io.IOException;
 
@@ -50,15 +51,27 @@ public class Script extends Plugin implements FilterPlugin {
   /** debugging level */
   private final static int debug = 0;
 
+  /** the script after parsing, saved for reinitialization */
+  private Vector savedScript;
+
   /**
    * Create a new scripting plugin.
    */
   public Script(PluginBus bus, final String id) {
     super(bus, id);
 
+    bus.registerPluginListener(new SocketListener() {
+      public void connect(String host, int port) {
+        setup(savedScript);
+      }
+      public void disconnect() {
+        // ignore disconnection
+      }
+    });
+
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
-        Vector script = new Vector();
+        savedScript = new Vector();
         String s = config.getProperty("Script", id, "script");
         if(s != null) {
 	  // check if the script is stored in a file
@@ -77,7 +90,7 @@ public class Script extends Plugin implements FilterPlugin {
 	    } else {
               pair[1] = s.substring(old + 1, idx)+"\n";
 	      if(debug > 0) System.out.print(pair[1]);
-	      script.addElement(pair);
+	      savedScript.addElement(pair);
 	      pair = null;
 	    }
             old = idx;
@@ -85,12 +98,12 @@ public class Script extends Plugin implements FilterPlugin {
           }
           if(pair != null) {
 	    pair[1] = s.substring(old + 1)+"\n";
-	    script.addElement(pair);
+	    savedScript.addElement(pair);
 	    if(debug > 0) System.out.print(pair[1]);
 	  } else
 	    Script.this.error("unmatched pairs of script elements");
 	  // set up the script
-	  setup(script);
+	  setup(savedScript);
         }
       }
     });
@@ -141,7 +154,8 @@ public class Script extends Plugin implements FilterPlugin {
    * @param script the script
    */
   private void setup(Vector script) {
-    this.script = script;
+    // clone script to make sure we do not change the original
+    this.script = (Vector)script.clone();
     if(debug > 0) 
       System.err.println("Script: script contains "+script.size()+" elements");
     match = ((String[])this.script.firstElement())[0].getBytes();
@@ -163,6 +177,9 @@ public class Script extends Plugin implements FilterPlugin {
        // and reset to use the next match
        if(++matchPos >= match.length)
          write(found());
+       // if the current character did not match reset
+       else
+         reset();
     }
   }
 
