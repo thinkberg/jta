@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei\u00dfner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -60,14 +60,14 @@ import de.mud.telnet.ScriptHandler;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Mei\u00dfner
  */
 
 
 public class Wrapper {
 
   /** debugging level */
-  private final static int debug = 0;
+  private final static int debug = 1;
 
   protected ScriptHandler scriptHandler = new ScriptHandler();
   private Thread reader;
@@ -150,20 +150,22 @@ public class Wrapper {
       handlers[i].setup( searchElements[i] );
     }
 
-    byte[] b = new byte[256];
+    byte[] b1 = new byte[1];
     int n = 0;
     StringBuffer ret = new StringBuffer();
     String current;
 
     while(n >= 0) {
-      n = read(b);
+      n = read(b1);
       if(n > 0) {
-	current = new String( b, 0, n );
+	current = new String( b1, 0, n );
 	if (debug > 0)
 	  System.err.print( current );
 	ret.append( current );
+        if (b1[0] != '\n')
+	  continue;
 	for ( int i = 0; i < handlers.length ; i++ ) {
-	  if ( handlers[i].match( b, n ) ) {
+	  if ( handlers[i].match( ret.toString().getBytes(), ret.length() ) ) {
 	    return ret.toString();
 	  } // if
 	} // for
