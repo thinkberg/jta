@@ -32,6 +32,7 @@ import java.awt.Label;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Scrollbar;
+import java.awt.Image;
 
 /*
 import java.awt.Graphics;
@@ -115,6 +116,8 @@ public class VDU extends Component
                                              /*   during other operations */
   private boolean update[];        /* contains the lines that need update */
   
+  private Image backingStore = null;
+
   /**
    * Create a color representation that is brighter than the standard
    * color but not what we would like to use for bold characters.
@@ -810,8 +813,6 @@ public class VDU extends Component
 
     screenLocked = true;
     
-    // super.update(getGraphics());
-    
     if(height > maxBufSize) 
       maxBufSize = height;
 
@@ -917,23 +918,10 @@ public class VDU extends Component
   public void redraw() {
     if(debug > 0) System.err.println("redraw()");
     update[0] = true;
-    repaint();
-  }
 
-  /**
-   * Update the display. To reduce flashing we have overridden this method.
-   */
-  public void update(Graphics g) {
-    if(debug > 0) System.err.println("update()");
-    paint(g);
-  }
+    if(backingStore == null || screenLocked) return;
 
-  /**
-   * Paint the current screen. All painting is done here. Only lines that have
-   * changed will be redrawn!
-   */
-  public void paint(Graphics g) {
-    if(screenLocked) return;
+    Graphics g = backingStore.getGraphics();
 
     if(debug > 0) {
       System.err.println("Clip region: "+g.getClipBounds());
@@ -1080,6 +1068,30 @@ public class VDU extends Component
                      raised);
     }
     update[0] = false;
+
+    repaint();
+  }
+
+  /**
+   * Update the display. To reduce flashing we have overridden this method.
+   */
+  public void update(Graphics g) {
+    if(debug > 0) System.err.println("update()");
+    paint(g);
+  }
+
+  /**
+   * Paint the current screen. All painting is done here. Only lines that have
+   * changed will be redrawn!
+   */
+  public void paint(Graphics g) {
+    if(backingStore == null) {
+      Dimension size = super.getSize();
+      backingStore = createImage(size.width, size.height);
+      redraw();
+    }
+
+    g.drawImage(backingStore, 0, 0, this);
   }
 
 /*
@@ -1182,8 +1194,9 @@ public class VDU extends Component
                               "charDescent="+charDescent);
     }
 
-    // now set the bounds for the whole component accordingly
-    // super.setBounds(x, y, w + xborder, h + yborder);
+    // delete the double buffer image and mark all lines
+    backingStore = null;
+    markLine(0, size.height);
   }
 
   /**
