@@ -40,7 +40,8 @@
 #define FAILMESSAGE "Sorry, all slots are full.\r\n"
 
 /* string printed before connection */
-#define RELAYHEADER "Relayd $Revision$ (c) Marcus Meissner\r\n"
+/* empty, or you cannot relay ssh */
+#define RELAYHEADER ""
 
 /* the tcp port this demons is listening on ... */
 #define LISTENPORT  31415
