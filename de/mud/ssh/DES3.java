@@ -28,6 +28,10 @@ package de.mud.ssh;
 
 
 public final class DES3 extends Cipher {
+  static {
+    System.err.println("3DES Cipher.");
+  }
+
   DES des1 = new DES();
   DES des2 = new DES();
   DES des3 = new DES();
