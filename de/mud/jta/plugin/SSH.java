@@ -107,7 +107,8 @@ public class SSH extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
 	if(pass == null) {
-          final Dialog frame = new Dialog((Frame)null,"SSH User Authentication");
+
+          final Frame frame = new Frame("SSH User Authentication");
           Panel panel = new Panel(new GridLayout(3,1));
 	  panel.add(new Label("SSH Authorization required"));
 	  panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
