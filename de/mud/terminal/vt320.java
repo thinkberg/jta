@@ -1,5 +1,4 @@
-/*
- * This file is part of "The Java Telnet Application".
+/* This file is part of "The Java Telnet Application".
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,12 +63,12 @@ public abstract class vt320 extends VDU implements KeyListener {
    * @param s the string
    */
   public void putString(String s) {
-    int  i,len=s.length();
+    int  len=s.length();
     // System.err.println("'"+s+"'");
 
     if(len > 0) {
       markLine(R,1);
-      for (i=0;i<len;i++) {
+      for (int i=0;i<len;i++) {
         // System.err.print(s.charAt(i)+"("+(int)s.charAt(i)+")");
         putChar(s.charAt(i),false);
       }
@@ -197,6 +196,11 @@ public abstract class vt320 extends VDU implements KeyListener {
     KPComma  = "\u001bOl";
     KPPeriod  = "\u001bOn";
     KPEnter  = "\u001bOM";
+
+    NUMPlus = new String[4];
+    NUMPlus[0] = "+";
+    NUMDot = new String[4];
+    NUMDot[0] = ".";
 
     /* ... */
 
@@ -365,8 +369,11 @@ public abstract class vt320 extends VDU implements KeyListener {
       if (res!=null) BackSpace[i]=unEscape(res);
       res = codes.getProperty(prefixes[i]+"TAB");
       if (res!=null) TabKey[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"NUMPLUS");
+      if (res!=null) NUMPlus[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"NUMDECIMAL");
+      if (res!=null) NUMDot[i]=unEscape(res);
     }
-
   }
 
   /**
@@ -420,9 +427,9 @@ public abstract class vt320 extends VDU implements KeyListener {
   int  R,C;
   int  attributes  = 0;
 
-  private int  Sc,Sr,Sa,Stm,Sbm;
-  private char Sgr,Sgl;
-  private char Sgx[];
+  int  Sc,Sr,Sa,Stm,Sbm;
+  char Sgr,Sgl;
+  char Sgx[];
 
   int  insertmode  = 0;
   int  statusmode = 0;
@@ -436,11 +443,11 @@ public abstract class vt320 extends VDU implements KeyListener {
   int mouserpt = 0;
   byte mousebut = 0;
 
-  private boolean  useibmcharset = false;
+  boolean  useibmcharset = false;
 
-  private  static  int  lastwaslf = 0;
-  private boolean  usedcharsets  = false;
-  private static  int i;
+  static  int  lastwaslf = 0;
+  boolean  usedcharsets  = false;
+
   private final static char ESC = 27;
   private final static char IND = 132;
   private final static char NEL = 133;
@@ -473,15 +480,15 @@ public abstract class vt320 extends VDU implements KeyListener {
    * < - User defined
    * ....
    */
-  private static char gx[] = { // same initial set as in XTERM.
+  char gx[] = { // same initial set as in XTERM.
     'B',      // g0
     '0',      // g1
     'B',      // g2
     'B',      // g3
   };
-  private static char gl = 0;		// default GL to G0
-  private static char gr = 2;		// default GR to G2
-  private static int onegl = -1;	// single shift override for GL.
+  char gl = 0;		// default GL to G0
+  char gr = 2;		// default GR to G2
+  int onegl = -1;	// single shift override for GL.
 
   // Map from scoansi linedrawing to DEC _and_ unicode (for the stuff which
   // is not in linedrawing). Got from experimenting with scoadmin.
@@ -535,7 +542,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
 
-  private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[], Escape[], BackSpace[];
+  private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[];
+  private String Escape[], BackSpace[], NUMDot[], NUMPlus[];
 
   private String osc,dcs;  /* to memorize OSC & DCS control sequence */
 
@@ -574,6 +582,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       case 'a': cmd += "\u0012"; break;
       default : 
 	if ( (tmp.charAt(idx)>='0') && (tmp.charAt(idx)<='9')) {
+	  int i;
 	  for (i = idx;i<tmp.length();i++)
 	    if ( (tmp.charAt(i)<'0') || (tmp.charAt(i)>'9'))
 	      break;
@@ -601,14 +610,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     if (keyChar == '\u001b' || keyChar == '\b') return;
 
-    /* DISABLED: this is non-portable :(
-    if (keyChar == 0x7f) {
-      write(Remove[0],false);
-      return;
-    }
-    */
     if (keyChar == '\t') {
-    	if (shift) {
+	if (shift) {
 	    write(TabKey[1],false);
 	} else { if (control) {
 	    write(TabKey[2],false);
@@ -735,6 +738,8 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (shift || control)
 	   sendTelnetCommand((byte)243); // BREAK
 	break;
+      case KeyEvent.VK_DECIMAL: write(NUMDot[xind],false); break;
+      case KeyEvent.VK_ADD: write(NUMPlus[xind],false); break;
       case KeyEvent.VK_F1: write(fmap[1],false); break;
       case KeyEvent.VK_F2: write(fmap[2],false); break;
       case KeyEvent.VK_F3: write(fmap[3],false); break;
@@ -744,8 +749,8 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_F7: write(fmap[7],false); break;
       case KeyEvent.VK_F8: write(fmap[8],false); break;
       case KeyEvent.VK_F9: write(fmap[9],false); break;
-      case KeyEvent.VK_F10: write(fmap[10],false); break;
-      case KeyEvent.VK_F11: write(fmap[11],false); break;
+	  case KeyEvent.VK_F10: write(fmap[10],false); break;
+	  case KeyEvent.VK_F11: write(fmap[11],false); break;
       case KeyEvent.VK_F12: write(fmap[12],false); break;
       case KeyEvent.VK_UP: write(KeyUp[xind],false); break;
       case KeyEvent.VK_DOWN: write(KeyDown[xind],false); break;
@@ -1368,9 +1373,9 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* Hard terminal reset */
 	/* reset character sets */
 	gx[0] = 'B';
-	gx[1] = 'B';
-	gx[2] = 'A';
-	gx[3] = 'A';
+	gx[1] = '0';
+	gx[2] = 'B';
+	gx[3] = 'B';
 	gl = 0;  // default GL to G0
 	gr = 1;  // default GR to G1
 	/* reset tabs */
@@ -1597,7 +1602,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (true || debug>1)
           System.out.println("ESC [ ? "+DCEvars[0]+" r");
         /* DEC Mode reset */
-	for (i=0;i<=DCEvar;i++) {
+	for (int i=0;i<=DCEvar;i++) {
 	  switch (DCEvars[i]){
 	  case 3: /* 80 columns*/
 	    size = getSize();
@@ -1631,7 +1636,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>0)
           System.out.println("ESC [ ? "+DCEvars[0]+" h");
         /* DEC Mode set */
-	for (i=0;i<=DCEvar;i++) {
+	for (int i=0;i<=DCEvar;i++) {
 	  switch (DCEvars[i]){
 	  case 1:  /* Application cursor keys */
 	    KeyUp[0]  = "\u001bOA";
@@ -1697,7 +1702,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* DEC Mode reset */
         if (debug>0)
           System.out.println("ESC [ ? "+DCEvars[0]+" l");
-	for (i=0;i<=DCEvar;i++) {
+	for (int i=0;i<=DCEvar;i++) {
 	  switch (DCEvars[i]){
 	  case 1:  /* Application cursor keys */
 	    KeyUp[0]  = "\u001b[A";
@@ -2134,7 +2139,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.print("ESC [ ");
         if (DCEvar == 0 && DCEvars[0] == 0)
           attributes = 0;
-        for (i=0;i<=DCEvar;i++) {
+        for (int i=0;i<=DCEvar;i++) {
           switch (DCEvars[i]) {
           case 0:
             if (DCEvar>0)
@@ -2239,9 +2244,9 @@ public abstract class vt320 extends VDU implements KeyListener {
   /* hard reset the terminal */
   public void reset() {
     gx[0] = 'B';
-    gx[1] = 'B';
-    gx[2] = 'A';
-    gx[3] = 'A';
+    gx[1] = '0';
+    gx[2] = 'B';
+    gx[3] = 'B';
     gl = 0;  // default GL to G0
     gr = 1;  // default GR to G1
     /* reset tabs */
