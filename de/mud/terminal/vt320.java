@@ -532,17 +532,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     */
 
     if(keyCode == KeyEvent.VK_ENTER && !control) {
-      if(sendcrlf)
-	write("\r\n"); /* YES, see RFC 854 */
-      else {
-        byte[] crnul = new byte[2];
-
-	crnul[0] = 13;
-	crnul[1] = 0;
-	write(crnul); /* YES, see RFC 854 */
-
-	if (localecho) putString("\r\n"); /* hack */
-      }
+      write("\n",false);
+      if (localecho) putString("\r\n"); // bad hack
     } 
     
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
@@ -1550,6 +1541,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           insertmode = 1;
           break;
         case 20:
+          System.out.println("Setting CRLF to TRUE");
           sendcrlf = true;
           break;
         default:
@@ -1566,6 +1558,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           insertmode = 0;
           break;
         case 20:
+          System.out.println("Setting CRLF to FALSE");
           sendcrlf = false;
           break;
         }
