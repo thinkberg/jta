@@ -300,8 +300,9 @@ public abstract class SshIO
 
     //we have to deal with data....
 			
-    if(debug > 0) 
-      System.out.println("1 packet to handle");
+    if(debug > 0)
+      System.out.println("1 packet to handle, type "+packetType);
+
 
     switch(packetType) {
     case SSH_MSG_DISCONNECT:
@@ -450,11 +451,14 @@ public abstract class SshIO
       str = SshMisc.getString(0, packetData);
       System.out.println("SshIO.handlePacket : " + " DEBUG " + str );
 
+      // bad bad bad bad bad. We should not do actions in DEBUG messages,
+      // but apparently some SSH demons does not send SSH_SMSG_FAILURE for
+      // just USER CMS.
       if(lastPacketSentType==SSH_CMSG_USER) { 
-        Send_SSH_CMSG_REQUEST_PTY(); //request a pseudo-terminal
+        /*Send_SSH_CMSG_REQUEST_PTY();*/
+        Send_SSH_CMSG_AUTH_PASSWORD();
         break;
       }
-
       return str.getBytes();
 
     default: 
@@ -654,7 +658,7 @@ public abstract class SshIO
    *   32-bit int   terminal width, pixels (0 if no graphics) (e.g., 480)
    */
   private byte[] Send_SSH_CMSG_REQUEST_PTY() throws IOException {
-    byte[] termType = SshMisc.createString("dumb"); // terminal type
+    byte[] termType = SshMisc.createString("vt320"); // terminal type
     byte[] row = new byte[4];
     row[3] = (byte) 24;			// terminal height
     byte[] col = new byte[4];
