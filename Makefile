@@ -59,7 +59,7 @@ jar:	app
 	  license/COPYING license/COPYING.LIB \
 	  `find $(SRCDIR) -name *.class` \
 	  `find $(SRCDIR) -name defaults.\*` > /dev/null
-	@rm -f "Created-$(DATE)"
+	@rm -f Created-*
 	@echo Created jar/$(PKGNAME).jar
 
 dist:	jar doc revision changes
