@@ -446,7 +446,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   boolean  useibmcharset = false;
 
   int  lastwaslf = 0;
-  boolean  usedcharsets  = false;
+  boolean usedcharsets  = false;
 
   private final static char ESC = 27;
   private final static char IND = 132;
@@ -1117,7 +1117,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         System.out.println("char > 255:"+(int)c);
       //return;
     }
-    
+
 
     switch (term_state) {
     case TSTATE_DATA:
@@ -2160,15 +2160,31 @@ public abstract class vt320 extends VDU implements KeyListener {
             if (DCEvar>0)
               attributes =0;
             break;
+          case 1:
+	    attributes |= BOLD;
+	    attributes &= ~LOW;
+	    break;
 	  case 2:
-	    attributes |= LOW;
+	    if ((DCEvar >= 2) && (i==0)) {
+	      /* SCO mode */
+	      int ncolor;
+              attributes &= ~(0x7f8|BOLD);
+
+	      ncolor = DCEvars[1];
+	      ncolor = ((ncolor&1)<<2)|(ncolor&2)|((ncolor&4)>>2);
+              attributes |= ((ncolor)+1)<<3;
+	      if ((ncolor & 8)==8)
+	        attributes |= BOLD;
+	      ncolor = DCEvars[2];
+	      ncolor = ((ncolor&1)<<2)|(ncolor&2)|((ncolor&4)>>2);
+              attributes |= ((ncolor)+1)<<7;
+	      i+=2;
+	    } else {
+	      attributes |= LOW;
+	    }
 	    break;
           case 4:
             attributes |= UNDERLINE;
-            break;
-          case 1:
-            attributes |= BOLD;
-	    attributes &= ~LOW;
             break;
           case 7:
             attributes |= INVERT;
