@@ -190,6 +190,8 @@ public class Main {
 	if(setup.getComponents().get("Terminal") != null) {
           PrintJob printJob = 
 	    frame.getToolkit().getPrintJob(frame,"JTA Terminal",null);
+	  // return if the user clicked cancel
+	  if(printJob == null) return;
 	  ((Component)setup.getComponents().get("Terminal"))
 	    .print(printJob.getGraphics());
 	  printJob.end();
