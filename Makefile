@@ -23,7 +23,8 @@ JFLAGS	=	-classpath $(CLASSPATH):.
 SRCDIR	=	de
 PKGNAME	=	jta20
 VERSION	=	`java -version 2>&1 | head -1 | \
-		  sed 's/^java version //' | sed 's/"//g'`
+		 sed 's/^java version //' | sed 's/"//g'`
+DATE	=	`date +%Y%m%d`
 
 .SUFFIXES:	.java .class
 
@@ -36,37 +37,47 @@ VERSION	=	`java -version 2>&1 | head -1 | \
 #
 all: 	app doc jar
 
-doc:	app
-	-mkdir doc
-	-rm -r doc/*.html doc/de
-	javadoc -d doc -version -author -sourcepath $(CLASSPATH):. \
-	  `find de/mud -type d -print | \
-	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; \
-
-
-
 run:	app
 	$(JAVA) $(JFLAGS) de.mud.jta.Main
 
-jar:	app
-	@echo Version: $(VERSION)
-	-mkdir jar
-	$(JAR) cvf jar/$(PKGNAME)-`date +%Y%m%d`-$(VERSION).jar \
-	  README \
+doc:	app
+	@echo Creating source documentation ...
+	@if [ ! -d doc ]; then mkdir doc; fi
+	@-rm -r doc/*.html doc/de
+	@javadoc -d doc -version -author -use -sourcepath $(CLASSPATH):. \
+	  `find de/mud -type d -print | \
+	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
+	@echo Source documentation done.
+
+jar:	app 
+	@echo Creating binary archive ...
+	@if [ ! -d jar ]; then mkdir jar; fi
+	@touch "Created-$(DATE)"
+	@$(JAR) cvf jar/$(PKGNAME).jar \
+	  "Created-$(DATE)" README \
 	  license/COPYING license/COPYING.LIB \
 	  `find $(SRCDIR) -name *.class` \
-	  `find $(SRCDIR) -name defaults.\*`
+	  `find $(SRCDIR) -name defaults.\*` > /dev/null
+	@rm -f "Created-$(DATE)"
+	@echo Created jar/$(PKGNAME).jar
 
-dist:	clean jar doc revision changes
-	-mkdir jar
-	(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
-	 /bin/cp REVISION CHANGES $(PKGNAME)/ && \
-	 /bin/cp -r doc $(PKGNAME)/ && \
-	 $(JAR) cvMf jar/$(PKGNAME)-`date +%Y%m%d`-src.jar $(PKGNAME) && \
-	 rm -rf $(PKGNAME))
+dist:	jar doc revision changes
+	@echo Creating distribution package ...
+	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
+	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
+	  cp REVISION CHANGES $(PKGNAME)/ && \
+	  cp -r doc $(PKGNAME)/ && \
+	  touch "$(PKGNAME)/Created-$(DATE)" && \
+	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/index.html \
+	                                  > $(PKGNAME)/index.new.html && \
+	  mv $(PKGNAME)/index.new.html $(PKGNAME)/index.html && \
+	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
+	 @rm -rf $(PKGNAME) 
+	 @echo Created jar/$(PKGNAME)-src.jar
 
 changes:
-	rcs2log > CHANGES
+	@rcs2log > CHANGES
+	@echo Created CHANGES.
 
 revision:
 	@find de -name \*.java | xargs cat | grep @version | \
@@ -80,12 +91,14 @@ revision:
 		   $$4,rev[1],rev[2],$$6,$$8); \
 	       }' \
 	  > REVISION
+	  @echo Created REVISION.
 
 # 
 # application dependencies
 #
 app:
 	@find $(SRCDIR) -name \*.java | sed 's/java$$/class/' | xargs make
+	@echo Done.
 
 clean:
 	-find . -name *.class -print | xargs rm > /dev/null 2>&1

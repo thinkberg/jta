@@ -463,7 +463,21 @@ public abstract class vt320 extends VDU implements KeyListener {
    * Not used.
    */
   public void keyTyped(KeyEvent evt) {
-    // nothing to to, however maybe we should use it?
+    boolean control = evt.isControlDown();
+    boolean shift = evt.isShiftDown();
+    boolean alt = evt.isAltDown();
+
+    int keyCode = evt.getKeyCode();
+    char keyChar = evt.getKeyChar();
+
+    if(shift && (keyChar == '\t')) 
+      write(KeyBacktab);
+    else if (alt)
+      write(""+((char)(keyChar|0x80)));
+    else if(capslock && !shift) 
+      write((""+keyChar).toUpperCase());
+    else
+      write(""+keyChar);
   }
 
   /**
@@ -640,19 +654,6 @@ public abstract class vt320 extends VDU implements KeyListener {
 	if(debug > 0)
 	  System.out.println("vt320: unknown event: "+evt);
     }
-
-    // blend out undefined keys that would show up as '?' in Java 2
-    if(keyChar == KeyEvent.CHAR_UNDEFINED) return;
-
-    // Hmmm. Outside the VMS case?
-    if(shift && (keyChar == '\t')) 
-      write(KeyBacktab);
-    else if (alt)
-      write(""+((char)(keyChar|0x80)));
-    else if(capslock && !shift) 
-      write((""+keyChar).toUpperCase());
-    else
-      write(""+keyChar);
   }
 
   private void handle_dcs(String dcs) {

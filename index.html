@@ -3,12 +3,13 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0</title>
 </head>
 <body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
 <center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
 <tr NOSAVE>
 <td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
@@ -48,7 +49,10 @@ ease of use and allows the addition of self-written plugins. New features
 include:</font>
 <ul>
 <li>
-<font color="#000000">full package names</font></li>
+<font color="#000000">full <b>Java 2</b> compatibility</font></li>
+
+<li>
+<font color="#000000">java package names</font></li>
 
 <li>
 <font color="#000000">application menu bar</font></li>
@@ -71,8 +75,8 @@ old Java 1 version</a> that will work with most currently available browsers.</f
 <font color="#CC0000">Download</font></h1></center>
 <font color="#000000">Please feel free to download the software and tell
 us about your expericences and problems you may encounter. Make sure you
-understand the <a href="license/COPYING">license</a>. Parts of the software (Telnet
-Protocol Handler, Terminal Emulation) are available under the <a href="license/COPYING.LIB">GNU
+understand the <a href="license/COPYING">license</a>. Parts of the software
+(Telnet Protocol Handler, Terminal Emulation) are available under the <a href="license/COPYING.LIB">GNU
 Library Public License</a> which is not quite as restrictive as the <a href="license/COPYING">GPL</a>.
 If you are still having problems with the license please do not hesitate
 to <a href="mailto:leo@mud.de,marcus@mud.de">contact us</a>.</font>
@@ -81,30 +85,23 @@ to <a href="mailto:leo@mud.de,marcus@mud.de">contact us</a>.</font>
 <tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
 <td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Archive</font></font></b>
 <br><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=-1>(shift-click
-on the package to download!)</font></font></font></b></td>
+to download!)</font></font></font></b></td>
 
 <td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Remarks</font></font></b></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="jar/jta20-19990914-1.2.jar">jta20-19990914-1.2.jar</a></tt>
-<br>(package-date-jdk)</td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="jar/jta20-19990914-1.2.jar">jta20.jar</a></tt>
+<br>(<!-- DATE -->)</td>
 
-<td>Class <b>binary</b> package to be put into your classpath. No source
-included. Compiled using JDK <b>1.2</b><sup><a href="#jdk">*</a></sup></td>
+<td>Class <b>binary</b> package to be put into your classpath. The archive
+contains the classes, readme and the license, but no documentation or source
+code.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="jar/jta20-19990914-1.1.7.jar">jta20-19990914-1.1.7.jar</a></tt>
-<br>(package-data-jdk)</td>
-
-<td>Class <b>binary</b> package to be put into you classpath. No source
-included. Compiled using JDK <b>1.1.7</b><sup><a href="#jdk">*</a></sup></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="jar/jta20-19990914-src.jar">jta20-19990914-src.jar</a></tt>
-<br>(package-data-source)</td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="jar/jta20-19990914-src.jar">jta20-src.jar</a></tt>
+<br>(<!-- DATE -->)</td>
 
 <td NOSAVE><b>Source</b> package with no classes included. If you have
 a JDK you can download this package to create your own binary packages.
@@ -112,11 +109,7 @@ We recommend the usage of the included Makefile. It contains also the source
 code <b>documentation</b>.</td>
 </tr>
 </table>
-<font color="#000000"><font size=-1><sup><a href="jdk">*</a></sup>We have
-discovered that compiling the package with JDK 1.2 results in different
-behaviour of the keyboard events than using an older JDK 1.1.x. Therefore
-we provide the package for both JDK version in compiled form. Make sure
-you use the right package for the corresponding Java runtime environment!</font></font>
+
 <center>
 <h1>
 <font color="#CC0000">Status Report</font></h1></center>
@@ -229,7 +222,7 @@ or text-based online games, such as MUDs.</td>
 <table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
 <tr NOSAVE>
 <td NOSAVE>
-<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
 <tr NOSAVE>
 <td NOSAVE>Copyright 1996-1999 <a href="mailto:leo@mud.de">Matthias L.
 Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
@@ -238,7 +231,6 @@ Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
 <div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
 version here</a>!</i></b></div>
 </td>
-
 </tr>
 </table>
 </td>
