@@ -122,7 +122,10 @@ public class Socket extends Plugin
   public void disconnect() throws IOException {
     if(debug>0) error("disconnect()");
     bus.broadcast(new OnlineStatus(false));
-    if(socket != null) socket.close();
+    if(socket != null) {
+      socket.close();
+      in = null; out = null;
+    }
   }
 
   public void setFilterSource(FilterPlugin plugin) {
