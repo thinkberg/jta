@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.16 i686) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.73C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.0 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -110,9 +110,8 @@ background.</td>
 <td>Terminal.localecho</td>
 
 <td>While both SSH and Telnet client part detect localechostate automatically,
-it
-can be overridden using this option. This is only recommended if you really
-need it.
+it can be overridden using this option. This is only recommended if you
+really need it.
 <br>Set to <b>true</b> for always localecho and <b>false</b> for never.</td>
 </tr>
 
@@ -166,7 +165,7 @@ Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
 <td>Terminal.beep</td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE>If this property points to a fully qualified
-URL&nbsp;of a sound file this will be played in case of a terminal <b>bell</b>
+URL of a sound file this will be played in case of a terminal <b>bell</b>
 signal. This works for applets only.</td>
 </tr>
 
@@ -267,9 +266,9 @@ graphics characters as used by some BBS's.</td>
 
 <td>Use this property if you have real UNICODE fonts installed on your
 system or at least fonts that include the characters you would like to
-display. The default setting it <b>ISO8859_1</b> but it may be used to make
-the terminal aware of special characters like in the japanese (i.e. <b>SJIS</b>)
-or chinese region.</td>
+display. The default setting it <b>ISO8859_1</b> but it may be used to
+make the terminal aware of special characters like in the japanese (i.e.
+<b>SJIS</b>) or chinese region.</td>
 </tr>
 </table></center>
 
@@ -312,9 +311,11 @@ character:</font></dt>
 <dd>
 <tt><font color="#000000">AF12 = \\e</font></tt></dd>
 
-<p><br><font color="#000000">As you can see the string you can define may
-contain special characters which may be escaped using the backslash (\).
-Allowed special characters follow in the table below:</font>
+<br>&nbsp;
+<p>&nbsp;
+<p><font color="#000000">As you can see the string you can define may contain
+special characters which may be escaped using the backslash (\). Allowed
+special characters follow in the table below:</font>
 <p><font color="#CC0000"><font size=-1>(<b>Important</b>: for some of the
 escape codes you need two backslashes as these are our own definitions
 and not known by the Java Property mechanism)</font></font>
@@ -508,6 +509,14 @@ with the shift, control or alt keys.</font>
 </td>
 
 <td>The backspace key.</td>
+</tr>
+
+<tr>
+<td>
+<center>TAB</center>
+</td>
+
+<td>The tabulator key.</td>
 </tr>
 </table></center>
 </td>
