@@ -94,7 +94,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   private boolean screenLocked = false;      /* screen needs to be locked */
                                              /* because of paint requests */
                                              /*   during other operations */
-  private boolean update[];        /* contains the lines that need update */
+  private int update[];        /* contains the lines that need update */
   
   /**
    * Create a color representation that is brighter than the standard
@@ -814,8 +814,8 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     size = new Dimension(width, height);
     topMargin = 0;
     bottomMargin = height - 1;
-    update = new boolean[height + 1];
-    for(int i = 0; i <= height; i++) update[i] = true;
+    update = new int[height + 1];
+    for(int i = 0; i <= height; i++) update[i] = 1;
     screenLocked = false;
   }
 
@@ -884,8 +884,8 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    */
   public void markLine(int l, int n) {
     l = checkBounds(l, 0, size.height - 1);
-    for(int i = 0; i < n && l + i < size.height; i++) 
-      update[l + i + 1] = true;
+    for(int i = 0; (i < n) && (l + i < size.height); i++)
+      update[l + i + 1] = 1;
   }
   
   /**
@@ -893,7 +893,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * @see #markLine
    */
   public void redraw() {
-    update[0] = true;
+    update[0]+=2;
     repaint();
   }
 
@@ -908,7 +908,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * Paint the current screen. All painting is done here. Only lines that have
    * changed will be redrawn!
    */
-  public synchronized void paint(Graphics g) {
+  public /*synchronized*/ void paint(Graphics g) {
     if(screenLocked) return;
 
     // System.err.println("Clip region: "+g.getClipBounds());
@@ -922,8 +922,8 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     g.setFont(normalFont);
 
     for(int l = 0; l < size.height; l++) {
-      if(update[0] && !update[l + 1]) continue;
-      update[l + 1] = false;
+      if((update[0]>0) && (0==update[l + 1])) continue;
+      update[l + 1] = 0;
       for(int c = 0; c < size.width; c++) {
         int addr = 0;
         int currAttr = charAttributes[windowBase + l][c];
@@ -1050,7 +1050,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
                      raised);
     }
 
-    update[0] = false;
+    update[0]--;
   }
 
 /*
@@ -1064,7 +1064,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 */
 
   public void print(Graphics g) {
-    for(int i = 0; i <= size.height; i++) update[i] = true;
+    for(int i = 0; i <= size.height; i++) update[i] = 1;
     paint(g);
   }
 
