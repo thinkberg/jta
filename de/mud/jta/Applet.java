@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -72,7 +72,7 @@ import java.util.Vector;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Meissner
  */
 public class Applet extends JApplet {
 
@@ -191,12 +191,12 @@ public class Applet extends JApplet {
 
       if ((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
         if (frameTitle == null) {
-          appletFrame = new JFrame("jta: " + host + (port.equals("23")?"":" " + port));
+          appletFrame = (RootPaneContainer)new JFrame("jta: " + host + (port.equals("23")?"":" " + port));
         } else {
-          appletFrame = new JFrame(frameTitle);
+          appletFrame = (RootPaneContainer)new JFrame(frameTitle);
         }
       } else {
-        appletFrame = this;
+        appletFrame = (RootPaneContainer)this;
       }
       appletFrame.getContentPane().setLayout(new BorderLayout());
 
@@ -301,6 +301,8 @@ public class Applet extends JApplet {
               else
                 ((JFrame) appletFrame).pack();
               ((JFrame) appletFrame).show();
+              if (port == null || port.length() <= 0)
+		port = "23";
               getAppletContext().showStatus("Trying " + host + " " + port + " ...");
               pluginLoader.broadcast(new SocketRequest(host,
                                                        Integer.parseInt(port)));
@@ -382,7 +384,8 @@ public class Applet extends JApplet {
         names = menuList.keySet().iterator();
         while (names.hasNext()) {
           String name = (String) names.next();
-          mb.add((Menu) menuList.get(name));
+	  Object o = menuList.get(name);
+          if (o instanceof Menu) mb.add((Menu) o);
         }
 
         Menu help = new Menu("Help");
