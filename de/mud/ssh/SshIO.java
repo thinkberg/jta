@@ -24,8 +24,8 @@ public abstract class SshIO
   /**
    * variables for the connection
    */
-  private String identification_string = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
-  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\n";
+  private String idstr = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
+  private String idstr_sent = "Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\n";
 
   /**
    * Debug level. This results in additional diagnostic messages on the
@@ -41,8 +41,11 @@ public abstract class SshIO
   SshPacket lastPacketReceived;
 
   String cipher_type = "IDEA";
-	
-					
+
+  private int remotemajor, remoteminor;
+  private int mymajor, myminor;
+  private int useprotocol;
+
   private String login = "", password = ""; 
   //nobody is to access those fields  : better to use pivate, nobody knows :-)
 
@@ -83,6 +86,12 @@ public abstract class SshIO
   private final int SSH_SMSG_EXITSTATUS =		20;
   private final int SSH_CMSG_EXIT_CONFIRMATION =	33;
   private final int SSH_MSG_DEBUG =	36;
+
+
+  private final int SSH2_MSG_IGNORE = 2;
+  private final int SSH2_MSG_KEXINIT = 20;
+
+  private String kexalgs, hostkeyalgs, encalgs2c, encalgc2s, macalgs2c, macalgc2s, compalgc2s, compalgs2c, langc2s, langs2;
 
   //used in getPacket
   private int position = 0;				// used to know, how far we are in packet_length_array[], padding[] ...
@@ -170,9 +179,15 @@ public abstract class SshIO
   private byte[] packetDone(SshPacket packet) throws IOException {
     if(packet == null) return null;
     lastPacketReceived = packet;
-    byte result[] = handlePacket(lastPacketReceived.getType(),
-                                 lastPacketReceived.getData());
-    return result;
+    if (useprotocol == 1) {
+      byte result[] = handlePacket1(lastPacketReceived.getType(),
+                                   lastPacketReceived.getData());
+      return result;
+    } else {
+      byte result[] = handlePacket2(lastPacketReceived.getType(),
+                                    lastPacketReceived.getData());
+      return result;
+    }
  }
 
 	
@@ -208,29 +223,55 @@ public abstract class SshIO
 
   private SshPacket handleBytes(byte buff[], int offset, int count) 
     throws IOException {
-		
+
     if(debug > 1) 
       System.out.println("SshIO.getPacket(" + buff + "," + count + ")" );
-		
+
     byte b;  		// of course, byte is a signed entity (-128 -> 127)
     int boffset = offset;	// offset in the buffer received 
-	
-		
+
+
     while(boffset < count) {
       b=buff[boffset++];	
       switch(phase) {
       case PHASE_INIT: 
 	// both sides MUST send an identification string of the form 
 	// "SSH-protoversion-softwareversion comments", 
-	// followed by newline character(ascii 10 = '\n' or '\r') 				
-	identification_string += (char) b;
+	// followed by newline character(ascii 10 = '\n' or '\r')
+	idstr += (char) b;
 	if (b=='\n') { 
-	  phase++; 
-	  write(identification_string_sent.getBytes());
+	  phase++;
+	  if (!idstr.substring(0,4).equals("SSH-")) {
+	    System.out.println("Received invalid ID string: " +idstr+", (substr "+idstr.substring(0,4)+")");
+	    throw (new IOException());
+	  }
+	  remotemajor = Integer.parseInt(idstr.substring(4,5));
+	  remoteminor = Integer.parseInt(idstr.substring(6,8));
+	  System.out.println("remotemajor "+remotemajor);
+	  System.out.println("remoteminor "+remoteminor);
+
+	  if (remotemajor == 2) {
+	    mymajor = 2;
+	    myminor = 0;
+	    useprotocol = 2;
+	  } else {
+	    if (false /* remove to enable*/ && (remoteminor == 99)) {
+	      mymajor = 2;
+	      myminor = 0;
+	      useprotocol = 2;
+	    } else {
+	      mymajor = 1;
+	      myminor = 5;
+	      useprotocol = 1;
+	    }
+	  }
+
+	  idstr_sent = "SSH-"+mymajor+"."+myminor+"-" + idstr_sent;
+	  write(idstr_sent.getBytes());
 	  position = 0;
-	  byte[] data = SshMisc.createString(identification_string);
-	  byte packet_type = SSH_SMSG_STDOUT_DATA;
-	  return createPacket(packet_type, data);
+	  byte[] data = SshMisc.createString(idstr);
+	  byte packet_type = SSH2_MSG_IGNORE;
+	  return createPacket2(packet_type, data);
 	}
 	break;
       case PHASE_SSH_RECEIVE_PACKET:
@@ -248,15 +289,72 @@ public abstract class SshIO
   // Create a packet 
   //
 
-  private SshPacket createPacket(byte newType, byte[] newData)
-  throws IOException { 
-    return new SshPacket(newType, newData,encryption,crypto);
+  private SshPacket1 createPacket1(byte newType, byte[] newData)
+  throws IOException {
+    return new SshPacket1(newType, newData,encryption,crypto);
+  } 
+  private SshPacket2 createPacket2(byte newType, byte[] newData)
+  throws IOException {
+    return new SshPacket2(newType, newData,encryption,crypto);
   } 
 	
-  private byte[] handlePacket(byte packetType, byte[] packetData) 
+  private byte[] handlePacket2(byte type, byte[] buf) 
+    throws IOException { //the message to handle is data and its length is 
+    int boffset = 0;	//offset in the buffer received 
+
+    switch (type) {
+    case SSH2_MSG_IGNORE:
+      System.out.println("SSH2: SSH2_MSG_IGNORE");
+      break;
+    case SSH2_MSG_KEXINIT:
+      System.out.println("SSH2: SSH2_MSG_KEXINIT");
+      byte kexcookie[] = new byte[16];
+      System.arraycopy(kexcookie,0,buf,0,16);
+      boffset = 16;
+      String kexalgs = SshMisc.getString(boffset, buf);
+      System.out.println("- "+kexalgs);boffset += 4+kexalgs.length();
+      String hostkeyalgs = SshMisc.getString(boffset, buf);
+      System.out.println("- "+hostkeyalgs);boffset += 4+hostkeyalgs.length();
+      String encalgc2s = SshMisc.getString(boffset, buf);
+      System.out.println("- "+encalgc2s);boffset += 4+encalgc2s.length();
+      String encalgs2c = SshMisc.getString(boffset, buf);
+      System.out.println("- "+encalgs2c);boffset += 4+encalgs2c.length();
+      String macalgc2s = SshMisc.getString(boffset, buf);
+      System.out.println("- "+macalgc2s);boffset += 4+macalgc2s.length();
+      String macalgs2c = SshMisc.getString(boffset, buf);
+      System.out.println("- "+macalgs2c);boffset += 4+macalgs2c.length();
+      String compalgc2s = SshMisc.getString(boffset, buf);
+      System.out.println("- "+compalgc2s);boffset += 4+compalgc2s.length();
+      String compalgs2c = SshMisc.getString(boffset, buf);
+      System.out.println("- "+compalgs2c);boffset += 4+compalgs2c.length();
+      String langc2s = SshMisc.getString(boffset, buf);
+      System.out.println("- "+langc2s);boffset += 4+langc2s.length();
+      String langs2c = SshMisc.getString(boffset, buf);
+      System.out.println("- "+langs2c);boffset += 4+langs2c.length();
+      System.out.println("- first_kex_follows: "+buf[boffset]);
+      boffset++;
+      /* int32 reserved (0) */
+
+      if (true /*!kexinitsent*/) {
+	  byte[] data = SshMisc.createString(idstr);
+	  byte packet_type = SSH2_MSG_KEXINIT;
+	  /* ... FIXME: fill it ... */
+	  createPacket2(packet_type, data);
+	  return null;
+      }
+
+      break;
+    default:
+      System.out.println("SSH2: handlePacket2 Unknown type "+type);
+      break;
+    }
+    return null;
+  }
+
+  private byte[] handlePacket1(byte packetType, byte[] packetData) 
     throws IOException { //the message to handle is data and its length is 
 
-    //if(debug > 1) w
+    //if(debug > 1)
     //System.out.println("SshIO.handlePacket("+data+","+ (packet_length - 5) +")");
 		
     byte b;  		// of course, byte is a signed entity (-128 -> 127)
@@ -605,7 +703,7 @@ public abstract class SshIO
 		
     //set the packet_type
     byte packet_type = SSH_CMSG_SESSION_KEY;
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
 
     crypto = new SshCrypto(cipher_type,session_key);
@@ -621,7 +719,7 @@ public abstract class SshIO
     if(debug > 0) System.err.println("Send_SSH_CMSG_USER("+login+")");
     byte[] data = SshMisc.createString(login);
     byte packet_type = SSH_CMSG_USER;
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
     return null;
   } //Send_SSH_CMSG_USER
@@ -633,7 +731,7 @@ public abstract class SshIO
   private byte[] Send_SSH_CMSG_AUTH_PASSWORD() throws IOException {
     byte[] data = SshMisc.createString(password); 
     byte packet_type = SSH_CMSG_AUTH_PASSWORD;
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
     return null;
   } //Send_SSH_CMSG_AUTH_PASSWORD
@@ -647,7 +745,7 @@ public abstract class SshIO
   private byte[] Send_SSH_CMSG_EXEC_SHELL() throws IOException {
     byte[] data = null;
     byte packet_type = SSH_CMSG_EXEC_SHELL;
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
     lastPacketSentType = packet_type;
     return null;
@@ -660,7 +758,7 @@ public abstract class SshIO
   private byte[] Send_SSH_CMSG_STDIN_DATA(String str) throws IOException {
     byte[] data = SshMisc.createString(str);
     byte packet_type = SSH_CMSG_STDIN_DATA;
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
     return null;
   } //Send_SSH_CMSG_STDIN_DATA
@@ -699,14 +797,14 @@ public abstract class SshIO
 
     byte packet_type =  SSH_CMSG_REQUEST_PTY;
 
-    SshPacket packet = createPacket(packet_type, data);
+    SshPacket packet = createPacket1(packet_type, data);
     sendPacket(packet);
     return null;
   } //Send_SSH_CMSG_REQUEST_PTY
 
   private byte[] Send_SSH_CMSG_EXIT_CONFIRMATION() throws IOException {
     byte packet_type = SSH_CMSG_EXIT_CONFIRMATION;
-    SshPacket packet = createPacket(packet_type, null);
+    SshPacket packet = createPacket1(packet_type, null);
     sendPacket(packet);
     return null;
   }
