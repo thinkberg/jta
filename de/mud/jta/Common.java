@@ -67,6 +67,7 @@ public class Common extends PluginLoader {
       String name = (String)e.nextElement();
       System.out.println("jta: loading plugin '"+name+"' ...");
       Plugin plugin = addPlugin(name);
+      plugins.put(name, plugin);
       if(plugin instanceof VisualPlugin) {
         Component c = ((VisualPlugin)plugin).getPluginVisual();
 	if(c != null) components.put(name, c);
@@ -76,6 +77,10 @@ public class Common extends PluginLoader {
     }
 
     broadcast(new ConfigurationRequest(config));
+  }
+
+  public Hashtable getPlugins() {
+    return plugins;
   }
 
   public Hashtable getComponents() {

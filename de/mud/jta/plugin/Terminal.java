@@ -21,7 +21,7 @@ package de.mud.jta.plugin;
 
 import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
-import de.mud.jta.VisualPlugin;
+import de.mud.jta.VisualTransferPlugin;
 import de.mud.jta.PluginBus;
 
 import de.mud.terminal.vt320;
@@ -45,7 +45,14 @@ import java.awt.Scrollbar;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.DataFlavor;
+
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.URL;
 
@@ -55,7 +62,7 @@ import java.util.Enumeration;
 /**
  * The terminal plugin represents the actual terminal where the
  * data will be displayed and the gets the keyboard input to sent
- * back to the remote host,
+ * back to the remote host.
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
@@ -63,18 +70,20 @@ import java.util.Enumeration;
  * @author Matthias L. Jugel, Marcus Meißner
  */
 public class Terminal extends Plugin 
-  implements FilterPlugin, VisualPlugin, Runnable {
+  implements FilterPlugin, VisualTransferPlugin, ClipboardOwner, Runnable {
 
   private final static int debug = 0;
   
   /** holds the actual terminal emulation */
   protected vt320 terminal;
 
+  /** the terminal panel that is displayed on-screen */
   protected Panel tPanel;
 
-  private Thread reader = null;
+  /** holds the terminal menu */
+  protected Menu menu;
 
-  private Menu menu;
+  private Thread reader = null;
 
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
@@ -307,5 +316,40 @@ public class Terminal extends Plugin
 
   public Menu getPluginMenu() {
     return menu;
+  }
+
+  public void copy(Clipboard clipboard) {
+    StringSelection selection = new StringSelection(terminal.getSelection());
+    clipboard.setContents(selection, this);
+  }
+
+  public void paste(Clipboard clipboard) {
+    if(clipboard == null) return;
+    Transferable t = clipboard.getContents(this);
+    try {
+      /*
+      InputStream is =
+        (InputStream)t.getTransferData(DataFlavor.plainTextFlavor);
+      if(debug > 0) 
+        System.out.println("Clipboard: available: "+is.available());
+      byte buffer[] = new byte[is.available()];
+      is.read(buffer);
+      is.close();
+      */
+      byte buffer[] = 
+        ((String)t.getTransferData(DataFlavor.stringFlavor)).getBytes();
+      try {
+        write(buffer);
+      } catch(IOException e) {
+        reader = null;
+      }
+    } catch(Exception e) {
+      // ignore any clipboard errors
+      if(debug > 0) e.printStackTrace();
+    }
+  }
+
+  public void lostOwnership(Clipboard clipboard, Transferable contents) {
+    terminal.clearSelection();
   }
 }

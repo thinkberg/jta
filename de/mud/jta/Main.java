@@ -41,6 +41,10 @@ import java.awt.MenuShortcut;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
+
+import java.awt.datatransfer.Clipboard;
 
 /**
  * <B>The Java Telnet Application</B><P>
@@ -62,7 +66,13 @@ import java.awt.event.KeyEvent;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public class Main extends Frame {
+public class Main {
+
+  /** holds the last focussed plugin */
+  private static Plugin focussedPlugin;
+
+  /** holds the system clipboard or our own */
+  private static Clipboard clipboard;
 
   public static void main(String args[]) {
     Properties options = new Properties();
@@ -86,6 +96,15 @@ public class Main extends Frame {
 
     final Frame frame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
 
+    // set up the clipboard
+    try {
+      clipboard = frame.getToolkit().getSystemClipboard();
+    } catch(Exception e) {
+      System.err.println("jta: system clipboard access denied");
+      System.err.println("jta: copy & paste only within the JTA");
+      clipboard = new Clipboard("de.mud.jta.Main");
+    }
+
     // configure the application and load all plugins
     final Common setup = new Common(options);
 
@@ -98,11 +117,35 @@ public class Main extends Frame {
       }
     });
 
+    FocusListener focusListener = new FocusListener() {
+      public void focusGained(FocusEvent e) {
+        Component c = e.getComponent();
+        Hashtable components = setup.getComponents();
+        Enumeration ce = components.keys();
+        while(ce.hasMoreElements()) {
+          String key = (String)ce.nextElement();
+          if(c == components.get(key)) {
+            focussedPlugin = (Plugin)setup.getPlugins().get(key);
+	    return;
+          }
+        }
+      }
+      public void focusLost(FocusEvent e) {
+        /** we do nothing and keep the last focussed component */
+      }
+    };
+
     Hashtable componentList = setup.getComponents();
     Enumeration names = componentList.keys();
     while(names.hasMoreElements()) {
       String name = (String)names.nextElement();
       Component c = (Component)componentList.get(name);
+      c.addFocusListener(focusListener);
+      c.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseEntered(java.awt.event.MouseEvent evt) {
+	  evt.getComponent().requestFocus();
+	}
+      });
       if(options.getProperty("layout."+name) == null) {
         System.err.println("jta: no layout property set for '"+name+"'");
 	frame.add("South", c);
@@ -112,7 +155,7 @@ public class Main extends Frame {
 
     // add a menu bar
     MenuBar mb = new MenuBar();
-    Menu file = new Menu("Host");
+    Menu file = new Menu("File");
     file.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
     MenuItem tmp;
     file.add(tmp = new MenuItem("Connect"));
@@ -136,6 +179,24 @@ public class Main extends Frame {
       }
     });
     mb.add(file);
+
+    Menu edit = new Menu("Edit");
+    edit.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
+    edit.add(tmp = new MenuItem("Copy"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        if(focussedPlugin instanceof VisualTransferPlugin)
+	  ((VisualTransferPlugin)focussedPlugin).copy(clipboard);
+      }
+    });
+    edit.add(tmp = new MenuItem("Paste"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        if(focussedPlugin instanceof VisualTransferPlugin)
+	  ((VisualTransferPlugin)focussedPlugin).paste(clipboard);
+      }
+    });
+    mb.add(edit);
 
     Hashtable menuList = setup.getMenus();
     names = menuList.keys();

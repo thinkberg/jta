@@ -41,11 +41,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PageFormat;
 */
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.DataFlavor;
-
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.MouseListener;
@@ -91,6 +86,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 
   private int cursorX, cursorY;                /* current cursor position */
   private Point selectBegin, selectEnd;          /* selection coordinates */
+  private String selection;                 /* contains the selected text */
 
   private Scrollbar scrollBar;
   private SoftFont  sf = new SoftFont();
@@ -180,8 +176,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     setForeground(Color.white);
     setBackground(Color.black);
 
-    selectBegin = new Point(0,0);
-    selectEnd = new Point(0,0); 
+    clearSelection();
 
     addMouseListener(this);
     addMouseMotionListener(this);
@@ -205,6 +200,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
       }
     });
 */
+    selection = null;
   }
   
   /**
@@ -1189,27 +1185,43 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     return insets;
   }
 
+  public void clearSelection() {
+    selectBegin = new Point(0,0);
+    selectEnd = new Point(0,0); 
+    selection = null;
+  }
+
+  public String getSelection() {
+    return selection;
+  }
+
+  private boolean buttonCheck(int modifiers, int mask) {
+    return (modifiers & mask) == mask;
+  }
+
   public void mouseMoved(MouseEvent evt) {
     /* nothing yet we do here */
   }
 
   public void mouseDragged(MouseEvent evt) {
-    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
-    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
-    int x = (evt.getX() - xoffset) / charWidth;
-    int y = (evt.getY() - yoffset) / charHeight + windowBase;
-    int oldx = selectEnd.x, oldy = selectEnd.y;
+    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
+      int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+      int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+      int x = (evt.getX() - xoffset) / charWidth;
+      int y = (evt.getY() - yoffset) / charHeight + windowBase;
+      int oldx = selectEnd.x, oldy = selectEnd.y;
 
-    if((x < selectBegin.x && y < selectBegin.y) &&
-       (x < selectEnd.x && y < selectEnd.y)) {
-      selectBegin.x = x;
-      selectBegin.y = y;
-    } else {
-      selectEnd.x = x;
-      selectEnd.y = y;
+      if((x < selectBegin.x && y < selectBegin.y) &&
+         (x < selectEnd.x && y < selectEnd.y)) {
+        selectBegin.x = x;
+        selectBegin.y = y;
+      } else {
+        selectEnd.x = x;
+        selectEnd.y = y;
+      }
+      if(oldx != x || oldy != y) 
+        repaint();
     }
-    if(oldx != x || oldy != y) 
-      repaint();
   }
 
   public void mouseClicked(MouseEvent evt) {
@@ -1230,56 +1242,45 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * @see java.awt.event.MouseEvent
    */
   public void mousePressed(MouseEvent evt) {
-    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
-    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
-    selectBegin.x = (evt.getX() - xoffset) / charWidth;
-    selectBegin.y = (evt.getY() - yoffset) / charHeight + windowBase;
-    selectEnd.x = selectBegin.x;
-    selectEnd.y = selectBegin.y;
+    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
+      int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+      int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+      selectBegin.x = (evt.getX() - xoffset) / charWidth;
+      selectBegin.y = (evt.getY() - yoffset) / charHeight + windowBase;
+      selectEnd.x = selectBegin.x;
+      selectEnd.y = selectBegin.y;
+    }
   }
 
-
   public void mouseReleased(MouseEvent evt) {
-    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
-    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
-    mouseDragged(evt);
+    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
+      int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+      int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+      mouseDragged(evt);
+  
+      if(selectBegin.x == selectEnd.x &&
+         selectBegin.y == selectEnd.y) {
+        repaint();
+        return;
+      }
+      selection = "";
+      // fix end.x and end.y, they can get over the border
+      if(selectEnd.x < 0) selectEnd.x = 0;
+      if(selectEnd.y < 0) selectEnd.y = 0;
+      if(selectEnd.y >= charArray.length)
+        selectEnd.y = charArray.length-1;
+      if(selectEnd.x >= charArray[0].length)
+        selectEnd.x = charArray[0].length-1;
 
-    if(selectBegin.x == selectEnd.x &&
-       selectBegin.y == selectEnd.y) {
+      for(int l = selectBegin.y; l <= selectEnd.y; l++) {
+        int start, end;
+	start = (l == selectBegin.y ? start = selectBegin.x : 0);
+	end = (l == selectEnd.y ? end = selectEnd.x : charArray.length - 1);
+        selection += (new String(charArray[l])).substring(start, end);
+	if(end == charArray.length - 1)
+	  selection += "\n";
+      }
       repaint();
-      return;
     }
-    String tmp = "";
-    // fix end.x and end.y, they can get over the border
-    if(selectEnd.x < 0) selectEnd.x = 0;
-    if(selectEnd.y < 0) selectEnd.y = 0;
-    if(selectEnd.y >= charArray.length)
-      selectEnd.y = charArray.length-1;
-    if(selectEnd.x >= charArray[0].length)
-      selectEnd.x = charArray[0].length-1;
-
-    for(int l = selectBegin.y; l <= selectEnd.y; l++)
-      if(l == selectBegin.y) 
-        tmp = (new String(charArray[l])).substring(selectBegin.x) + "\n";
-      else if(l == selectEnd.y) 
-        tmp += (new String(charArray[l])).substring(0, selectEnd.x);
-      else tmp += new String(charArray[l]) + "\n";
-
-    StringSelection selection = new StringSelection(tmp);
-    Toolkit toolkit = getToolkit();
-    Clipboard clipboard = toolkit.getSystemClipboard();
-    clipboard.setContents(selection, selection);
-
-    try {
-      String s = (String)((StringSelection)clipboard.getContents(this))
-          .getTransferData(DataFlavor.stringFlavor);
-      System.out.println(s);
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
-
-    repaint();
   } 
-
-
 }
