@@ -480,6 +480,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   private final static int TSTATE_VT52X = 14;
   private final static int TSTATE_VT52Y = 15;
   private final static int TSTATE_CSI_TICKS = 16;
+  private final static int TSTATE_CSI_EQUAL = 17; /* ESC [ = */
 
   /* The graphics charsets
    * B - default ASCII
@@ -2033,6 +2034,33 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             break;
         }
         break;
+      case TSTATE_CSI_EQUAL:
+        term_state = TSTATE_DATA;
+        switch (c) {
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            DCEvars[DCEvar] = DCEvars[DCEvar] * 10 + ((int) c) - 48;
+            term_state = TSTATE_CSI_EQUAL;
+            break;
+          case ';':
+            DCEvar++;
+            DCEvars[DCEvar] = 0;
+            term_state = TSTATE_CSI_EQUAL;
+            break;
+	  
+          default:
+            System.out.println("Unknown ESC [ = ...  \"" + c);
+            break;
+        }
+        break;
       case TSTATE_CSI_DOLLAR:
         term_state = TSTATE_DATA;
         switch (c) {
@@ -2061,6 +2089,9 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             break;
           case '$':
             term_state = TSTATE_CSI_DOLLAR;
+            break;
+          case '=':
+            term_state = TSTATE_CSI_EQUAL;
             break;
           case '!':
             term_state = TSTATE_CSI_EX;
