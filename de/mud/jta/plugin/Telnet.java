@@ -23,6 +23,7 @@ import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 
+import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
@@ -54,6 +55,7 @@ public class Telnet extends Plugin implements FilterPlugin {
    */
   public Telnet(PluginBus pbus) {
     super(pbus);
+    // this is a jdk 1.1.x hack
     final PluginBus bus = pbus;
 
     // create a new telnet protocol handler
@@ -75,6 +77,16 @@ public class Telnet extends Plugin implements FilterPlugin {
         source.write(b);
       }
     };
+
+    // reset the telnet protocol handler just in case :-)
+    bus.registerPluginListener(new OnlineStatusListener() {
+      public void online() {
+        handler.reset();
+      }
+      public void offline() {
+        handler.reset();
+      }
+    });
   }
 
   public void setFilterSource(FilterPlugin source) { 

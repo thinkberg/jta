@@ -31,8 +31,10 @@ import java.awt.Event;
 import java.awt.Label;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.Scrollbar;
 
-import java.awt.AWTEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.AdjustmentEvent;
 
 /**
  * Video Display Unit emulation. This class implements all necessary
@@ -74,6 +76,7 @@ public class VDU extends Canvas {
   private int cursorX, cursorY;                /* current cursor position */
   private Point selectBegin, selectEnd;          /* selection coordinates */
 
+  private Scrollbar scrollBar;
   private SoftFont  sf = new SoftFont();
 
   private boolean screenLocked = false;      /* screen needs to be locked */
@@ -531,6 +534,10 @@ public class VDU extends Canvas {
     else
       markLine(top, l - top + 1);
 
+    if(scrollBar != null)
+      scrollBar.setValues(windowBase, size.height, 0, bufSize);
+
+
     screenLocked = false;
   }
   
@@ -819,6 +826,22 @@ public class VDU extends Canvas {
   }
 
   /**
+   * Connect a scrollbar to the VDU. This should be done differently
+   * using a property change listener.
+   * @param scrollBar the scroll bar
+   */
+  public void setScrollbar(Scrollbar scrollBar) {
+    if(scrollBar == null) return;
+    this.scrollBar = scrollBar;
+    this.scrollBar.setValues(windowBase, size.height, 0, bufSize - size.height);
+    this.scrollBar.addAdjustmentListener(new AdjustmentListener() {
+      public void adjustmentValueChanged(AdjustmentEvent evt) {
+        setWindowBase(evt.getValue());
+      }
+    });
+  }
+
+  /**
    * Mark lines to be updated with redraw().
    * @param l starting line
    * @param n amount of lines to be updated
@@ -1006,6 +1029,7 @@ public class VDU extends Canvas {
   public void setBounds(int x, int y, int w, int h) {
     if(debug > 0)
       System.err.println("VDU: setBounds("+x+","+y+","+w+","+h+")");
+    super.setBounds(x, y, w, h);
 
     int xborder = 0, yborder = 0;
     
@@ -1077,7 +1101,7 @@ public class VDU extends Canvas {
     }
 
     // now set the bounds for the whole component accordingly
-    super.setBounds(x, y, w + xborder, h + yborder);
+    // super.setBounds(x, y, w + xborder, h + yborder);
   }
 
   /**

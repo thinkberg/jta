@@ -28,8 +28,19 @@ import java.util.Enumeration;
 import java.io.IOException;
 
 import java.awt.Frame;
+import java.awt.Dialog;
+import java.awt.Label;
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.MenuShortcut;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * <B>The Java Telnet Application</B><P>
@@ -64,23 +75,25 @@ public class Main extends Frame {
     String error = parseOptions(options, args);
     if(error != null) {
       System.err.println(error);
-      System.err.println("usage: de.mud.jta.Main [-term id] [host [port]]");
+      System.err.println("usage: de.mud.jta.Main [-addplugin plugin] "
+                        +"[-term id] [host [port]]");
       System.exit(0);
     }
 
-    String host = options.getProperty("Socket.host");
-    String port = options.getProperty("Socket.port");
+    final String host = options.getProperty("Socket.host");
+    final String port = options.getProperty("Socket.port");
 
     final Frame frame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
 
     // configure the application and load all plugins
-    Common setup = new Common(options);
+    final Common setup = new Common(options);
 
     setup.registerPluginListener(new OnlineStatusListener() {
-      public void online() { /* nothing to do */ }
+      public void online() { 
+        frame.setTitle("jta: "+host+(port.equals("23")?"":" "+port));
+      }
       public void offline() {
-        frame.dispose();
-        System.exit(0);
+        frame.setTitle("jta: offline");
       }
     });
 
@@ -96,6 +109,59 @@ public class Main extends Frame {
         frame.add(options.getProperty("layout."+name), c);
     }
 
+    // add a menu bar
+    MenuBar mb = new MenuBar();
+    Menu file = new Menu("Host");
+    file.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
+    MenuItem tmp;
+    file.add(tmp = new MenuItem("Connect"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+      }
+    });
+    file.add(tmp = new MenuItem("Disconnect"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        setup.broadcast(new SocketRequest());
+      }
+    });
+    file.add(new MenuItem("-"));
+    file.add(tmp = new MenuItem("Exit"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        frame.dispose();
+	System.exit(0);
+      }
+    });
+    mb.add(file);
+
+    Menu plugin = new Menu("Plugin");
+    plugin.setShortcut(new MenuShortcut(KeyEvent.VK_P, true));
+    Hashtable menuList = setup.getMenus();
+    names = menuList.keys();
+    while(names.hasMoreElements()) {
+      String name = (String)names.nextElement();
+      plugin.add((Menu)menuList.get(name));
+    }
+    mb.add(plugin);
+
+
+    Menu help = new Menu("Help");
+    help.add(tmp = new MenuItem("About"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        Dialog d = new Dialog(frame, "About JTA", true);
+	d.add(new Label("Copyright (c) 1996-1999 "
+	               +"Matthias L Jugel, Marcus Meiﬂner"));
+	d.setResizable(false);
+	d.pack();
+	d.show();
+      }
+    });
+    mb.setHelpMenu(help);
+
+    frame.setMenuBar(mb);
     frame.pack();
     frame.show();
 
@@ -106,8 +172,8 @@ public class Main extends Frame {
    * Parse the command line argumens and override any standard options
    * with the new values if applicable.
    * <P><SMALL>
-   * This method does not work with jdk 1.1.x as the setProperty()
-   * method is not available. So it used the put() method from 
+   * This method did not work with jdk 1.1.x as the setProperty()
+   * method is not available. So it uses now the put() method from 
    * Hashtable instead.
    * </SMALL>
    * @param options the original options
@@ -119,7 +185,7 @@ public class Main extends Frame {
     for(int n = 0; n < args.length; n++) {
       if(args[n].equals("-addplugin"))
         if(!args[n+1].startsWith("-"))
-	  options.put("plugins", options.get("plugins")+","+args[++n]);
+	  options.put("plugins", args[++n]+","+options.get("plugins"));
         else
 	  return "missing parameter for -addplugin";
       else if(args[n].equals("-term"))

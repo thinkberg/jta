@@ -649,7 +649,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       write(KeyBacktab);
     else if (alt)
       write(""+((char)(keyChar|0x80)));
-    else if(capslock) 
+    else if(capslock && !shift) 
       write((""+keyChar).toUpperCase());
     else
       write(""+keyChar);

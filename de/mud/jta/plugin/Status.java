@@ -23,8 +23,11 @@ import de.mud.jta.Plugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.OnlineStatusListener;
+import de.mud.jta.event.SocketListener;
 
 import java.awt.Component;
+import java.awt.Panel;
+import java.awt.BorderLayout;
 import java.awt.Menu;
 import java.awt.Label;
 import java.awt.Color;
@@ -43,24 +46,52 @@ public class Status extends Plugin implements VisualPlugin {
   private final static int debug = 1;
 
   private Label status;
+  private Label host;
+  private Panel sPanel;
+
+  private String address;
+  private int port;
 
   public Status(PluginBus bus) {
     super(bus);
-    status = new Label("offline", Label.RIGHT);
+    sPanel = new Panel(new BorderLayout());
+
+    host = new Label("Not connected.", Label.LEFT);
+
+    bus.registerPluginListener(new SocketListener() {
+      public void connect(String addr, int p) {
+        address = addr;
+	port = p;
+        host.setText("Trying "+address+(port == 23 ? "" : " "+port)+" ...");
+      }
+      public void disconnect() {
+        host.setText("Not connected.");
+      }
+    });
+
+    sPanel.add("Center", host);
+
+    status = new Label("offline", Label.CENTER);
+
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
         status.setText("online");
 	status.setBackground(Color.green);
+	host.setText("Connected to "+address+(port == 23 ? "" : " "+port));
       }
       public void offline() {
         status.setText("offline");
 	status.setBackground(Color.red);
+        host.setText("Not connected.");
       }
     });
+
+    sPanel.add("East", status);
+
   }
 
   public Component getPluginVisual() {
-    return status;
+    return sPanel;
   }
 
   public Menu getPluginMenu() {

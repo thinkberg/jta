@@ -41,6 +41,7 @@ import java.net.UnknownHostException;
 public class Socket extends Plugin implements FilterPlugin, SocketListener {
 
   private final static int debug = 0;
+ 
   protected java.net.Socket socket;
   protected InputStream in;
   protected OutputStream out;
@@ -88,6 +89,10 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
   }
 
   public void write(byte[] b) throws IOException {
-    out.write(b);
+    try {
+      out.write(b);
+    } catch(IOException e) {
+      disconnect();
+    }
   }
 }

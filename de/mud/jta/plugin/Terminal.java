@@ -33,10 +33,17 @@ import de.mud.jta.event.WindowSizeListener;
 import de.mud.jta.event.LocalEchoListener;
 
 import java.awt.Component;
+import java.awt.Panel;
+import java.awt.BorderLayout;
 import java.awt.Menu;
+import java.awt.MenuItem;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Color;
+import java.awt.Scrollbar;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import java.io.IOException;
 
@@ -61,13 +68,52 @@ public class Terminal extends Plugin
   /** holds the actual terminal emulation */
   protected vt320 terminal;
 
+  protected Panel tPanel;
+
   private Thread reader = null;
+
+  private Menu menu;
 
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
   public Terminal(PluginBus bus) {
     super(bus);
+
+    menu = new Menu("Terminal");
+    MenuItem item;
+    menu.add(item = new MenuItem("Smaller Font"));
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        Font font = terminal.getFont();
+	terminal.setFont(new Font(font.getName(), 
+	                     font.getStyle(), font.getSize()-1));
+	if(tPanel.getParent() != null) {
+	  Component parent = tPanel.getParent();
+	  if(parent instanceof java.awt.Frame) 
+	    ((java.awt.Frame)parent).pack();
+	  tPanel.getParent().doLayout();
+	  tPanel.getParent().validate();
+	}
+      }
+    });
+    menu.add(item = new MenuItem("Larger Font"));
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        Font font = terminal.getFont();
+	terminal.setFont(new Font(font.getName(), 
+	                     font.getStyle(), font.getSize()+1));
+	if(tPanel.getParent() != null) {
+	  Component parent = tPanel.getParent();
+	  if(parent instanceof java.awt.Frame) 
+	    ((java.awt.Frame)parent).pack();
+	  tPanel.getParent().doLayout();
+	  tPanel.getParent().validate();
+	}
+      }
+    });
+
+    // create the terminal emulation
     terminal = new vt320() {
       public void write(byte[] b) {
         try {
@@ -78,10 +124,13 @@ public class Terminal extends Plugin
       }
     };
 
+    tPanel = new Panel(new BorderLayout());
+    tPanel.add("Center", terminal);
+
     // register an online status listener
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
-        if(debug > 0) System.err.println("Terminal: online");
+        if(debug > 0) System.err.println("Terminal: online "+reader);
         if(reader == null) {
           reader = new Thread(Terminal.this);
           reader.start();
@@ -140,9 +189,11 @@ public class Terminal extends Plugin
 	    raised = Boolean.getBoolean("Terminal.borderRaised");
 	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
 	                     raised);
-        } else if(key.equals("Terminal.scrollBar"))
-	  System.out.println("Terminal.scrollBar not implemented yet");
-	else if(key.equals("Terminal.id"))
+        } else if(key.equals("Terminal.scrollBar")) {
+	  Scrollbar scrollBar = new Scrollbar();
+	  tPanel.add("East", scrollBar);
+	  terminal.setScrollbar(scrollBar);
+	} else if(key.equals("Terminal.id"))
 	  terminal.setTerminalID(config.getProperty(key));
 	else if(key.equals("Terminal.buffer"))
 	  terminal.setBufferSize(Integer.parseInt(config.getProperty(key)));
@@ -170,6 +221,8 @@ public class Terminal extends Plugin
 	    style = Font.BOLD;
 	  else if(fontStyle.equals("italic"))
 	    style = Font.ITALIC;
+	  else if(fontStyle.equals("bold+italic"))
+	    style = Font.BOLD | Font.ITALIC;
 	  terminal.setFont(new Font(config.getProperty(key), style, fsize));
 	} else if(key.equals("Terminal.keyCodes")) 
 	  System.out.println("Terminal.keyCodes not implemented yet");
@@ -194,7 +247,7 @@ public class Terminal extends Plugin
       if(n > 0) terminal.putString(new String(b, 0, n));
     } catch(IOException e) {
       reader = null;
-      return;
+      break;
     }
   }
 
@@ -214,10 +267,10 @@ public class Terminal extends Plugin
   }
 
   public Component getPluginVisual() {
-    return terminal;
+    return tPanel;
   }
 
   public Menu getPluginMenu() {
-    return null;
+    return menu;
   }
 }
