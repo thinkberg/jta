@@ -228,6 +228,7 @@ public class Applet extends java.applet.Applet {
 			  options.getProperty("Applet.Netscape.privilege")
 			});
           clipboard = appletFrame.getToolkit().getSystemClipboard();
+	  System.err.println("Applet: acquired system clipboard: "+clipboard);
 	} catch(NoClassDefFoundError nc) {
 	  System.err.println("Applet: This is not Netscape ...");
         } catch(Exception e) {
@@ -236,7 +237,7 @@ public class Applet extends java.applet.Applet {
 	      ((InvocationTargetException)e).getTargetException() : e));
 	  e.printStackTrace();
         } finally {
-	  if(clipboard != null) {
+	  if(clipboard == null) {
             System.err.println("Applet: copy & paste only within the JTA");
             clipboard = new Clipboard("de.mud.jta.Main");
 	  }
