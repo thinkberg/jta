@@ -1423,15 +1423,15 @@ public class VDU extends Component
       if(selectEnd.y < 0) selectEnd.y = 0;
       if(selectEnd.y >= charArray.length)
         selectEnd.y = charArray.length-1;
-      if(selectEnd.x >= charArray[0].length)
-        selectEnd.x = charArray[0].length-1;
+      if(selectEnd.x > charArray[0].length)
+        selectEnd.x = charArray[0].length;
 
       for(int l = selectBegin.y; l <= selectEnd.y; l++) {
         int start, end;
 	start = (l == selectBegin.y ? start = selectBegin.x : 0);
-	end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length - 1);
+	end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length );
         selection += (new String(charArray[l])).substring(start, end);
-	if(end == charArray[l].length - 1)
+	if(end == charArray[l].length)
 	  selection += "\n";
       }
     }
