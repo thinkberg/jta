@@ -44,7 +44,7 @@ import java.net.ServerSocket;
  */
 public class FlashTerminalServer implements Runnable {
 
-  private final static int debug = 3;
+  private final static int debug = 0;
 
   /**
    * Read all parameters from the applet configuration and
@@ -59,11 +59,12 @@ public class FlashTerminalServer implements Runnable {
     if (debug > 0)
       System.err.println("FlashTerminalServer: main(" + args[0] + ", "+args[1] + ")");
     try {
-      ServerSocket serverSocket = new ServerSocket(9999);
+      ServerSocket serverSocket = new ServerSocket(8080);
       // create a new
       while(true) {
         System.out.println("FlashTerminalServer: waiting for connection ...");
         Socket flashClientSocket = serverSocket.accept();
+        System.out.println("FlashTerminalServer: Connect to: "+flashClientSocket);
         new FlashTerminalServer(args[0], args[1], flashClientSocket);
       }
     } catch (IOException e) {
@@ -140,19 +141,25 @@ public class FlashTerminalServer implements Runnable {
     };
 
     try {
+      terminal = new FlashTerminal() {
+        public void disconnect() {
+          running = false;
+          try {
+            socket.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      };
+      terminal.setVDUBuffer(emulation);
+
       // open new socket and get streams
       socket = new Socket(host, Integer.parseInt(port));
       is = socket.getInputStream();
       os = socket.getOutputStream();
 
       (new Thread(this)).start();
-
-      terminal = new FlashTerminal(flashSocket) {
-        public void disconnect() {
-          running = false;
-        }
-      };
-      terminal.setVDUBuffer(emulation);
+      terminal.start(flashSocket);
     } catch (IOException e) {
       System.err.println("FlashTerminalServer: error connecting to remote host: "+e);
     } catch (NumberFormatException e) {
@@ -174,9 +181,10 @@ public class FlashTerminalServer implements Runnable {
 
         while (true) {
           n = is.read(b);
-          System.err.println("FlashTerminalServer: got " + n + " bytes");
+          if(debug > 0)
+            System.err.println("FlashTerminalServer: got " + n + " bytes");
           if (n <= 0)
-            emulation.putString(new String(b, 0, n));
+            continue;
 
           telnet.inputfeed(b, n);
           n = 0;
@@ -194,6 +202,5 @@ public class FlashTerminalServer implements Runnable {
       }
     }
     System.err.println("FlashTerminalServer: finished reading from remote host");
-
   }
 }
