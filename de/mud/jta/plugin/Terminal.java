@@ -140,9 +140,7 @@ public class Terminal extends Plugin
 	    raised = Boolean.getBoolean("Terminal.borderRaised");
 	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
 	                     raised);
-        } else if(key.equals("Terminal.borderColor"))
-	  terminal.setBackground(Color.decode(config.getProperty(key)));
-	else if(key.equals("Terminal.scrollBar"))
+        } else if(key.equals("Terminal.scrollBar"))
 	  System.out.println("Terminal.scrollBar not implemented yet");
 	else if(key.equals("Terminal.id"))
 	  terminal.setTerminalID(config.getProperty(key));

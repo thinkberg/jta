@@ -57,13 +57,17 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
   }
 
   /** Connect to the host and port passed. */
-  public void connect(String host, int port)
-    throws UnknownHostException, IOException {
+  public void connect(String host, int port) throws IOException {
     if(debug>0) System.err.println("Socket: connect("+host+","+port+")");
-    socket = new java.net.Socket(host, port);
-    in = socket.getInputStream();
-    out = socket.getOutputStream();
-    bus.broadcast(new OnlineStatus(true));
+    try {
+      socket = new java.net.Socket(host, port);
+      in = socket.getInputStream();
+      out = socket.getOutputStream();
+      bus.broadcast(new OnlineStatus(true));
+    } catch(Exception e) {
+      System.err.println("Socket: "+e);
+      disconnect();
+    }
   }  
 
   /** Disconnect the socket and close the connection. */
