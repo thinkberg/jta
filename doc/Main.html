@@ -49,15 +49,16 @@ Mei&szlig;ner</a></i>
 <center>
 <h2>
 <font color="#CC0000">The Application (Main)</font></h2></center>
-<font color="#000000">Running the software as application is the least
-restrictive way to connect to other systems. There are two ways to operate
-the program. One is to simply start it and to configure everything within
-the application or to give arguments, like host and port, on the command
-line. The first way may be the least complicated as the menu entries are
-self descriptive. You need to have installed a java runtime environment
-or java development kit to run the application. On Microsoft Windows systems
-an installed Internet Explorer with Java support should suffice though.</font>
-<p><font color="#000000">Make sure either the program <tt>java</tt> (JRE,
+<font color="#000000">&nbsp;There are two ways to operate the program.
+One is to simply start it and to configure everything within the application
+or to give arguments, like host and port, on the command line. The first
+way may be the least complicated as the menu entries are self descriptive.
+You need to have installed a java runtime environment or java development
+kit to run the application. On Microsoft Windows systems an installed Internet
+Explorer with Java support should suffice though.</font>
+<h3>
+Quickstart</h3>
+<font color="#000000">Make sure either the program <tt>java</tt> (JRE,
 JDK) or <tt>jview</tt> (Windows IE) is in your path. Optionally you may
 set the environment variable <tt>CLASSPATH</tt> to point to the file
 <tt>jta20.jar</tt>
@@ -72,13 +73,7 @@ IE installed, use jview instead)</font></b></dt>
 <tt><font color="#000000">java de.mud.jta.Main</font></tt></dd>
 
 <dd>
-<i><font color="#000000"></font></i></dd>
-
-<dd>
 <i><font color="#000000">Now you should see the following output:</font></i></dd>
-
-<dd>
-<tt><font color="#000000"></font></tt></dd>
 
 <dd>
 <tt><font color="#000000">** The Java(tm) Telnet Application</font></tt></dd>
@@ -102,13 +97,51 @@ Marcus Meissner</font></tt></dd>
 <dd>
 <tt><font color="#000000">jta: loading plugin 'Terminal' ...</font></tt></dd>
 
-<br>&nbsp;
-<p>&nbsp;
-<p><font color="#000000">Some other messages might appear, but unless you
-see an <tt>Exception</tt> a window should appear on your screen and prompt
-you for login into your local host. If you are running on windows you will
-probably see an error message and should append the target host you want
-to connect to to the command line above.</font></td>
+<p><br><font color="#000000">Some other messages might appear, but unless
+you see an <tt>Exception</tt> a window should appear on your screen and
+prompt you for login into your local host. If you are running on windows
+you will probably see an error message and should append the target host
+you want to connect to to the command line above.</font>
+<h3>
+<font color="#000000">Command Line Options</font></h3>
+<font color="#000000">The application understand several command line arguments
+to configure the way it looks and where to initially connect to. The following
+command line arguments are possible:</font><font color="#000000"></font>
+<p><tt><font color="#000000">de.mud.jta.Main [-plugins pluginlist] [host
+[port]]</font></tt>
+<br><font color="#000000"><font size=-1>(Options enclosed in brackets are
+optional and may be left out.)</font></font>
+<br><font color="#000000"></font>&nbsp;
+<center><table BORDER CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Option</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE>-plugins <i>pluginlist</i></td>
+
+<td>Use this option to define a different list of plugins to be loaded
+on startup of the application. Plugins are always added from back to front
+and are separated by comma:&nbsp;<tt></tt>
+<p><tt>&nbsp;&nbsp; Socket,Telnet,Terminal</tt><tt></tt>
+<p>The above <i>pluginlist</i> is the default.</td>
+</tr>
+
+<tr>
+<td><i>host</i></td>
+
+<td>This</td>
+</tr>
+
+<tr>
+<td><i>port</i></td>
+
+<td></td>
+</tr>
+</table></center>
+<font color="#000000"></font></td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">There
 are some differences in how to invoke the java interpreter for either Java
@@ -140,7 +173,7 @@ are shown below:</font>
 you can simply use the command line parameter <tt>-cp</tt> to add the jar
 file to the class path:
 <p><b>UNIX:</b>
-<br><tt>java -cp /java/jta20.jar</tt><tt></tt>
+<br><tt>java -cp /java/jta20.jar</tt>
 <p><b>Windows:</b>
 <br><tt>java -cp C:\java\jta20.jar&nbsp;</tt></td>
 </tr>
