@@ -1,10 +1,29 @@
+# This file is part of "The Java Telnet Application".
+#
+# This is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# "The Java Telnet Application" is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this software; see the file COPYING.  If not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
 JAVA	=	java
 JAR	=	jar
 JAVAC	=	javac
 DEBUG	=	-g -deprecation
 JFLAGS	=	-classpath $(CLASSPATH):.
 SRCDIR	=	de
-PKGNAME	=	telnet-v20
+PKGNAME	=	jta20
+VERSION	=	`java -version 2>&1 | head -1 | \
+		  sed 's/^java version //' | sed 's/"//g'`
 
 .SUFFIXES:	.java .class
 
@@ -16,27 +35,32 @@ PKGNAME	=	telnet-v20
 # major rules to create files
 #
 all: 	app doc jar
-	
+
 doc:	app
 	-mkdir doc
-	javadoc -d doc -version -author \
+	-rm -r doc/*.html doc/de
+	javadoc -d doc -version -author -sourcepath $(CLASSPATH):. \
 	  `find de/mud -type d -print | \
-	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`
+	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; \
+
+
 
 run:	app
 	$(JAVA) $(JFLAGS) de.mud.jta.Main
 
 jar:	app
+	@echo Version: $(VERSION)
 	-mkdir jar
-	$(JAR) cvf jar/jta.jar `find $(SRCDIR) -name *.class` \
+	$(JAR) cvf jar/$(PKGNAME)-`date +%Y%m%d`-$(VERSION).jar \
+	  `find $(SRCDIR) -name *.class` \
 	  `find $(SRCDIR) -name defaults.\*`
 
-dist:	clean doc revision changes
+dist:	clean jar doc revision changes
 	-mkdir jar
 	(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) telnet && \
 	 /bin/cp REVISION CHANGES $(PKGNAME)/ && \
 	 /bin/cp -r doc $(PKGNAME)/ && \
-	 $(JAR) cvMf jar/jta-20-source.jar $(PKGNAME) && \
+	 $(JAR) cvMf jar/$(PKGNAME)-`date +%Y%m%d`-src.jar $(PKGNAME) && \
 	 rm -rf $(PKGNAME))
 
 changes:
