@@ -1,20 +1,15 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * This is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2002. All Righs Reserved.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The software is licensed under the terms and conditions in the
+ * license agreement included in the software distribution package.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the license along with this
+ * software; see the file license.txt. If not, navigate to the 
+ * URL http://javatelnet.org/ and view the "License Agreement".
+ *
  */
 
 package de.mud.jta.plugin;
@@ -24,7 +19,7 @@ import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
 import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.ConfigurationListener;
-import de.mud.jta.event.SocketListener;
+import de.mud.jta.event.ReturnFocusListener;
 import de.mud.jta.event.SocketRequest;
 
 import javax.swing.JButton;
@@ -35,6 +30,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
@@ -50,7 +46,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The MudConnector (http://www.mudconnector.com) plugin. The plugin will
@@ -73,7 +73,7 @@ public class MudConnector
 
   protected URL listURL = null;
   protected int step;
-  protected Hashtable mudList = null;
+  protected Map mudList = null;
   protected JList mudListSelector = new JList();
   protected JTextField mudName, mudAddr, mudPort;
   protected JButton connect;
@@ -118,8 +118,12 @@ public class MudConnector
       g.fill3DRect(0, 0, width, getSize().height, true);
       g.setColor(getForeground());
       g.setXORMode(getBackground());
-      g.drawString("" + (current * 100 / (max > 0?max:1)) + "%",
-                   getSize().width / 2 - 15, getSize().height / 2);
+      String percent = "" + (current * 100 / (max > 0?max:1)) 
+                     + "% / " + current + " of "+max;
+      g.drawString(percent,
+                   getSize().width / 2 -
+                   getFontMetrics(getFont()).stringWidth(percent) / 2,
+		   getSize().height / 2);
       g.drawString(text,
                    getSize().width / 2 -
                    getFontMetrics(getFont()).stringWidth(text) / 2,
@@ -184,12 +188,8 @@ public class MudConnector
       }
     });
 
-    bus.registerPluginListener(new SocketListener() {
-      public void connect(String host, int port) {
-        setup();
-      }
-
-      public void disconnect() {
+    bus.registerPluginListener(new ReturnFocusListener() {
+      public void returnFocus() {
         setup();
       }
     });
@@ -205,7 +205,8 @@ public class MudConnector
     panel.add("Center", progress = new ProgressBar());
     mudListPanel.add("PROGRESS", panel);
     panel = new JPanel(new BorderLayout());
-    panel.add("Center", mudListSelector);
+    JScrollPane scrollPane = new JScrollPane(mudListSelector);
+    panel.add("Center", scrollPane);
     mudListPanel.add("MUDLIST", panel);
     panel.add("East", panel = new JPanel(new GridLayout(3, 1)));
     panel.add(mudName = new JTextField(20));
@@ -224,6 +225,7 @@ public class MudConnector
     mudListSelector.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent evt) {
         JList list = (JList) evt.getSource();
+	list.ensureIndexIsVisible(list.getSelectedIndex());
         String item = (String) list.getSelectedValue();
         mudName.setText(item);
         Object mud[] = (Object[]) mudList.get(item);
@@ -245,9 +247,9 @@ public class MudConnector
   public void run() {
     try {
 
-      Hashtable menuList = new Hashtable();
+      Map menuList = new HashMap();
 
-      mudList = new Hashtable();
+      mudList = new HashMap();
       BufferedReader r =
               new BufferedReader(new InputStreamReader(listURL.openStream()));
 
@@ -292,15 +294,15 @@ public class MudConnector
           if (debug > 0)
             error(name + " [" + host + "," + port + "]");
           mudList.put(name, new Object[]{host, port, new Integer(idx++)});
-          mudListSelector.add(name, new JLabel(name));
           progress.adjust(++counter, name);
           mudListPanel.repaint();
 
-          JMenu subMenu = (JMenu) menuList.get(name.charAt(0) + "");
+	  String key = (""+name.charAt(0)).toUpperCase();
+          JMenu subMenu = (JMenu) menuList.get(key);
           if (subMenu == null) {
-            subMenu = new JMenu(name.charAt(0) + "");
+            subMenu = new JMenu(key);
             MCMenu.add(subMenu);
-            menuList.put(name.charAt(0) + "", subMenu);
+            menuList.put(key, subMenu);
           }
           JMenuItem item = new JMenuItem(name);
           item.addActionListener(MudConnector.this);
@@ -309,6 +311,9 @@ public class MudConnector
         while (token != ts.TT_EOF && token != ts.TT_EOL)
           token = ts.nextToken();
       }
+      List list = new ArrayList(mudList.keySet());
+      Collections.sort(list);
+      mudListSelector.setListData(list.toArray());
       System.out.println("MudConnector: found " + mudList.size() + " entries");
     } catch (Exception e) {
       error("error: " + e);

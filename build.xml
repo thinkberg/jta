@@ -3,16 +3,70 @@
 <project name="jta" basedir="." default="build">
 
   <target name="init">
+    <property name="name" value="jta"/>
     <property name="version" value="20"/>
     <property name="target.dir" value="jar"/>
+    <property name="debug" value="true"/>
   </target>
 
-  <target name="build" depends="init">
-    <javac srcdir="." includes="de/mud/**"/>
+  <target name="all" depends="build,doc,bin-jar,src-jar"/>
+
+  <target name="build" depends="compile,compile-contrib" description="build binaries">
   </target>
 
-  <target name="jar" depends="build">
-    <jar basedir="." includes="de/**" jarfile="${target.dir}/jta20.jar"/>
+  <target name="compile">
+    <javac srcdir="." includes="de/mud/**" debug="${debug}"/>
   </target>
-  
+
+  <target name="compile-contrib">
+    <javac srcdir="contrib" includes="**" debug="${debug}">
+      <classpath>
+        <pathelement location="."/>
+        <pathelement location="jar/gnu-regexp-1.0.8.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean" depends="init" description="clean up">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="doc/source/**"/>
+    </delete>
+    <delete dir="${name}${version}"/>
+  </target>
+
+  <target name="doc" depends="init" description="create java documentation">
+    <javadoc sourcepath="." destdir="doc/source" packagenames="de.*"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="The Java Telnet/SSH API (${name}${version})"/>
+  </target>
+
+  <target name="bin-jar" depends="init,build" description="package binaries">
+    <jar jarfile="${target.dir}/${name}${version}.jar"
+      manifest="jta.manifest">
+      <fileset dir="." includes="de/**/*.class"/>
+      <fileset dir="." includes="de/**/*.conf"/>
+      <fileset dir="." includes="license/**" excludes="license/CVS"/>
+    </jar>
+  </target>
+
+  <target name="src-jar" depends="init" description="package the sources">
+    <mkdir dir="${name}${version}"/>
+    <!-- copy sources -->
+    <copy todir="${name}${version}">
+      <fileset dir=".">
+        <include name="de/**/*.java"/>
+        <include name="de/**/*.conf"/>
+        <include name="tools/**"/>
+        <exclude name="**/CVS"/>
+      </fileset>
+    </copy>
+    <!-- package sources -->
+    <jar basedir="." includes="${name}${version}/**" jarfile="${target.dir}/jta${version}-src.jar"/>
+    <delete dir="${name}${version}"/>
+  </target>
+
+
 </project>

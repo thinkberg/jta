@@ -1,20 +1,15 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * This is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2002. All Righs Reserved.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * The software is licensed under the terms and conditions in the
+ * license agreement included in the software distribution package.
  *
- * You should have received a copy of the GNU General Public License
- * along with this software; see the file COPYING.  If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the license along with this
+ * software; see the file license.txt. If not, navigate to the
+ * URL http://javatelnet.org/ and view the "License Agreement".
+ *
  */
 package de.mud.jta;
 
@@ -125,6 +120,14 @@ public class Main {
     // configure the application and load all plugins
     final Common setup = new Common(options);
 
+    if (port == null || port.length() == 0) {
+      if (setup.getPlugins().containsKey("SSH")) {
+        port = "22";
+      } else {
+        port = "23";
+      }
+    }
+
     setup.registerPluginListener(new OnlineStatusListener() {
       public void online() {
         frame.setTitle("jta: " + host + (port.equals("23")?"":" " + port));
@@ -179,13 +182,13 @@ public class Main {
       file.setMnemonic(KeyEvent.VK_F);
       JMenuItem tmp;
       file.add(tmp = new JMenuItem("Connect"));
-      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           String destination =
                   JOptionPane.showInputDialog(frame,
-                                              new JLabel("Enter your destination host (host:port)"),
-                                              host + ":" + port
+                                              new JLabel("Enter your destination host (host[:port])"),
+                                              "Connect", JOptionPane.QUESTION_MESSAGE
                   );
           if (destination != null) {
             int sep = 0;
@@ -208,7 +211,7 @@ public class Main {
       });
       file.addSeparator();
       file.add(tmp = new JMenuItem("Print"));
-      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (setup.getComponents().get("Terminal") != null) {
@@ -234,7 +237,7 @@ public class Main {
 
       JMenu edit = new JMenu("Edit");
       edit.add(tmp = new JMenuItem("Copy"));
-      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (focussedPlugin instanceof VisualTransferPlugin)
@@ -242,7 +245,7 @@ public class Main {
         }
       });
       edit.add(tmp = new JMenuItem("Paste"));
-      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (focussedPlugin instanceof VisualTransferPlugin)
@@ -282,7 +285,11 @@ public class Main {
 
     frame.show();
 
-    setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+    if(debug > 0) 
+      System.err.println("host: '"+host+"', "+host.length());
+    if (host != null && host.length() > 0) {
+      setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+    }
     /* make sure the focus goes somewhere to start off with */
     setup.broadcast(new ReturnFocusRequest());
   }
