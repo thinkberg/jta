@@ -437,9 +437,13 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   private String osc,dcs;  /* to memorize OSC & DCS control sequence */
 
+  /** vt320 state variable (internal) */
   private int term_state = TSTATE_DATA;
+  /** in vms mode, set by Terminal.VMS property */
   private boolean vms = false;
+  /** Tabulators */
   private byte[]  Tabs;
+  /** The list of integers as used by CSI */
   private int[]  DCEvars = new int [10];
   private int  DCEvar;
 
@@ -1162,13 +1166,14 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       //but check for vt102 ESC \
       if (c=='\\' && osc.charAt(osc.length()-1)==ESC) {
-				  handle_osc(osc);
-				  term_state = TSTATE_DATA;
-				  break;
+	handle_osc(osc);
+	term_state = TSTATE_DATA;
+	break;
       }
-    osc = osc + c;
-    break;
+      osc = osc + c;
+      break;
     case TSTATE_ESC:
+      term_state = TSTATE_DATA;
       switch (c) {
       case '#':
         term_state = TSTATE_ESCSQUARE;
@@ -1190,15 +1195,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  Tabs[i]=1;
 	}
         /*FIXME:*/
-        term_state = TSTATE_DATA;
         break;
       case '[':
-        term_state = TSTATE_CSI;
         DCEvar    = 0;
         DCEvars[0]  = 0;
         DCEvars[1]  = 0;
         DCEvars[2]  = 0;
         DCEvars[3]  = 0;
+        term_state = TSTATE_CSI;
         break;
       case ']':
         osc="";
@@ -1216,7 +1220,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         C=0;
         if (debug>1)
           System.out.println("ESC E (at "+R+")");
-        term_state = TSTATE_DATA;
         break;
       case 'D':
         if (R == tm - 1 || R == bm || R == rows - 1)
@@ -1225,7 +1228,6 @@ public abstract class vt320 extends VDU implements KeyListener {
           R++;
         if (debug>1)
           System.out.println("ESC D (at "+R+" )");
-        term_state = TSTATE_DATA;
         break;
       case 'M': // IL
         if ((R>=tm) && (R<=bm)) // in scrolregion
@@ -1233,7 +1235,6 @@ public abstract class vt320 extends VDU implements KeyListener {
 	/* else do nothing ; */
         if (debug>1)
           System.out.println("ESC M ");
-        term_state = TSTATE_DATA;
         break;
       case 'H':
         if (debug>1)
@@ -1242,82 +1243,59 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (C>=columns)
           C=columns-1;
         Tabs[C] = 1;
-        term_state = TSTATE_DATA;
         break;
       case '=':
         /*application keypad*/
         if (debug>0)
           System.out.println("ESC =");
-        term_state = TSTATE_DATA;
         break;
-      case '>':
-        /*normal keypad*/
+      case '>': /*normal keypad*/
         if (debug>0)
           System.out.println("ESC >");
-        term_state = TSTATE_DATA;
         break;
-      case '7':
-        /*save cursor */
+      case '7': /*save cursor */
         Sc = C;
         Sr = R;
         Sa = attributes;
         if (debug>1)
           System.out.println("ESC 7");
-        term_state = TSTATE_DATA;
         break;
-      case '8':
-        /*restore cursor */
+      case '8': /*restore cursor */
         C = Sc;
         R = Sr;
         attributes = Sa;
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC 7");
         break;
-      case '(':
-        /* Designate G0 Character set (ISO 2022) */
+      case '(': /* Designate G0 Character set (ISO 2022) */
         term_state = TSTATE_SETG0;
         break;
-      case ')':
-        /* Designate G0 character set (ISO 2022) */
+      case ')': /* Designate G0 character set (ISO 2022) */
         term_state = TSTATE_SETG1;
         break;
-      case '*':
-        /* Designate G1 Character set (ISO 2022) */
+      case '*': /* Designate G1 Character set (ISO 2022) */
         term_state = TSTATE_SETG2;
         break;
-      case '+':
-        /* Designate G1 Character set (ISO 2022) */
+      case '+': /* Designate G1 Character set (ISO 2022) */
         term_state = TSTATE_SETG3;
         break;
-      case '~':
-        /* Locking Shift 1, right */
-        term_state = TSTATE_DATA;
+      case '~': /* Locking Shift 1, right */
         gr = 1;
         break;
-      case 'n':
-        /* Locking Shift 2 */
-        term_state = TSTATE_DATA;
+      case 'n': /* Locking Shift 2 */
         gl = 2;
         break;
-      case '}':
-        /* Locking Shift 2, right */
-        term_state = TSTATE_DATA;
+      case '}': /* Locking Shift 2, right */
         gr = 2;
         break;
-      case 'o':
-        /* Locking Shift 3 */
-        term_state = TSTATE_DATA;
+      case 'o': /* Locking Shift 3 */
         gl = 3;
         break;
-      case '|':
-        /* Locking Shift 3, right */
-        term_state = TSTATE_DATA;
+      case '|': /* Locking Shift 3, right */
         gr = 3;
         break;
       default:
         System.out.println("ESC unknown letter: ("+((int)c)+")");
-        term_state = TSTATE_DATA;
         break;
       }
       break;
@@ -1378,7 +1356,9 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       dcs = dcs + c;
       break;
+
     case TSTATE_DCEQ:
+      term_state = TSTATE_DATA;
       switch (c) {
       case '0':
       case '1':
@@ -1391,6 +1371,12 @@ public abstract class vt320 extends VDU implements KeyListener {
       case '8':
       case '9':
         DCEvars[DCEvar]=DCEvars[DCEvar]*10+((int)c)-48;
+        term_state = TSTATE_DCEQ;
+        break;
+      case ';':
+        DCEvar++;
+        DCEvars[DCEvar] = 0;
+        term_state = TSTATE_DCEQ;
         break;
       case 'r': // XTERM_RESTORE
         if (true || debug>1)
@@ -1411,7 +1397,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         case 12:/* local echo off */
           break;
         }
-        term_state = TSTATE_DATA;
         break;
       case 'h': // DECSET
         if (debug>0)
@@ -1437,8 +1422,31 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 12:/* local echo off */
           break;
+        case 18:/* DECPFF - Printer Form Feed Mode -> On */
+          break;
+        case 19:/* DECPEX - Printer Extent Mode -> Screen */
+          break;
         }
-        term_state = TSTATE_DATA;
+        break;
+      case 'i': // DEC Printer Control, autoprint, echo screenchars to printer
+		// This is different to CSI i!
+		// Also: "Autoprint prints a final display line only when the
+		// cursor is moved off the line by an autowrap or LF, FF, or
+		// VT (otherwise do not print the line)."
+        switch (DCEvars[0]) {
+        case 1:
+	  if (debug>1)
+            System.out.println("CSI ? 1 i : Print line containing cursor");
+          break;
+        case 4:
+	  if (debug>1)
+            System.out.println("CSI ? 4 i : Start passthrough printing");
+          break;
+        case 5:
+	  if (debug>1)
+            System.out.println("CSI ? 4 i : Stop passthrough printing");
+          break;
+        }
         break;
       case 'l':	//DECRST
         /* DEC Mode reset */
@@ -1464,12 +1472,11 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 12:/* local echo on */
           break;
+        case 18:/* DECPFF - Printer Form Feed Mode -> Off*/
+          break;
+        case 19:/* DECPEX - Printer Extent Mode -> Scrolling Region */
+          break;
         }
-        term_state = TSTATE_DATA;
-        break;
-      case ';':
-        DCEvar++;
-        DCEvars[DCEvar] = 0;
         break;
       case 'n':
         if (debug>0)
@@ -1480,14 +1487,13 @@ public abstract class vt320 extends VDU implements KeyListener {
           write(((char)ESC)+"[?13n",false);
           System.out.println("ESC[5n");
           break;
-        default:break;
+        default:
+          break;
         }
-        term_state = TSTATE_DATA;
         break;
       default:
         if (debug>0)
           System.out.println("ESC [ ? "+DCEvars[0]+" "+c);
-        term_state = TSTATE_DATA;
         break;
       }
       break;
@@ -1512,6 +1518,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     case TSTATE_CSI:
+      term_state = TSTATE_DATA;
       switch (c) {
       case '$':
 	term_state=TSTATE_CSI_DOLLAR;
@@ -1532,22 +1539,22 @@ public abstract class vt320 extends VDU implements KeyListener {
       case '8':
       case '9':
         DCEvars[DCEvar]=DCEvars[DCEvar]*10+((int)c)-48;
+        term_state = TSTATE_CSI;
         break;
       case ';':
         DCEvar++;
         DCEvars[DCEvar] = 0;
+        term_state = TSTATE_CSI;
         break;
       case 'c':/* send primary device attributes */
         /* send (ESC[?61c) */
         write(((char)ESC)+"[?1;2c",false);
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" c");
         break;
       case 'q':
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" q");
-        term_state = TSTATE_DATA;
         break;
       case 'g':
         /* used for tabsets */
@@ -1562,7 +1569,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         }
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" g");
-        term_state = TSTATE_DATA;
         break;
       case 'h':
         switch (DCEvars[0]) {
@@ -1577,9 +1583,30 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.println("unsupported: ESC [ "+DCEvars[0]+" h");
           break;
         }
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" h");
+        break;
+      case 'i': // Printer Controller mode.
+		// "Transparent printing sends all output, except the CSI 4 i
+		//  termination string, to the printer and not the screen,
+		//  uses an 8-bit channel if no parity so NUL and DEL will be
+		//  seen by the printer and by the termination recognizer code,
+		//  and all translation and character set selections are
+		//  bypassed."
+        switch (DCEvars[0]) {
+	case 0:
+	  if (debug>1)
+            System.out.println("CSI 0 i:  Print Screen, not implemented.");
+	  break;
+        case 4:
+	  if (debug>1)
+	    System.out.println("CSI 4 i:  Enable Transparent Printing, not implemented.");
+          break;
+        case 5:
+	  if (debug>1)
+	    System.out.println("CSI 4/5 i:  Disable Transparent Printing, not implemented.");
+          break;
+	}
         break;
       case 'l':
         switch (DCEvars[0]) {
@@ -1591,7 +1618,6 @@ public abstract class vt320 extends VDU implements KeyListener {
           sendcrlf = false;
           break;
         }
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" l");
         break;
@@ -1611,7 +1637,6 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    R-=DCEvars[0];
 	  if (R < limit)
             R = limit;
-	  term_state = TSTATE_DATA;
 	  if (debug>1)
 	    System.out.println("ESC [ "+DCEvars[0]+" A");
 	  break;
@@ -1636,7 +1661,6 @@ public abstract class vt320 extends VDU implements KeyListener {
             if (debug>2) System.out.println("Not limited.");
 	  }
 	  if (debug>2) System.out.println("to: " + R);
-	  term_state = TSTATE_DATA;
 	  if (debug>1)
 	    System.out.println("ESC [ "+DCEvars[0]+" B (at C="+C+")");
 	  break;
@@ -1648,14 +1672,12 @@ public abstract class vt320 extends VDU implements KeyListener {
           C+=DCEvars[0];
         if (C>columns-1)
           C=columns-1;
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" C");
         break;
       case 'd': // CVA
 	R = DCEvars[0];
         System.out.println("ESC [ "+DCEvars[0]+" d");
-        term_state = TSTATE_DATA;
 	break;
       case 'D':
         if (DCEvars[0]==0)
@@ -1663,7 +1685,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         else
           C-=DCEvars[0];
         if (C<0) C=0;
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" D");
         break;
@@ -1689,17 +1710,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	_SetCursor(0,0);
         if (debug>1)
           System.out.println("ESC ["+DCEvars[0]+" ; "+DCEvars[1]+" r");
-        term_state = TSTATE_DATA;
         break;
       case 'G':  /* CUP  / cursor absolute column */
 	C = DCEvars[0];
-	System.out.println("ESC [ "+DCEvars[0]+" G");
-        term_state = TSTATE_DATA;
+	if (debug>1) System.out.println("ESC [ "+DCEvars[0]+" G");
 	break;
       case 'H':  /* CUP  / cursor position */
         /* gets 2 arguments */
 	_SetCursor(DCEvars[0]-1,DCEvars[1]-1);
-        term_state = TSTATE_DATA;
         if (debug>2) {
           System.out.println("ESC [ "+DCEvars[0]+";"+DCEvars[1]+" H, moveoutsidemargins "+moveoutsidemargins);
           System.out.println("	-> R now "+R+", C now "+C);
@@ -1711,7 +1729,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         C = DCEvars[1]-1;
         if (C<0) C=0;
         if (R<0) R=0;
-        term_state = TSTATE_DATA;
         if (debug>2)
           System.out.println("ESC [ "+DCEvars[0]+";"+DCEvars[1]+" f");
         break;
@@ -1721,7 +1738,6 @@ public abstract class vt320 extends VDU implements KeyListener {
           insertLine(R,SCROLL_DOWN);
         else
           insertLine(R,DCEvars[0],SCROLL_DOWN);
-        term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" L (at R "+R+")");
         break;
@@ -1733,7 +1749,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         else
           for (int i=0;i<DCEvars[0];i++)
             deleteLine(R);
-        term_state = TSTATE_DATA;
         break;
       case 'K':
         if (debug>1)
@@ -1752,7 +1767,6 @@ public abstract class vt320 extends VDU implements KeyListener {
           deleteArea(0,R,columns,1);
           break;
         }
-        term_state = TSTATE_DATA;
         break;
       case 'J':
         /* clear below current line */
@@ -1775,14 +1789,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         }
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" J");
-        term_state = TSTATE_DATA;
         break;
       case '@':
 	if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" @");
 	for (int i=0;i<DCEvars[0];i++)
 	  insertChar(C,R,' ',attributes);
-	term_state = TSTATE_DATA;
 	break;
       case 'P':
         if (debug>1)
@@ -1790,7 +1802,6 @@ public abstract class vt320 extends VDU implements KeyListener {
 	if (DCEvars[0]==0) DCEvars[0]=1;
 	for (int i=0;i<DCEvars[0];i++)
           deleteChar(C,R);
-        term_state = TSTATE_DATA;
         break;
       case 'n':
         switch (DCEvars[0]){
@@ -1809,7 +1820,6 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("ESC [ "+DCEvars[0]+" n??");
           break;
         }
-        term_state = TSTATE_DATA;
         break;
       case 'm':  /* attributes as color, bold , blink,*/
         if (debug>3)
@@ -1882,11 +1892,9 @@ public abstract class vt320 extends VDU implements KeyListener {
         }
         if (debug>3)
           System.out.print(" (attributes = "+attributes+")m \n");
-        term_state = TSTATE_DATA;
         break;
       default:
         System.out.println("ESC [ unknown letter:"+c+" ("+((int)c)+")");
-        term_state = TSTATE_DATA;
         break;
       }
       break;
