@@ -373,7 +373,8 @@ public abstract class SshIO
 
       if (lastPacketSentType==SSH_CMSG_AUTH_PASSWORD) {// password correct !!!
 	//yahoo
-	System.out.println("login succesful");
+	if (debug>0)
+	  System.out.println("login succesful");
 
 	//now we have to start the interactive session ...
 	Send_SSH_CMSG_REQUEST_PTY(); //request a pseudo-terminal
