@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -52,7 +52,7 @@ import java.io.IOException;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Meissner
  */
 public class Telnet extends Plugin implements FilterPlugin {
 
@@ -139,14 +139,25 @@ public class Telnet extends Plugin implements FilterPlugin {
   }
 
   public int read(byte[] b) throws IOException {
-    // We just don't pass read() down, since negotiate() might call other
-    // functions and we need transaction points.
+    /* We just don't pass read() down, since negotiate() might call other
+     * functions and we need transaction points.
+     */
     int n;
 
-    n = handler.negotiate(b);	// we still have stuff buffered ...
-    if (n>0)
-      return n;
+    /* clear out the rest of the buffer.
+     * loop, in case we have negotiations (return 0) and
+     * date (return > 0) mixed ... until end of buffer or
+     * any data read.
+     */
+    do {
+      n = handler.negotiate(b);
+      if (n>0)
+        return n;
+    } while (n==0);
 
+    /* try reading stuff until we get at least 1 byte of real data or are 
+     * at the end of the buffer.
+     */
     while (true) {
       n = source.read(b);
       if (n <= 0 )
