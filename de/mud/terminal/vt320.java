@@ -410,7 +410,18 @@ public abstract class vt320 extends VDU implements KeyListener {
     if (debug>2) System.out.println("write(|"+s+"|,"+doecho);
     if (s == null) // aka the empty string.
         return true;
-    write(s.getBytes());
+    /* NOTE: getBytes() honours some locale, it *CONVERTS* the string.
+     * However, we output only 7bit stuff towards the target, and *some*
+     * 8 bit control codes. We must not mess up the latter, so we do hand
+     * by hand copy.
+     */
+
+    byte arr[] = new byte[s.length()];
+    for (int i=0;i<s.length();i++) {
+    	arr[i] = (byte)s.charAt(i);
+    }
+    write(arr);
+
     if (doecho)
     	putString(s);
     return true;
@@ -613,7 +624,11 @@ public abstract class vt320 extends VDU implements KeyListener {
   private boolean writeSpecial(String s) {
     if (((s.length() >= 3) && (s.charAt(0) == 27) && (s.charAt(1)=='O'))) {
       if (vt52mode) {
-      	s="\u001b?"+s.substring(2); /* ESC ? x */
+        if ((s.charAt(2) >= 'P') && (s.charAt(2) <= 'S')) {
+	  s="\u001b"+s.substring(2); /* ESC x */
+	} else {
+	  s="\u001b?"+s.substring(2); /* ESC ? x */
+        }
       } else {
         if (output8bit) {
 	  s="\u008f"+s.substring(2);  /* SS3 x */
@@ -1330,7 +1345,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 		  mapped = true;
 		}
 		break;
-	      case 'A':case 'B': mapped = true; break;
+	      case '<': case 'A':case 'B': mapped = true; break;
 	      default:
 		System.out.println("Unsupported GR mapping: "+gx[gr]);
 		break;
@@ -1504,6 +1519,9 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.println("ESC =");
 	keypadmode = true;
         break;
+      case '<': /* vt52 mode off */
+        vt52mode = false;
+	break;
       case '>': /*normal keypad*/
         if (debug>0)
           System.out.println("ESC >");
@@ -1710,8 +1728,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    KeyLeft[0]  = "\u001bOD";
 	    break;
 	  case 2: /* DECANM */
-	    vt52mode = true;
-            //System.out.println("vt52 mode enabled");
+	    vt52mode = false;
 	    break;
 	  case 3: /* 132 columns*/
 	    size = getSize();
@@ -1780,8 +1797,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    KeyLeft[0]  = "\u001b[D";
 	    break;
 	  case 2: /* DECANM */
-	    vt52mode = false;
-            //System.out.println("vt52 mode disabled");
+	    vt52mode = true;
 	    break;
 	  case 3: /* 80 columns*/
 	    size = getSize();
@@ -1852,10 +1868,15 @@ public abstract class vt320 extends VDU implements KeyListener {
       switch (c) {
       case 'p':
       	System.out.println("Conformance level: "+DCEvars[0]+" (unsupported),"+DCEvars[1]);
-	if (DCEvars[1]==1)
+	if (DCEvars[0] == 61) {
 	  output8bit = false;
-	else
+	  break;
+	}
+	if (DCEvars[1]==1) {
+	  output8bit = false;
+	} else {
 	  output8bit = true; /* 0 or 2 */
+	}
       	break;
       default:
         System.out.println("Unknown ESC [...  \""+c);
