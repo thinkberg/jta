@@ -527,9 +527,9 @@ public abstract class SshIO
 	  cipher_types = (byte)SSH_CIPHER_3DES;
 	  cipher_type = "DES3";
 	} else {
-	  System.err.println("SshIO: remote server does not supported IDEA or BlowFish, support cypher mask is "+supported_ciphers_mask[3]+".\n");
+	  System.err.println("SshIO: remote server does not supported IDEA, BlowFish or 3DES, support cypher mask is "+supported_ciphers_mask[3]+".\n");
 	  disconnect();
-	  return "\rRemote server does not support IDEA / Blowfish blockcipher, closing connection.\r\n".getBytes();
+	  return "\rRemote server does not support IDEA/Blowfish/3DES blockcipher, closing connection.\r\n".getBytes();
 	}
       }
     }
