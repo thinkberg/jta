@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0</title>
@@ -13,9 +13,9 @@
 <center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
 <tr NOSAVE>
 <td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
-<table BORDER=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
 <tr NOSAVE>
-<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
 <div ALIGN=right>
 <h1>
 <font face="Arial,Helvetica"><font color="#000099">The Java<sup><font size=-2>tm</font></sup>
@@ -25,6 +25,18 @@ Telnet Application/Applet</font></font></h1></div>
 Mei&szlig;ner</a></i>
 <p><b>Version 2.0 <i>beta </i>/ Java 2 and 1.1.x</b>
 <br>Available under <a href="license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><i><font face="Arial,Helvetica">Homepage</font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/index.html">Applet Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/download.html">Download</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="doc/index.html">Documentation</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/users.html">Users / Opinions</a></font></b></td>
 </tr>
 </table>
 </td>
@@ -68,48 +80,8 @@ include:</font>
 </ul>
 <font color="#000000">This version should <i>run with all runtime environments</i>
 that are at least Java 1.1.x compatible. If you are working with an older
-Java runtime environment (e.g. 1.0) please go to the<a href="http://www.first.gmd.de/persons/leo/java/Telnet/">
-old Java 1 version</a> that will work with most currently available browsers.</font>
-<center>
-<h1>
-<font color="#CC0000">Download</font></h1></center>
-<font color="#000000">Please feel free to download the software and tell
-us about your expericences and problems you may encounter. Make sure you
-understand the <a href="license/COPYING">license</a>. Parts of the software
-(Telnet Protocol Handler, Terminal Emulation) are available under the <a href="license/COPYING.LIB">GNU
-Library Public License</a> which is not quite as restrictive as the <a href="license/COPYING">GPL</a>.
-If you are still having problems with the license please do not hesitate
-to <a href="mailto:leo@mud.de,marcus@mud.de">contact us</a>.</font>
-<br>&nbsp;
-<table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
-<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
-<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Archive</font></font></b>
-<br><b><font face="Arial,Helvetica"><font color="#FFFFFF"><font size=-1>(shift-click
-to download!)</font></font></font></b></td>
-
-<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Remarks</font></font></b></td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="http://www.mud.de/se/jta/jar/jta20.jar">jta20.jar</a></tt>
-<br>(<!-- DATE -->)</td>
-
-<td>Class <b>binary</b> package to be put into your classpath. The archive
-contains the classes, readme and the license, but no documentation or source
-code.</td>
-</tr>
-
-<tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt><a href="http://www.mud.de/se/jta/jar/jta20-src.jar">jta20-src.jar</a></tt>
-<br>(<!-- DATE -->)</td>
-
-<td NOSAVE><b>Source</b> package with no classes included. If you have
-a JDK you can download this package to create your own binary packages.
-We recommend the usage of the included Makefile. It contains also the source
-code <b>documentation</b>.</td>
-</tr>
-</table>
-
+Java runtime environment (e.g. 1.0) please go to the<b><a href="http://www.first.gmd.de/persons/leo/java/Telnet/">old
+Java 1 version</a></b> that will work with most currently available browsers.</font>
 <center>
 <h1>
 <font color="#CC0000">Status Report</font></h1></center>
@@ -125,7 +97,8 @@ Part</font></font></b></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Base System&nbsp;</font>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/index.html">Base
+System</a></font>
 <br><font color="#000099">(Bus + plugin loader)</font></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port complete.</font></td>
@@ -136,7 +109,8 @@ the common part for both application and applet.</font></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Terminal Hardware</font></td>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/terminal/VDU.html">Terminal
+Hardware</a></font></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port complete.</font>
 <br><font color="#CC0000">cut &amp; paste in progress</font>
@@ -148,7 +122,8 @@ after one week some parts are still not done.</font></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Terminal Emulation</font></td>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/terminal/vt320.html">Terminal
+Emulation</a></font></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port done.</font></td>
 
@@ -158,8 +133,8 @@ programmers and is now Java 2 (event handling) compliant.</font></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Telnet Protocol
-Handler</font></td>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/source/de/mud/telnet/TelnetProtocolHandler.html">Telnet
+Protocol Handler</a></font></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600">Java 2 port done.</font></td>
 
@@ -169,7 +144,7 @@ of the application and is now provided as a library class for further use.</font
 </tr>
 
 <tr ALIGN=LEFT VALIGN=TOP NOSAVE>
-<td><font color="#000099">Application</font></td>
+<td><font color="#000099"><a href="doc/Main.html">Application</a></font></td>
 
 <td NOSAVE><font color="#006600">Java 2 implementation.</font></td>
 
@@ -178,7 +153,7 @@ as opposite to the applet.</font></td>
 </tr>
 
 <tr ALIGN=LEFT VALIGN=TOP NOSAVE>
-<td><font color="#000099">Applet</font></td>
+<td><font color="#000099"><a href="doc/Applet.html">Applet</a></font></td>
 
 <td NOSAVE><font color="#CC0000">partly implemented (no params)</font></td>
 
@@ -186,13 +161,18 @@ as opposite to the applet.</font></td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">Plugins</font></td>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099"><a href="doc/plugins.html">Plugins</a></font></td>
 
-<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600"><b>Socket</b> plugin
-done.</font>
-<br><font color="#006600"><b>Telnet</b> plugin done.</font>
-<br><font color="#006600"><b>Terminal</b> plugin done.</font>
-<br><font color="#006600"><b>Script</b> plugin done.</font></td>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#006600"><b><a href="doc/plugins/Socket.html">Socket</a></b>
+plugin done.</font>
+<br><font color="#006600"><b><a href="doc/plugins/Telnet.html">Telnet</a></b>
+plugin done.</font>
+<br><font color="#006600"><b><a href="doc/plugins/Terminal.html">Terminal</a></b>
+plugin done.</font>
+<br><font color="#006600"><b><a href="doc/plugins/Script.html">Script</a></b>
+plugin done.</font>
+<br><font color="#CC0000"><b><a href="doc/plugins/SSH.html">SSH</a></b>
+plugin partly done.</font></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE><font color="#000099">These are the most
 common plugins that will be delivered with the software.</font></td>
@@ -200,10 +180,31 @@ common plugins that will be delivered with the software.</font></td>
 </table>
 </td>
 
-<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><b>The Java<sup><font size=-2>tm</font></sup>
-Telnet Applet</b>
-<p>... is a fully featured TELNET implementation coupled with a very sophisticated
-terminal emulation for VT and ANSI terminals.
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><b><i><font color="#CC0000">Did
+you <a href="html/download.html">download</a> the latest version? Have
+a look at the timestamp:</font></i></b>
+<br><b></b>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">Package Timestamp</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE><!-- DATE --></td>
+</tr>
+</table></center>
+<b></b>
+<p><b><i><font color="#CC0000">What is&nbsp;..</font></i></b>
+<br><b></b>&nbsp;
+<table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">The Java<sup><font size=-2>tm</font></sup>
+Telnet Applet</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>... is a fully featured TELNET implementation coupled with a
+very sophisticated terminal emulation for VT and ANSI terminals.
 <p>TELNET was one of the first protocols to be developed during the early
 stages of the ARPANET that later became the Internet. TELNET allows you
 to login to another Internet location to gain access to databases, library
@@ -218,11 +219,17 @@ fast and reliable TELNET implementation to login to other workstations
 or text-based online games, such as MUDs.</td>
 </tr>
 </table>
+<b></b>
+<br><b></b>&nbsp;
+<br>&nbsp;
+<br>&nbsp;</td>
+</tr>
+</table>
 
 <table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
 <tr NOSAVE>
 <td NOSAVE>
-<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
 <tr NOSAVE>
 <td NOSAVE>Copyright 1996-1999 <a href="mailto:leo@mud.de">Matthias L.
 Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
@@ -230,6 +237,12 @@ Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
 <td>
 <div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
 version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id$</div>
 </td>
 </tr>
 </table>
