@@ -136,7 +136,7 @@ public class Terminal extends Plugin
 	  /* do nothing */ ;
 	else if(key.equals("Terminal.border")) {
 	  boolean raised = false;
-	  if(config.contains("Terminal.borderStyle"))
+	  if(config.containsKey("Terminal.borderStyle"))
 	    raised = Boolean.getBoolean("Terminal.borderRaised");
 	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
 	                     raised);
