@@ -105,12 +105,16 @@ public abstract class vt320 extends VDU implements KeyListener {
     KeyEnd = new String[4];
     NextScn = new String[4];
     PrevScn = new String[4];
+    Escape = new String[4];
+    BackSpace = new String[4];
     Insert[0]  = Insert[1]  = Insert[2]  = Insert[3]  = "\u001b[2~";
     Remove[0]  = Remove[1]  = Remove[2]  = Remove[3]  = "\u001b[3~";
     PrevScn[0] = PrevScn[1] = PrevScn[2] = PrevScn[3] = "\u001b[5~";
     NextScn[0] = NextScn[1] = NextScn[2] = NextScn[3] = "\u001b[6~";
     KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001b[H";
     KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001b[F";
+    Escape[0]  = Escape[1]  = Escape[2]  = Escape[3]  = "\u001b";
+    BackSpace[0]  = BackSpace[1]  = BackSpace[2]  = BackSpace[3]  = "\b";
 
     /* some more VT100 keys */
     Find   = "\u001b[1~";
@@ -286,6 +290,10 @@ public abstract class vt320 extends VDU implements KeyListener {
       if (res!=null) KeyLeft[i]=unEscape(res);
       res = codes.getProperty(prefixes[i]+"RIGHT");
       if (res!=null) KeyRight[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"ESCAPE");
+      if (res!=null) Escape[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"BACKSPACE");
+      if (res!=null) BackSpace[i]=unEscape(res);
     }
 
   }
@@ -433,7 +441,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
 
-  private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[];
+  private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[], Escape[], BackSpace[];
 
   private String osc,dcs;  /* to memorize OSC & DCS control sequence */
 
@@ -498,6 +506,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     char keyChar = evt.getKeyChar();
 
     if (debug>2) System.out.println("vt320: keyTyped "+evt);
+
+    if (keyChar == '\u001b' || keyChar == '\b') return;
 
     /* DISABLED: this is non-portable :(
     if (keyChar == 0x7f) {
@@ -636,6 +646,8 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
       case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
       case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
+      case KeyEvent.VK_ESCAPE: write(Escape[xind],false); break;
+      case KeyEvent.VK_BACK_SPACE: write(BackSpace[xind],false); break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8,false);
