@@ -131,8 +131,8 @@ public class VDU extends Component
     int r,g,b;
 
     r = (int)min(clr.getRed()  * 1.2 , 255.0);
-    b = (int)min(clr.getGreen()* 1.2 , 255.0);
-    g = (int)min(clr.getBlue() * 1.2 , 255.0);
+    g = (int)min(clr.getGreen()* 1.2 , 255.0);
+    b = (int)min(clr.getBlue() * 1.2 , 255.0);
     return new Color(r,g,b);
   }
 
@@ -166,11 +166,11 @@ public class VDU extends Component
   public final static int COLOR_7 = 7;
 
   /* definitions of standards for the display unit */
-  private static int COLOR_FG_STD  = 7;
-  private static int COLOR_BG_STD  = 0;
-  private final static int COLOR         = 0x7f8;
-  private final static int COLOR_FG      = 0x78;
-  private final static int COLOR_BG      = 0x780;
+  final static int COLOR_FG_STD  = 7;
+  final static int COLOR_BG_STD  = 0;
+  public final static int COLOR         = 0xff0;
+  public final static int COLOR_FG      = 0xf0;
+  public final static int COLOR_BG      = 0xf00;
 
   /** User defineable cursor colors */
   private Color cursorColorFG = null;
@@ -1021,9 +1021,9 @@ public class VDU extends Component
         bg = darken(getBackground());
 
         if((currAttr & COLOR_FG) != 0)
-          fg = darken(color[((currAttr & COLOR_FG) >> 3)-1]);
+          fg = darken(color[((currAttr & COLOR_FG) >> 4)-1]);
         if((currAttr & COLOR_BG) != 0)
-          bg = darken(darken(color[((currAttr & COLOR_BG) >> 7)-1]));
+          bg = darken(darken(color[((currAttr & COLOR_BG) >> 8)-1]));
 
         if((currAttr & BOLD) != 0)
           if(fg.equals(Color.black)) {
