@@ -275,7 +275,7 @@ public abstract class vt320 extends VDU implements KeyListener {
    * Set the terminal id used to identify this terminal.
    * @param terminalID the id string
    */
-  public void setTerminalID(String terminaID) { 
+  public void setTerminalID(String terminalID) { 
     this.terminalID = terminalID; 
   }
 
