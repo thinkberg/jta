@@ -28,6 +28,7 @@ package de.mud.jta;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.BorderLayout;
@@ -38,6 +39,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Help display for JTA.
@@ -58,8 +60,16 @@ public class Help {
     try {
       helpText.setPage(Help.class.getResource(url));
     } catch (IOException e) {
-      System.err.println("unable to load help");
-      helpText.setText("The Java Telnet Applet/Application\r\n(c) 1996-2004 Matthias L. Jugel, Marcus Meiﬂner\r\n\r\n");
+      try {
+        helpText.setPage(new URL(url));
+      }
+      catch (Exception ee)
+      {
+        System.err.println("unable to load help");
+        JOptionPane.showMessageDialog(parent, "The Java Telnet Applet/Application\r\n(c) 1996-2004 Matthias L. Jugel, Marcus Meiﬂner\r\n\r\n",
+                "jta", JOptionPane.INFORMATION_MESSAGE);
+        return;
+      }
     }
     helpText.setEditable(false);
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -69,7 +69,7 @@ import java.util.Properties;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Meissner
  */
 public class Main {
 
@@ -221,22 +221,22 @@ public class Main {
         }
       });
       file.addSeparator();
-      file.add(tmp = new JMenuItem("Print"));
-      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK));
-      tmp.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent evt) {
-          if (setup.getComponents().get("Terminal") != null) {
-            PrintJob printJob =
-                    frame.getToolkit().getPrintJob(frame, "JTA Terminal", null);
-            // return if the user clicked cancel
-            if (printJob == null) return;
-            ((JComponent) setup.getComponents().get("Terminal"))
-                    .print(printJob.getGraphics());
-            printJob.end();
+      if (setup.getComponents().get("Terminal") != null) {
+        file.add(tmp = new JMenuItem("Print"));
+        tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+              PrintJob printJob =
+                      frame.getToolkit().getPrintJob(frame, "JTA Terminal", null);
+              // return if the user clicked cancel
+              if (printJob == null) return;
+              ((JComponent) setup.getComponents().get("Terminal"))
+                      .print(printJob.getGraphics());
+              printJob.end();
           }
-        }
-      });
-      file.addSeparator();
+        });
+        file.addSeparator();
+      }
       file.add(tmp = new JMenuItem("Exit"));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
@@ -294,7 +294,7 @@ public class Main {
     else
       frame.pack();
 
-    frame.show();
+    frame.setVisible(true);
 
     if(debug > 0) 
       System.err.println("host: '"+host+"', "+host.length());
