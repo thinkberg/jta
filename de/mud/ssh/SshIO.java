@@ -55,7 +55,7 @@ public abstract class SshIO
    * variables for the connection
    */
   private String identification_string = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
-  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\r\n";
+  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\n";
 
   /**
    * Debug level. This results in additional diagnostic messages on the
@@ -96,19 +96,19 @@ public abstract class SshIO
   //	be sent by either side.  Messages with _CMSG_ are only sent by the
   //  client, and messages with _SMSG_ only by the server.
   //
-  private final int SSH_MSG_DISCONNECT =			1;
-  private final int SSH_SMSG_PUBLIC_KEY =			2;
+  private final int SSH_MSG_DISCONNECT =		1;
+  private final int SSH_SMSG_PUBLIC_KEY =		2;
   private final int SSH_CMSG_SESSION_KEY =		3;	
-  private final int SSH_CMSG_USER =				4;
+  private final int SSH_CMSG_USER =			4;
   private final int SSH_CMSG_AUTH_PASSWORD =		9;
   private final int SSH_CMSG_REQUEST_PTY =		10;
-  private final int SSH_CMSG_EXEC_SHELL =			12;
+  private final int SSH_CMSG_EXEC_SHELL =		12;
   private final int SSH_SMSG_SUCCESS =			14;
   private final int SSH_SMSG_FAILURE =			15;
-  private final int SSH_CMSG_STDIN_DATA =			16;
+  private final int SSH_CMSG_STDIN_DATA =		16;
   private final int SSH_SMSG_STDOUT_DATA =		17;
   private final int SSH_SMSG_STDERR_DATA =		18;
-  private final int SSH_SMSG_EXITSTATUS =			20;
+  private final int SSH_SMSG_EXITSTATUS =		20;
   private final int SSH_CMSG_EXIT_CONFIRMATION =	33;
   private final int SSH_MSG_DEBUG =	36;
 
@@ -164,8 +164,9 @@ public abstract class SshIO
    * 
    */
   synchronized public byte[] handleSSH(byte[] b) throws IOException {
-		
     byte[] result = packetDone(handleBytes(b, 0, b.length));
+
+    System.err.println("handleSSH " + b.length + " bytes, "+b.toString()+"");
 
     while(lastPacketReceived != null && lastPacketReceived.toBeFinished) {
       byte[] buff = lastPacketReceived.unfinishedBuffer;
@@ -213,12 +214,12 @@ public abstract class SshIO
   }
 
   public void disconnect() {
-		// System.err.println("In Disconnect");
-		login = "";
-		password = ""; 
-		phase=0;
+    // System.err.println("In Disconnect");
+    login = "";
+    password = ""; 
+    phase=0;
     encryption = false;
-		lastPacketReceived = null;
+    lastPacketReceived = null;
   }
 
 
@@ -231,8 +232,6 @@ public abstract class SshIO
 	dataToSend = null;
     }
   }
-	
-
 
   private SshPacket handleBytes(byte buff[], int offset, int count) 
     throws IOException {
@@ -258,13 +257,11 @@ public abstract class SshIO
 	  position = 0;
 	  byte[] data = SshMisc.createString(identification_string);
 	  byte packet_type = SSH_SMSG_STDOUT_DATA;
-	  SshPacket firstLine = createPacket(packet_type, data);
-	  return firstLine;
+	  return createPacket(packet_type, data);
 	}
 	break;
       case PHASE_SSH_RECEIVE_PACKET:
-	SshPacket result = 
-	  lastPacketReceived.getPacketfromBytes(buff, boffset-1, count,encryption,crypto);
+	SshPacket result = lastPacketReceived.getPacketfromBytes(buff,boffset-1,count,encryption,crypto);
 	return 	result;
       } // switch(phase) 
     } 	//while(boffset < count) 
@@ -278,7 +275,8 @@ public abstract class SshIO
   // Create a packet 
   //
 
-  private SshPacket createPacket(byte newType, byte[] newData) throws IOException { 
+  private SshPacket createPacket(byte newType, byte[] newData)
+  throws IOException { 
     return new SshPacket(newType, newData,encryption,crypto);
   } 
 	
@@ -427,8 +425,8 @@ public abstract class SshIO
 
     case SSH_SMSG_FAILURE:
       if (lastPacketSentType==SSH_CMSG_AUTH_PASSWORD) {// password incorrect ???
-				System.out.println("failed to log in");
-				disconnect();
+        System.out.println("failed to log in");
+        disconnect();
 	return "\nLogin & password not accepted\r\n".getBytes();
       }
       if (lastPacketSentType==SSH_CMSG_USER) { 
