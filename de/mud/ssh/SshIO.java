@@ -73,7 +73,7 @@ public abstract class SshIO
   boolean ScreenUpdateForEachPacket = false;
 	
 
-  private String login, password; 
+  private String login = "", password = ""; 
   //nobody is to access those fields  : better to use pivate, nobody knows :-)
 
 
@@ -113,6 +113,7 @@ public abstract class SshIO
   private final int SSH_SMSG_STDERR_DATA =		18;
   private final int SSH_SMSG_EXITSTATUS =			20;
   private final int SSH_CMSG_EXIT_CONFIRMATION =	33;
+  private final int SSH_MSG_DEBUG =	36;
 
   //used in getPacket
   private int position = 0;				// used to know, how far we are in packet_length_array[], padding[] ...
@@ -148,10 +149,12 @@ public abstract class SshIO
   }
 
   public void setLogin(String user) {
+    if(user == null) user = "";
     login = user;
   }
 
   public void setPassword(String password) {
+    if(password == null) password = "";
     this.password = password;
   }
 
@@ -431,7 +434,7 @@ public abstract class SshIO
       //StrByte = new byte[str.length()];
       //str.getBytes(0, str.length(),	StrByte, 0);
       //return(StrByte);
-      break;
+      return str.getBytes();
 			
     case SSH_SMSG_EXITSTATUS: //sent by the server to indicate that 
                               // the client program has terminated.
@@ -443,9 +446,19 @@ public abstract class SshIO
       disconnect();
       break;
 
+   case SSH_MSG_DEBUG:
+      str = "Error: " + SshMisc.getString(0, packetData);
+      System.out.println("SshIO.handlePacket : " + "STDERR_DATA " + str );
+
+      if(lastPacketSentType==SSH_CMSG_USER) { 
+        Send_SSH_CMSG_REQUEST_PTY(); //request a pseudo-terminal
+        break;
+      }
+
+      return str.getBytes();
 
     default: 
-      System.err.print("SshIO.handlePacket : Packet Type unknown\r\n");
+      System.err.print("SshIO.handlePacket : Packet Type unknown: "+packetType);
       break;
 		
     }//	switch(b)
@@ -586,6 +599,7 @@ public abstract class SshIO
    * string   user login name on server
    */
   private byte[] Send_SSH_CMSG_USER() throws IOException {
+    System.err.println("Send_SSH_CMSG_USER("+login+")");
     byte[] data = SshMisc.createString(login);
     byte packet_type = SSH_CMSG_USER;
     SshPacket packet = createPacket(packet_type, data);
