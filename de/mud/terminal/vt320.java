@@ -731,6 +731,8 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
       case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
       case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
+      case KeyEvent.VK_DECIMAL:	write(NUMDot[xind],false); break;
+      case KeyEvent.VK_ADD: 	write(NUMPlus[xind],false); break;
     }
 
     switch (keyCode) {
@@ -738,8 +740,6 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (shift || control)
 	   sendTelnetCommand((byte)243); // BREAK
 	break;
-      case KeyEvent.VK_DECIMAL: write(NUMDot[xind],false); break;
-      case KeyEvent.VK_ADD: write(NUMPlus[xind],false); break;
       case KeyEvent.VK_F1: write(fmap[1],false); break;
       case KeyEvent.VK_F2: write(fmap[2],false); break;
       case KeyEvent.VK_F3: write(fmap[3],false); break;
