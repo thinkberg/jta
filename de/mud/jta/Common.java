@@ -46,7 +46,12 @@ public class Common extends PluginLoader {
 
   private Hashtable plugins, components, menus;
 
+  public final static String DEFAULT_PATH = "de.mud.jta.plugin";
+
   public Common(Properties config) {
+    // configure the plugin path
+    super(getPluginPath(config.getProperty("pluginPath")));
+
     System.out.println("** The Java(tm) Telnet Application");
     System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
     System.out.println("** Copyright (c) 1996-2000 Matthias L. Jugel, "
@@ -56,7 +61,7 @@ public class Common extends PluginLoader {
     components = new Hashtable();
     menus = new Hashtable();
 
-    Vector names = split(config.getProperty("plugins"));
+    Vector names = split(config.getProperty("plugins"), ',');
     if(names == null) {
       System.err.println("jta: no plugins found! aborting ...");
       return;
@@ -101,20 +106,40 @@ public class Common extends PluginLoader {
     return menus;
   }
 
+
+  /**
+   * Convert the plugin path from a separated string list to a Vector.
+   * @param path the string path
+   * @return a vector containing the path
+   */
+  private static Vector getPluginPath(String path) {
+    if(path == null)
+      path = DEFAULT_PATH;
+
+    // I am not sure that this is desirable, as the applet administrator
+    // might use UNIX and thus ':' but the applet user might have a Windows
+    // system and thus uses ';' and thus the whole thing will collapse.
+    String separator = System.getProperty("path.separator");
+    if(separator == null)
+      separator = ":";
+
+    return split(path, separator.charAt(0));
+  }
+
   /**
    * Split up comma separated lists of strings. This is quite strict, no
    * whitespace characters are allowed.
    * @param s the string to be split up
    * @return an array of strings
    */
-  private static Vector split(String s) {
+  private static Vector split(String s, char separator) {
     if(s == null) return null;
     Vector v = new Vector();
-    int old = -1, idx = s.indexOf(',');
+    int old = -1, idx = s.indexOf(separator);
     while(idx >= 0) {
       v.addElement(s.substring(old + 1, idx));
       old = idx;
-      idx = s.indexOf(',', old + 1);
+      idx = s.indexOf(separator, old + 1);
     } 
     v.addElement(s.substring(old + 1));
     return v;

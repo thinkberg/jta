@@ -51,8 +51,7 @@ public class PluginLoader implements PluginBus {
    * Create new plugin loader and set up with default plugin path.
    */
   public PluginLoader() {
-    PATH = new Vector();
-    PATH.addElement("de.mud.jta.plugin"); 
+    this(null);
   }
 
   /**
@@ -60,7 +59,11 @@ public class PluginLoader implements PluginBus {
    * @param path the default search path for plugins
    */
   public PluginLoader(Vector path) {
-    PATH = path;
+    if(path == null) {
+      PATH = new Vector();
+      PATH.addElement("de.mud.jta.plugin"); 
+    } else
+      PATH = path;
   }
 
   /**
@@ -74,15 +77,18 @@ public class PluginLoader implements PluginBus {
   public Plugin addPlugin(String name, String id) {
     Plugin plugin = null;
 
-    // load the plugin by name and instantiate it
-    try {
-      Class c = Class.forName(PATH.elementAt(0)+"."+name);
-      Constructor cc = c.getConstructor(new Class[] { PluginBus.class, 
-                                                      String.class });
-      plugin = (Plugin)cc.newInstance(new Object[] { this, id });
-    } catch(Exception e) {
-      System.err.println("plugin loader: cannot load "+name);
-      e.printStackTrace();
+    // cycle through the PATH to load plugin
+    Enumeration path = PATH.elements();
+    while(plugin == null && path.hasMoreElements())
+      plugin = loadPlugin((String)path.nextElement(), name, id);
+
+    // if it was not found, try without a path as a last resort
+    if(plugin == null)
+      plugin = loadPlugin(null, name, id);
+
+    // nothing found, tell the user
+    if(plugin == null) {
+      System.err.println("plugin loader: plugin '"+name+"' was not found!");
       return null;
     }
 
@@ -95,6 +101,27 @@ public class PluginLoader implements PluginBus {
     }
 
     return plugin;
+  }
+
+  private Plugin loadPlugin(String path, String name, String id) {
+    Plugin plugin = null;
+    String fullClassName = (path == null) ? name : path + "." + name;
+
+    // load the plugin by name and instantiate it
+    try {
+      Class c = Class.forName(fullClassName);
+      Constructor cc = c.getConstructor(new Class[] { PluginBus.class, 
+                                                      String.class });
+      plugin = (Plugin)cc.newInstance(new Object[] { this, id });
+      return plugin;
+    } catch(ClassNotFoundException ce) {
+      if(debug > 0)
+        System.err.println("plugin loader: plugin not found: "+fullClassName);
+    } catch(Exception e) {
+      System.err.println("plugin loader: can't load plugin: "+fullClassName);
+      e.printStackTrace();
+    }
+    return null;
   }
 
   /** holds the plugin listener we serve */
