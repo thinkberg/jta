@@ -19,7 +19,7 @@
 package de.mud.bsx;
 /**
  * a LRU Cache for BSX Objects.
- @author  Thomas Kriegelstein
+ @author  Thomas Kriegelstein (tk4@rb.mud.de)
  @version 1.0
  */
 public class BSXCache

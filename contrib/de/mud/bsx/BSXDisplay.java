@@ -20,7 +20,7 @@ package de.mud.bsx;
 
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -31,10 +31,10 @@ import java.util.Enumeration;
  * Implementation of a BSX Display capable of handling basic BSX-Calls.
  * Handles: @SCE, @DFS, @VIO, @RMO, @DFO, @RFS
  * Uses:    BSXCache, BSXObject, BSXScene
- @author  Thomas Kriegelstein
+ @author  Thomas Kriegelstein (tk4@rb.mud.de)
  @version 1.0
  */
-public final class BSXDisplay extends Canvas
+public final class BSXDisplay extends Component
 {
     /** The offscreen doublebuffer */
     protected Image picture;

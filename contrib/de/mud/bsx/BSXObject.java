@@ -26,7 +26,7 @@ import java.awt.Graphics;
  <ul>
  <li>renders its data on a given Graphics object
  </ul>
- @author  Thomas Kriegelstein
+ @author  Thomas Kriegelstein (tk4@rb.mud.de)
  @version 1.0
  */
 public class BSXObject

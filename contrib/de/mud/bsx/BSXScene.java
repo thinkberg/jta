@@ -31,10 +31,10 @@ import java.util.Enumeration;
  <li>keeps track on objects with their positions
  <li>renders its data on a given Graphics object
  </ul>
- @author  Thomas Kriegelstein
+ @author  Thomas Kriegelstein (tk4@rb.mud.de)
  @version 1.1
 */
-class BSXScene extends BSXObject
+public class BSXScene extends BSXObject
 {
     /** the eight BSX depth layers */
     protected final Vector[] layers = new Vector[8];
