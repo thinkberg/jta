@@ -49,7 +49,7 @@ import java.io.IOException;
  * </I>Cedric Gourio</I>'s implementation that used parts of the old Java
  * Telnet Applet. Have a look at the package de.mud.ssh for further information
  * about ssh or look at the official ssh homepage:
- * <A HREF="http://www.ssh.org/">http://www.ssh.org/</A>.
+ * <A HREF="http://www.ssh.org/">http://www.ssh.fi/</A>.
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
@@ -97,9 +97,19 @@ public class SSH extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
         final Frame frame = new Frame("SSH User Authentication");
-        Panel panel = new Panel(new GridLayout(2,2));
+        Panel panel = new Panel(new GridLayout(3,1));
+	panel.add(new Label("SSH Authorization required"));
+	panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
+        panel.add(new Label("Adapted 1999 to the JTA by Matthias L. Jugel"));
+	frame.add("North", panel);
+        panel = new Panel(new GridLayout(2,2));
 	final TextField login = new TextField(10);
 	final TextField passw = new TextField(10);
+	login.addActionListener(new ActionListener() {
+	  public void actionPerformed(ActionEvent evt) {
+	    passw.requestFocus();
+	  }
+	});
 	passw.setEchoChar('*');
 	panel.add(new Label("User name")); panel.add(login);
 	panel.add(new Label("Password")); panel.add(passw);
@@ -107,14 +117,16 @@ public class SSH extends Plugin implements FilterPlugin {
 	panel = new Panel();
 	Button cancel = new Button("Cancel");
 	Button ok = new Button("Login");
-	ok.addActionListener(new ActionListener() {
+	ActionListener enter = new ActionListener() {
 	  public void actionPerformed(ActionEvent evt) {
 	    handler.setLogin(login.getText());
 	    handler.setPassword(passw.getText());
 	    frame.dispose();
 	    auth = true;
 	  }
-	});
+	};
+	ok.addActionListener(enter);
+	passw.addActionListener(enter);
 	cancel.addActionListener(new ActionListener() {
 	  public void actionPerformed(ActionEvent evt) {
 	    frame.dispose();
@@ -141,13 +153,23 @@ public class SSH extends Plugin implements FilterPlugin {
   private byte buffer[];
   private int pos;
 
+  /**
+   * Read data from the backend and decrypt it. This is a buffering read
+   * as the encrypted information is usually smaller than its decrypted
+   * pendant. So it will not read from the backend as long as there is
+   * data in the buffer.
+   * @param b the buffer where to read the decrypted data in
+   * @return the amount of bytes actually read.
+   */
   public int read(byte[] b) throws IOException {
+    // we don't want to read from the pipeline without authorization
     while(!auth) try {
       Thread.sleep(1000);
     } catch(InterruptedException e) {
       e.printStackTrace();
     }
 
+    // empty the buffer before we do anything else
     if(buffer != null) {
       int amount = (buffer.length - pos) <= b.length ? 
                       buffer.length - pos : b.length;
@@ -158,7 +180,8 @@ public class SSH extends Plugin implements FilterPlugin {
         buffer = null;
       return amount;
     }
-        
+ 
+    // now that the buffer is empty let's read more data and decrypt it
     int n = source.read(b);
     if(n > 0) {
       byte[] tmp = new byte[n];
@@ -180,7 +203,14 @@ public class SSH extends Plugin implements FilterPlugin {
     return n;
   }
 
+  /**
+   * Write data to the back end. This hands the data over to the ssh
+   * protocol handler who encrypts the information and writes it to
+   * the actual back end pipe.
+   * @param b the unencrypted data to be encrypted and sent
+   */
   public void write(byte[] b) throws IOException {
+    // no write until authorization is done
     if(!auth) return;
     handler.sendData(new String(b));
   }

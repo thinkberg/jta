@@ -144,7 +144,7 @@ class SshPacket {
 
   public SshPacket getPacketfromBytes(byte buff[], int offset, int count) 
     throws IOException {
-		
+
     int boffset = offset;
     byte b;  			
     while(boffset < count) {
@@ -185,13 +185,10 @@ class SshPacket {
 	block[position] = b;
 				
 	if (++position>=block.length) { //the block is complete
-										
-						
 	  if (count>boffset) {  //there is more than 1 packet in buff
 	    toBeFinished = true;
 	    unfinishedBuffer = buff;
 	    positionInUnfinishedBuffer = boffset;
-	    System.out.println("buffer: "+boffset+", "+buff.length);
 	  }
 	  else toBeFinished = false;
 

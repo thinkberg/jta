@@ -53,7 +53,7 @@ public abstract class SshIO
    * variables for the connection
    */
   private String identification_string = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
-  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (01/08/98) developped by Cedric Gourio: javassh@france-mail.com\r";
+  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\r";
 
   /**
    * Debug level. This results in additional diagnostic messages on the
@@ -170,10 +170,13 @@ public abstract class SshIO
       int start = lastPacketReceived.positionInUnfinishedBuffer;
       if(buff != null) {
         byte[] result = packetDone(handleBytes(buff, start, buff.length));
-	if(rest != null && result != null) {
-	  byte[] tmp = new byte[rest.length + result.length];
-	  System.arraycopy(rest, 0, tmp, 0, rest.length);
-	  System.arraycopy(result, 0, tmp, rest.length, result.length);
+	if(rest != null) {
+	  if(result != null) {
+	    byte[] tmp = new byte[rest.length + result.length];
+	    System.arraycopy(rest, 0, tmp, 0, rest.length);
+	    System.arraycopy(result, 0, tmp, rest.length, result.length);
+	    rest = tmp;
+	  }
 	} else
 	  rest = result;
       }
@@ -187,7 +190,7 @@ public abstract class SshIO
         System.arraycopy(rest, 0, cat, 0, rest.length);
         System.arraycopy(result, 0, cat, rest.length, result.length);
         return cat;
-      } else
+      } else 
         return rest;
 
     return result;

@@ -136,16 +136,12 @@ public class Main extends Frame {
     });
     mb.add(file);
 
-    Menu plugin = new Menu("Plugin");
-    plugin.setShortcut(new MenuShortcut(KeyEvent.VK_P, true));
     Hashtable menuList = setup.getMenus();
     names = menuList.keys();
     while(names.hasMoreElements()) {
       String name = (String)names.nextElement();
-      plugin.add((Menu)menuList.get(name));
+      mb.add((Menu)menuList.get(name));
     }
-    mb.add(plugin);
-
 
     Menu help = new Menu("Help");
     help.add(tmp = new MenuItem("About"));

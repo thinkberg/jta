@@ -146,8 +146,7 @@ class SshMisc {
     value[1] = (byte) ((length>>16) & 0xff);
     value[0] = (byte) ((length>>24) & 0xff);
 
-    byte [] strByte = new byte[length];
-    str.getBytes(0, length,	strByte, 0);
+    byte [] strByte = str.getBytes();
 		
     for (int i=0; i<length; i++) value[i+4] = strByte[i];
     return value;
