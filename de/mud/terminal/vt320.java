@@ -641,6 +641,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  System.out.println("vt320: unknown event: "+evt);
     }
 
+    if(keyChar == 0) return;
+
     // Hmmm. Outside the VMS case?
     if(shift && (keyChar == '\t')) 
       write(KeyBacktab);
