@@ -483,8 +483,9 @@ public abstract class vt320 extends VDU implements KeyListener {
   private static char gr = 2;		// default GR to G2
   private static int onegl = -1;	// single shift override for GL.
 
-  // map from scoansi linedrawing to DEC
-  private final static String scoansi_acs="3x4u?kZl@mYjEnBwDqCtAvMq:xNnIl;kHm<j";
+  // Map from scoansi linedrawing to DEC _and_ unicode (for the stuff which
+  // is not in linedrawing). Got from experimenting with scoadmin.
+  private final static String scoansi_acs="Tm7k3x4u?kZl@mYjEnB\u2566DqCtAvM\u2550:\u2551N\u2557I\u2554;\u2557H\u255a0a<\u255d";
   // array to store DEC Special -> Unicode mapping
   //  Unicode   DEC  Unicode name    (DEC name)
   private static char DECSPECIAL[] = {
@@ -1272,11 +1273,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	        // Remap SCOANSI line drawing to VT100 line drawing chars
 		// for our SCO using customers.
 	        if ( terminalID.equals("scoansi") ) {
-		   byte[] arr = scoansi_acs.getBytes();
-		   int i;
-		   for (i=0;i<arr.length;i+=2) {
-		      if (c==arr[i]) {
-			c=(char)arr[i+1];
+		   for (int i=0;i<scoansi_acs.length();i+=2) {
+		      if (c==scoansi_acs.charAt(i)) {
+			c=scoansi_acs.charAt(i+1);
 			break;
 		      }
 		   }
