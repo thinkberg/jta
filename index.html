@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0</title>
@@ -51,8 +51,9 @@ Mei&szlig;ner</a></i>
 <font color="#CC0000">Version 2.0 RC3&nbsp;</font></h1></center>
 
 <center><font color="#CC0000"><b>Important:</b> this is release candidate
-2. It still lacks some functionality known from the older version. Have
-a look at the <a href="#STATUS">Status Report</a>!</font></center>
+3.&nbsp; Most of the functionality is implemented and we are working on
+cosmetic changes.&nbsp;</font>
+<br><font color="#CC0000">Have a look at the <a href="#STATUS">Status Report</a>!</font></center>
 
 <p><font color="#000000">The software has been rewritten and comes with
 a complete new base system. Apart from changes to the event handling in
@@ -95,34 +96,18 @@ Java 1 version</a></b> that will work with most currently available browsers.</f
 <center>
 <h1>
 <a NAME="STATUS"></a><font color="#CC0000">Status Report</font></h1></center>
-We are coming toward a release but cannot say when this will be. The currently
-available package is already usable for those would like to upgrade from
-the old version. What has not yet been implemented is stated below:
+The final release can be seen on the horizon but we do not feel that is
+ready right now for a few things. The <i>cut&amp;paste</i> does not work
+too well and we have requests for <i>printing</i> functionality that we
+would like to include before the final release.
 <blockquote>
 <li>
-<font color="#CC0000">[important] </font>The <b>terminal display </b>is
-now <b>FAST</b> in Java 1 and 2! We introduced <i>double buffering</i>
-for the VDU and you can see the difference.</li>
+<i>cut&amp;paste</i> is messy and needs a rework ...</li>
 
 <li>
-Together with the ButtonBar we have managed to make the plugins more useful
-by allowing <i>more than one of the same plugins</i> to be used. Have a
-look at the <a href="doc/plugins/index.html">plugin documentation</a> page.</li>
-
-<li>
-<i>cut&amp;paste</i> is still somewhat messy</li>
-
-<li>
-<i>application menus</i> are still under development</li>
+<font color="#CC0000">[important]</font> the <b><a href="doc/plugins/SSH.html">SSH</a></b>
+stuff has been worked on by <i>Dave Smith </i>and should work now</li>
 </blockquote>
-Under some circumstances you may experience difficulties with some of the
-plugins:
-<ul>
-<li>
-<b><a href="doc/plugins/SSH.html">SSH</a></b> may work or it may not. We
-had reports that it works beautifully but we also had people who had <i>crc
-errors </i>en-masse and we simply don't know why.</li>
-</ul>
 </td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Did
