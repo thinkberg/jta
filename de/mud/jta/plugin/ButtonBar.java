@@ -107,13 +107,20 @@ import java.awt.event.ActionEvent;
  * # The following line send the text in the input field "send" and appends
  * # a newline.
  * input		send	20	"\\@send@\n"	"ls"
- * #
- * # To implement an Choice Box specify the choice keyword and repeat
- * # pairs of labels and values. The values will appear in the dropdown
- * # down box, the string will be sent if selected. You can use any number
- * # of choices.
  * # 
- * choice		choice1	"sends text1" choice2 	"sends text2"
+ * # - Defining a choice
+ * # A choice is defined just like the button above, but it has multiple
+ * # text/command pairs. If the text or command contain whitespace characters,
+ * # enclose them in quote (") characters. The text and command data may be
+ * # spread over several lines for better readability. Make the first command
+ * # empty because it is initially selected, and choosing it will have no
+ * # effect until some other item has been chosen.
+ * #choice       "- choose -"   ""
+ * #             "Text 1"       "Command 1"
+ * #             "Text 2"       "Command 2"
+ * #             "Text 3"       "Command 3"
+ * # etc...
+
  * </PRE>
  * Other possible keywords are <TT>break</TT> which does introduce a new
  * line so that buttons and input fields defined next will appear in a new
