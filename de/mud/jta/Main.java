@@ -21,6 +21,7 @@ package de.mud.jta;
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.FocusStatusListener;
 import de.mud.jta.event.SocketRequest;
+import de.mud.jta.event.ReturnFocusRequest;
 
 import java.util.Properties;
 import java.util.Hashtable;
@@ -261,6 +262,8 @@ public class Main {
     frame.show();
 
     setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+    /* make sure the focus goes somewhere to start off with */
+    setup.broadcast(new ReturnFocusRequest());
   }
 
   /**

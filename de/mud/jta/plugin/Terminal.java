@@ -33,6 +33,7 @@ import de.mud.jta.event.TerminalTypeListener;
 import de.mud.jta.event.WindowSizeListener;
 import de.mud.jta.event.LocalEchoListener;
 import de.mud.jta.event.FocusStatus;
+import de.mud.jta.event.ReturnFocusListener;
 
 import java.awt.Component;
 import java.awt.Panel;
@@ -269,6 +270,12 @@ public class Terminal extends Plugin
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
         configure(config);
+      }
+    });
+
+    bus.registerPluginListener(new ReturnFocusListener() {
+      public void returnFocus() {
+        terminal.requestFocus();
       }
     });
   }

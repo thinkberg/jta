@@ -20,6 +20,7 @@ package de.mud.jta;
 
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.SocketRequest;
+import de.mud.jta.event.ReturnFocusRequest;
 import de.mud.jta.event.AppletRequest;
 
 import java.util.Properties;
@@ -199,6 +200,7 @@ public class Applet extends java.applet.Applet {
 	     .booleanValue())) {
           ((Frame)appletFrame).pack();
 	  ((Frame)appletFrame).show();
+	  pluginLoader.broadcast(new ReturnFocusRequest());
 	  close.setLabel(startText != null ? stopText : "Disconnect");
 	} else
 	  close.setLabel(startText != null ? startText : "Connect");
@@ -215,6 +217,7 @@ public class Applet extends java.applet.Applet {
               getAppletContext().showStatus("Trying "+host+" "+port+" ...");
               pluginLoader.broadcast(new SocketRequest(host, 
 	                                               Integer.parseInt(port)));
+              pluginLoader.broadcast(new ReturnFocusRequest());
 	      close.setLabel(stopText != null ? stopText : "Disconnect");
 	    }
           }
@@ -351,6 +354,7 @@ public class Applet extends java.applet.Applet {
       if(debug > 0) System.err.println("start("+host+", "+port+")");
       getAppletContext().showStatus("Trying "+host+" "+port+" ...");
       pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+      pluginLoader.broadcast(new ReturnFocusRequest());
     } 
   }
 
