@@ -432,6 +432,9 @@ public abstract class SshIO
 
 
     switch(p.getType()) {
+    case SSH_MSG_IGNORE:
+      return "";
+
     case SSH_MSG_DISCONNECT:
       String str = p.getString();
       disconnect();
