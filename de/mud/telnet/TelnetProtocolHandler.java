@@ -308,7 +308,7 @@ public abstract class TelnetProtocolHandler {
     if (count == 0) 	// buffer is empty.
       return -1;
 
-    while(!dobreak && (boffset < count)) {
+    while(!dobreak && (boffset < count) && (noffset < nbuf.length)) {
       b=buf[boffset++];
       // of course, byte is a signed entity (-128 -> 127)
       // but apparently the SGI Netscape 3.0 doesn't seem
