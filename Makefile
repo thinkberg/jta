@@ -68,7 +68,7 @@ jar:	app build
 	@touch "Created-$(DATE)"
 	@$(JAR) cvfm jar/$(PKGNAME).jar jta.manifest \
 	  "Created-$(DATE)" README \
-	  license/COPYING license/COPYING.LIB \
+	  license/COPYING \
 	  de/mud/ssh/license.txt \
 	  `find $(SRCDIR) -name \*.class` \
 	  `find $(SRCDIR) -name \*.conf` > /dev/null
