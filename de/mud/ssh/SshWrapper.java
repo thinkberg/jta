@@ -221,7 +221,7 @@ public class SshWrapper {
    * @param b the buffer where to read the decrypted data in
    * @return the amount of bytes actually read.
    */
-  public int read(byte[] b) {
+  public int read(byte[] b) throws IOException {
     // Empty the buffer before we do anything else
     if(buffer != null) {
       int amount = ((buffer.length - pos) <= b.length) ? 
@@ -235,20 +235,12 @@ public class SshWrapper {
     }
  
     // now that the buffer is empty let's read more data and decrypt it
-    int n = 0;
-    try {
-      n = in.read(b);
-    } catch (IOException e) {
-    }
+    int n = in.read(b);
     if(n > 0) {
       byte[] tmp = new byte[n];
       System.arraycopy(b, 0, tmp, 0, n);
       pos = 0;
-      try {
-        buffer = handler.handleSSH(tmp);
-      } catch (IOException e) {
-      }
-
+      buffer = handler.handleSSH(tmp);
       if(debug > 0 && buffer != null && buffer.length > 0)
         System.err.println("ssh: "+buffer);
 
