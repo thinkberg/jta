@@ -55,7 +55,7 @@ public abstract class SshIO
    * variables for the connection
    */
   private String identification_string = ""; //("SSH-<protocolmajor>.<protocolminor>-<version>\n")
-  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\r";
+  private String identification_string_sent = "SSH-1.5-Java Ssh 1.1 (16/09/99) leo@mud.de, original by Cedric Gourio (javassh@france-mail.com)\r\n";
 
   /**
    * Debug level. This results in additional diagnostic messages on the
@@ -256,13 +256,10 @@ public abstract class SshIO
 	  phase++; 
 	  write(identification_string_sent.getBytes());
 	  position = 0;
-	  //return StringByte;
-	  byte[] data = SshMisc.createString(identification_string_sent);
+	  byte[] data = SshMisc.createString(identification_string);
 	  byte packet_type = SSH_SMSG_STDOUT_DATA;
-	  SshPacket fistLine = createPacket(packet_type, data);
-	  //identification_string = null;
-	  //identification_string_sent = null;
-	  return fistLine;
+	  SshPacket firstLine = createPacket(packet_type, data);
+	  return firstLine;
 	}
 	break;
       case PHASE_SSH_RECEIVE_PACKET:
@@ -343,12 +340,13 @@ public abstract class SshIO
 	// we have completely received the PUBLIC_KEY
 	// we prepare the answer ...
 
-      Send_SSH_CMSG_SESSION_KEY(anti_spoofing_cookie,
-				server_key_public_modulus,
-				host_key_public_modulus,
-				supported_ciphers_mask,
-				server_key_public_exponent,
-				host_key_public_exponent);
+      byte ret[] = Send_SSH_CMSG_SESSION_KEY(
+	anti_spoofing_cookie, server_key_public_modulus,
+	host_key_public_modulus, supported_ciphers_mask,
+	server_key_public_exponent, host_key_public_exponent
+      );
+      if (ret != null)
+	  return ret;
 				
 	// we check if MD5(server_key_public_exponent) is equals to the 
 	// applet parameter if any .
@@ -516,7 +514,7 @@ public abstract class SshIO
 					   byte[] supported_ciphers_mask,
 					   byte[] server_key_public_exponent,
 					   byte[] host_key_public_exponent)
-	throws IOException { 
+	throws IOException {
 		
     String str;
     int boffset;
@@ -548,9 +546,9 @@ public abstract class SshIO
     //
     cipher_type = (byte) SSH_CIPHER_IDEA; // SSH_CIPHER_NONE SSH_CIPHER_IDEA;
     if (  (((1 << cipher_type) & 0xff) & supported_ciphers_mask[3])==0) { 
-      System.err.println("SshIO: encryption method not supported\n");
+      System.err.println("SshIO: remote server does not supported IDEA only encryption, support cypher mask is "+supported_ciphers_mask[3]+".\n");
       disconnect();
-      return "\rencryption method not supported !!\r\n".getBytes();
+      return "\rRemote server does not support IDEA Key exchange, closing connection.\r\n".getBytes();
     }
 
     // 	anti_spoofing_cookie : the same 
