@@ -271,7 +271,10 @@ public class Terminal extends Plugin
 	    if(colors.get(tmp) != null)
 	      set[i] = (Color)colors.get(tmp);
 	    else try {
-	      set[i] = Color.getColor(tmp);
+	      if(Color.getColor(tmp) != null) 
+	        set[i] = Color.getColor(tmp);
+              else
+	        set[i] = Color.decode(tmp);
 	    } catch(Exception e) {
 	      error("ignoring unknown color code: "+tmp);
 	    }
