@@ -1161,6 +1161,11 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       switch (c) {
       case CSI: // should be in the 8bit section, but some BBS use this
+        DCEvar    = 0;
+        DCEvars[0]  = 0;
+        DCEvars[1]  = 0;
+        DCEvars[2]  = 0;
+        DCEvars[3]  = 0;
         term_state = TSTATE_CSI;
         break;
       case ESC:
@@ -1250,17 +1255,17 @@ public abstract class vt320 extends VDU implements KeyListener {
 	      System.out.println(c+" ("+(int)c+")");
           }
         }
-	/*
+	if (!useibmcharset) { /* Not a IBM Charset BBS, use DEC magic */
 	  if ( gx[gr] == '0' ) {
-          if ( c >= '\u00bf' && c <= '\u00fe' ) {
-          if (debug>2)
-	  System.out.print("Mapping "+c);
-	  c = DECSPECIAL[(short)c - 0xbf];
-	  if (debug>2)
-	  System.out.println("to "+c);
-          }
+	    if ( c >= '\u00df' && c <= '\u00fe' ) {
+	      if (debug>2)
+		  System.out.print("Mapping "+c+", value is "+(c-'\u00df'));
+	      c = DECSPECIAL[c-'\u00df'];
+	      if (debug>2)
+		System.out.println("to "+c);
+	    }
 	  }
-	*/
+	}
 	if (debug>4) System.out.println("output "+c+" at "+C+","+R);
         if (useibmcharset)
           c = map_cp850_unicode(c);
@@ -1407,13 +1412,13 @@ public abstract class vt320 extends VDU implements KeyListener {
       case '(': /* Designate G0 Character set (ISO 2022) */
         term_state = TSTATE_SETG0;
         break;
-      case ')': /* Designate G0 character set (ISO 2022) */
+      case ')': /* Designate G1 character set (ISO 2022) */
         term_state = TSTATE_SETG1;
         break;
-      case '*': /* Designate G1 Character set (ISO 2022) */
+      case '*': /* Designate G2 Character set (ISO 2022) */
         term_state = TSTATE_SETG2;
         break;
-      case '+': /* Designate G1 Character set (ISO 2022) */
+      case '+': /* Designate G3 Character set (ISO 2022) */
         term_state = TSTATE_SETG3;
         break;
       case '~': /* Locking Shift 1, right */
