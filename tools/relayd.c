@@ -177,7 +177,7 @@ int i;
 /* Turn into a daemon. It is easy, isn't it? */
 void
 daemonize() {
-
+#ifndef _WIN32
     switch (fork()) {
     default: /* parent dies */
 	exit(0);
@@ -194,6 +194,7 @@ daemonize() {
 	setsid();	/* become session leader to detach from controlling tty */
 	return;	/* and return */
     }
+#endif
 }
 
 void

@@ -195,6 +195,7 @@ fd_make_nonblocking(int fd) {
 /* Turn into a daemon. It is easy, isn't it? */
 void
 daemonize() {
+#ifndef _WIN32 
     switch (fork()) {
     default:
 	exit(0);
@@ -211,6 +212,7 @@ daemonize() {
 	setsid();	/* become session leader to detach from controlling tty */
 	return;	/* and return */
     }
+#endif
 }
 
 
