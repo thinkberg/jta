@@ -18,7 +18,8 @@
 JAVA	=	java
 JAR	=	jar
 JAVAC	=	javac
-DEBUG	=	-g -deprecation
+#DEBUG	=	-g -deprecation
+DEBUG	=	-O
 JFLAGS	=	-classpath $(CLASSPATH):jar/cryptix.jar:.
 SRCDIR	=	de
 PKGNAME	=	jta20
@@ -139,8 +140,8 @@ app:
 	@echo Done.
 
 clean:
-	-find . -name *.class -print | xargs rm > /dev/null 2>&1
-	-find . -name *~ -print | xargs rm > /dev/null 2>&1
+	-find . -name \*.class -print | xargs rm > /dev/null 2>&1
+	-find . -name \*~ -print | xargs rm > /dev/null 2>&1
 	-rm tools/relayd tools/mrelayd
 
 realclean: clean
