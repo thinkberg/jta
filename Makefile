@@ -74,9 +74,6 @@ jar:	app
 cont:
 	@echo Compiling contributed software ...
 	@(cd contrib; make)
-	@echo Creating contrib.jar ...
-	@$(JAR) cvf jar/contrib.jar contrib
-	@echo Created jar/contrib.jar
 
 dist:	jar cont doc revision changes
 	@echo Creating distribution package ...
@@ -99,13 +96,16 @@ dist:	jar cont doc revision changes
 	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
 	  bin/users.pl > $(PKGNAME)/html/users.html.new && \
 	  mv $(PKGNAME)/html/users.html.new $(PKGNAME)/html/users.html && \
-	  rm -f $(PKGNAME)/tools/* $(PKGNAME)/html/user.db \
+	  rm -r $(PKGNAME)/tools/* \
+	        $(PKGNAME)/html/users.db \
 	        $(PKGNAME)/bin/users.pl && \
-	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
-	 @rm -rf $(PKGNAME) 
-	 @echo Created jar/$(PKGNAME)-src.jar
-	 @jar cvMf jar/relay.jar \
-	   tools/relayd tools/mrelayd tools/*.c tools/*.exe
+	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME) && \
+	  (cd $(PKGNAME); make cont; $(JAR) cvMf ../jar/contrib.jar contrib) \
+	 ) > /dev/null 
+	@rm -rf $(PKGNAME) 
+	@echo Created jar/$(PKGNAME)-src.jar
+	@$(JAR) cvMf jar/relay.jar \
+	  tools/relayd tools/mrelayd tools/*.c tools/*.exe
 
 changes:
 	@rcs2log > CHANGES
