@@ -14,7 +14,7 @@
 
   <target name="all" depends="build,doc,bin-jar,src-jar"/>
 
-  <target name="dist" depends="version,all" description="builds a distribution"/>
+  <target name="dist" depends="clean,version,all" description="builds a distribution"/>
 
   <target name="build" depends="compile,compile-contrib" description="build binaries"/>
 
@@ -69,6 +69,8 @@
       <fileset dir=".">
         <exclude name="**/*.class"/>
         <exclude name="**/CVS"/>
+        <exclude name="**/.*"/>
+        <exclude name="jar/**"/>
         <exclude name="${name}${version}"/>
       </fileset>
     </copy>
