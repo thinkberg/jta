@@ -2077,14 +2077,18 @@ public abstract class vt320 extends VDU implements KeyListener {
 	for (int i=0;i<DCEvars[0];i++)
 	  insertChar(C,R,' ',attributes);
 	break;
-      case 'X':
+      case 'X': {
+	int toerase = DCEvars[0];
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" X, C="+C+",R="+R);
-	if (DCEvars[0]==0) DCEvars[0]=1;
-	for (int i=0;(i<DCEvars[0]) && (C+i<columns);i++)
-          putChar(C+i,R,' ');
-	// does not change cursorpos.
+	if (toerase==0)
+	  toerase=1;
+	if (toerase+C > columns)
+	  toerase = columns-C;
+	deleteArea(C,R,toerase,1);
+	// does not change cursor position
         break;
+      }
       case 'P':
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" P, C="+C+",R="+R);
@@ -2136,11 +2140,14 @@ public abstract class vt320 extends VDU implements KeyListener {
             if (DCEvar>0)
               attributes =0;
             break;
+	  case 2:
+	    attributes |= LOW;
           case 4:
             attributes |= UNDERLINE;
             break;
           case 1:
             attributes |= BOLD;
+	    attributes &= ~LOW;
             break;
           case 7:
             attributes |= INVERT;
@@ -2158,6 +2165,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  case 12: 
 	   gl = 1;usedcharsets = true;
 	   break;
+          case 21: /* normal intensity */
+	    attributes &= ~(LOW|BOLD);
+            break;
           case 25: /* blinking off */
             break;
           case 27:
