@@ -161,16 +161,17 @@ public abstract class vt320 extends VDU implements KeyListener {
     KeyDown    = "\u001b[B";
     KeyRight   = "\u001b[C";
     KeyLeft    = "\u001b[D";
-    KP0  = "\u001bOp";
-    KP1  = "\u001bOq";
-    KP2  = "\u001bOr";
-    KP3  = "\u001bOs";
-    KP4  = "\u001bOt";
-    KP5  = "\u001bOu";
-    KP6  = "\u001bOv";
-    KP7  = "\u001bOw";
-    KP8  = "\u001bOx";
-    KP9  = "\u001bOy";
+    Numpad = new String[10];
+    Numpad[0]  = "\u001bOp";
+    Numpad[1]  = "\u001bOq";
+    Numpad[2]  = "\u001bOr";
+    Numpad[3]  = "\u001bOs";
+    Numpad[4]  = "\u001bOt";
+    Numpad[5]  = "\u001bOu";
+    Numpad[6]  = "\u001bOv";
+    Numpad[7]  = "\u001bOw";
+    Numpad[8]  = "\u001bOx";
+    Numpad[9]  = "\u001bOy";
     KPMinus  = "\u001bOm";
     KPComma  = "\u001bOl";
     KPPeriod  = "\u001bOn";
@@ -245,6 +246,11 @@ public abstract class vt320 extends VDU implements KeyListener {
   public void setKeyCodes(Properties codes) {
     String res, prefixes[] = {"","S","C","A"};
     int i;
+    
+    for (i=0;i<10;i++) {
+	res = codes.getProperty("NUMPAD"+i);
+	if(res!=null) Numpad[i] = unEscape(res);
+    }
     for (i=1;i<20;i++) {
 	res = codes.getProperty("F"+i);
 	if(res!=null) FunctionKey[i] = unEscape(res);
@@ -408,13 +414,12 @@ public abstract class vt320 extends VDU implements KeyListener {
   };
 
   /** Strings to send on function key pressing */
+  private String Numpad[];
   private String FunctionKey[];
   private String FunctionKeyShift[];
   private String FunctionKeyCtrl[];
   private String FunctionKeyAlt[];
   private String KeyUp,KeyDown,KeyLeft,KeyRight,KeyTab,KeyBacktab;
-
-  private String KP0, KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9;
   private String KPMinus, KPComma, KPPeriod,KPEnter;
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
@@ -556,16 +561,16 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  write(Remove[0]);        //  VMS delete = remove
       } else if(control)
 	switch(keyChar) {
-	case '0': write(KP0); return;
-	case '1': write(KP1); return;
-	case '2': write(KP2); return;
-	case '3': write(KP3); return;
-	case '4': write(KP4); return;
-	case '5': write(KP5); return;
-	case '6': write(KP6); return;
-	case '7': write(KP7); return;
-	case '8': write(KP8); return;
-	case '9': write(KP9); return;
+	case '0': write(Numpad[0]); return;
+	case '1': write(Numpad[1]); return;
+	case '2': write(Numpad[2]); return;
+	case '3': write(Numpad[3]); return;
+	case '4': write(Numpad[4]); return;
+	case '5': write(Numpad[5]); return;
+	case '6': write(Numpad[6]); return;
+	case '7': write(Numpad[7]); return;
+	case '8': write(Numpad[8]); return;
+	case '9': write(Numpad[9]); return;
 	case '.': write(KPPeriod); return;
 	case '-':
 	case 31:  write(KPMinus); return;
@@ -608,6 +613,16 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_UP: write(PrevScn[xind],false); break;
       case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
       case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
+      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); break;
+      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); break;
+      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); break;
+      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); break;
+      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); break;
+      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); break;
+      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); break;
+      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
+      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
+      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8,false);
