@@ -24,14 +24,8 @@
 
 package de.mud.terminal;
 
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Properties;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Implementation of a VT terminal emulation plus ANSI compatible.
@@ -41,7 +35,7 @@ import java.lang.reflect.InvocationTargetException;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public abstract class vt320 extends VDU implements KeyListener {
+public abstract class vt320 extends VDUBuffer {
   /** The current version id tag.<P>
    * $Id$
    */
@@ -88,18 +82,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   /**
    * Create a new vt320 terminal and intialize it with useful settings.
-   * @param width the width of the character screen
-   * @param height the amount of rows on screen
-   * @param font the font to be used for rendering characters
    */
-  public vt320(int width, int height, Font font) {
-    super(width, height, font);
-
+  public vt320(int width, int height) {
+    super(width, height);
     setVMS(false);
     setIBMCharset(false);
     setTerminalID("vt320");
     setBufferSize(100);
-    setBorder(2, false);
+    //setBorder(2, false);
 
     int nw = getColumns();
     if (nw < 132) nw = 132; //catch possible later 132/80 resizes
@@ -217,110 +207,96 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     /* we have to make sure the tab key stays within the component */
     String version = System.getProperty("java.version");
-    if(version.startsWith("1.4")) {
+    if (version.startsWith("1.4")) {
       try {
-        Class params[] = new Class[] { boolean.class };
-        vt320.class.getMethod("setFocusable", params).invoke(this, new Object[] { new Boolean(true) });
-        vt320.class.getMethod("setFocusTraversalKeysEnabled", params).invoke(this, new Object[] { new Boolean(false) });
+        Class params[] = new Class[]{boolean.class};
+        vt320.class.getMethod("setFocusable", params).invoke(this, new Object[]{new Boolean(true)});
+        vt320.class.getMethod("setFocusTraversalKeysEnabled", params).invoke(this, new Object[]{new Boolean(false)});
       } catch (Exception e) {
-        System.err.println("vt320: unable to reset focus handling for java version "+version);
+        System.err.println("vt320: unable to reset focus handling for java version " + version);
         e.printStackTrace();
       }
     }
-    addKeyListener(this);
-
-    /* I don't think we want that here ... */
-    addMouseListener(new MouseAdapter() {
-      public void mouseEntered(MouseEvent evt) {
-        requestFocus();
-      }
-
-      public void mousePressed(MouseEvent evt) {
-        if (mouserpt == 0)
-          return;
-        int mods = evt.getModifiers();
-        mousebut = 3;
-        if ((mods & 16) == 16) mousebut = 0;
-        if ((mods & 8) == 8) mousebut = 1;
-        if ((mods & 4) == 4) mousebut = 2;
-
-
-        int mousecode;
-        if (mouserpt == 9)	/* X10 Mouse */
-          mousecode = 0x20 | mousebut;
-        else			/* normal xterm mouse reporting */
-          mousecode = mousebut | 0x20 | ((mods & 7) << 2);
-
-        java.awt.Point pos = mouseGetPos(evt.getPoint());
-        byte b[] = new byte[6];
-
-        b[0] = 27;
-        b[1] = (byte) '[';
-        b[2] = (byte) 'M';
-        b[3] = (byte) mousecode;
-        b[4] = (byte) (0x20 + pos.x + 1);
-        b[5] = (byte) (0x20 + pos.y + 1);
-
-        write(b); // FIXME: writeSpecial here
-      }
-
-      public void mouseReleased(MouseEvent evt) {
-        if (mouserpt == 0)
-          return;
-        java.awt.Point pos = mouseGetPos(evt.getPoint());
-        int mods = evt.getModifiers();
-
-
-        /* problem is tht modifiers still have the released button set in them.
-	mousebut = 3;
-	if ((mods & 16)==16) mousebut=0;
-	if ((mods &  8)==8 ) mousebut=1;
-	if ((mods &  4)==4 ) mousebut=2;
-	 */
-
-        int mousecode;
-        if (mouserpt == 9)
-          mousecode = 0x20 + mousebut;	/* same as press? appears so. */
-        else
-          mousecode = '#';
-
-        byte b[] = new byte[6];
-        b[0] = 27;
-        b[1] = (byte) '[';
-        b[2] = (byte) 'M';
-        b[3] = (byte) mousecode;
-        b[4] = (byte) (0x20 + pos.x + 1);
-        b[5] = (byte) (0x20 + pos.y + 1);
-        write(b); // FIXME: writeSpecial here
-        mousebut = 0;
-      }
-    });
-
   }
 
   /**
-   * Create a new terminal emulation with specific width and height.
-   * @param width the width of the character screen
-   * @param height the amount of rows on screen
-   */
-  public vt320(int width, int height) {
-    this(width, height, new Font("Monospaced", Font.PLAIN, 10));
-  }
-
-  /**
-   * Create a new terminal emulation with a specific font.
-   * @param font the font to be used for rendering characters
-   */
-  public vt320(Font font) {
-    this(80, 24, font);
-  }
-
-  /**
-   * Create a new terminal emulation with a specific font.
+   * Create a default vt320 terminal with 80 columns and 24 lines.
    */
   public vt320() {
-    this(80, 24, new Font("Monospaced", Font.PLAIN, 10));
+    this(80, 24);
   }
+
+  /**
+   * Terminal is mouse-aware and requires (x,y) coordinates of
+   * on the terminal (character coordinates) and the button clicked.
+   * @param x
+   * @param y
+   * @param modifiers
+   */
+  public void mousePressed(int x, int y, int modifiers) {
+    if (mouserpt == 0)
+      return;
+
+    int mods = modifiers;
+    mousebut = 3;
+    if ((mods & 16) == 16) mousebut = 0;
+    if ((mods & 8) == 8) mousebut = 1;
+    if ((mods & 4) == 4) mousebut = 2;
+
+    int mousecode;
+    if (mouserpt == 9)	/* X10 Mouse */
+      mousecode = 0x20 | mousebut;
+    else			/* normal xterm mouse reporting */
+      mousecode = mousebut | 0x20 | ((mods & 7) << 2);
+
+    byte b[] = new byte[6];
+
+    b[0] = 27;
+    b[1] = (byte) '[';
+    b[2] = (byte) 'M';
+    b[3] = (byte) mousecode;
+    b[4] = (byte) (0x20 + x + 1);
+    b[5] = (byte) (0x20 + y + 1);
+
+    write(b); // FIXME: writeSpecial here
+  }
+
+  /**
+   * Terminal is mouse-aware and requires the coordinates and button
+   * of the release.
+   * @param x
+   * @param y
+   * @param modifiers
+   */
+  public void mouseReleased(int x, int y, int modifiers) {
+    if (mouserpt == 0)
+      return;
+
+    /* problem is tht modifiers still have the released button set in them.
+    int mods = modifiers;
+    mousebut = 3;
+    if ((mods & 16)==16) mousebut=0;
+    if ((mods &  8)==8 ) mousebut=1;
+    if ((mods &  4)==4 ) mousebut=2;
+    */
+
+    int mousecode;
+    if (mouserpt == 9)
+      mousecode = 0x20 + mousebut;	/* same as press? appears so. */
+    else
+      mousecode = '#';
+
+    byte b[] = new byte[6];
+    b[0] = 27;
+    b[1] = (byte) '[';
+    b[2] = (byte) 'M';
+    b[3] = (byte) mousecode;
+    b[4] = (byte) (0x20 + x + 1);
+    b[5] = (byte) (0x20 + y + 1);
+    write(b); // FIXME: writeSpecial here
+    mousebut = 0;
+  }
+
 
   /** we should do localecho (passed from other modules). false is default */
   private boolean localecho = false;
@@ -696,7 +672,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     boolean alt = evt.isAltDown();
 
     int keyCode = evt.getKeyCode();
-    char keyChar = evt.getKeyChar();
+    // char keyChar = evt.getKeyChar();
     //System.out.println("keyPressed "+evt);
 
     int xind;
@@ -807,13 +783,6 @@ public abstract class vt320 extends VDU implements KeyListener {
       default:
         break;
     }
-  }
-
-  /**
-   * Not used.
-   */
-  public void keyReleased(KeyEvent evt) {
-    // nothing to to, however maybe we should use it?
   }
 
   /**
@@ -945,6 +914,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     if (debug > 2) System.out.println("vt320: keyPressed " + evt + "\"" + keyChar + "\"");
 
+    // FIXME: not used?
     String fmap[];
     int xind;
     xind = 0;
@@ -1318,12 +1288,11 @@ public abstract class vt320 extends VDU implements KeyListener {
   }
 
   private void putChar(char c, boolean doshowcursor) {
-    Dimension size;
     int rows = getRows(); //statusline
     int columns = getColumns();
     int tm = getTopMargin();
     int bm = getBottomMargin();
-    byte msg[];
+    // byte msg[];
     boolean mapped = false;
 
     if (debug > 4) System.out.println("putChar(" + c + " [" + ((int) c) + "]) at R=" + R + " , C=" + C + ", columns=" + columns + ", rows=" + rows);
@@ -1883,8 +1852,7 @@ public abstract class vt320 extends VDU implements KeyListener {
             for (int i = 0; i <= DCEvar; i++) {
               switch (DCEvars[i]) {
                 case 3: /* 80 columns*/
-                  size = getSize();
-                  setScreenSize(80, rows);
+                  setScreenSize(80, getRows());
                   break;
                 case 4: /* scrolling mode, smooth */
                   break;
@@ -1926,8 +1894,7 @@ public abstract class vt320 extends VDU implements KeyListener {
                   vt52mode = false;
                   break;
                 case 3: /* 132 columns*/
-                  size = getSize();
-                  setScreenSize(132, rows);
+                  setScreenSize(132, getRows());
                   break;
                 case 6: /* DECOM: move inside margins. */
                   moveoutsidemargins = false;
@@ -1995,8 +1962,7 @@ public abstract class vt320 extends VDU implements KeyListener {
                   vt52mode = true;
                   break;
                 case 3: /* 80 columns*/
-                  size = getSize();
-                  setScreenSize(80, rows);
+                  setScreenSize(80, getRows());
                   break;
                 case 6: /* DECOM: move outside margins. */
                   moveoutsidemargins = true;
@@ -2152,8 +2118,7 @@ public abstract class vt320 extends VDU implements KeyListener {
             /* used for tabsets */
             switch (DCEvars[0]) {
               case 3:/* clear them */
-                int nw = getColumns();
-                Tabs = new byte[nw];
+                Tabs = new byte[getColumns()];
                 break;
               case 0:
                 Tabs[C] = 0;
