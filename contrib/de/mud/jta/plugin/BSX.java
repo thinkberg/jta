@@ -300,7 +300,21 @@ public class BSX extends Plugin
 								else
 									{
 										data=new int[polys][];
-										state=4;
+										if (polys>0) {
+											state=4;
+										} else { // Empty BSX is "00"
+											if (equals(cmd,DFS))
+												{
+													visual.defineScene(obj,
+																	   data);
+												}
+											else if (equals(cmd,DFO))
+												{
+													visual.defineObject(obj,
+																		data);
+												}
+											reset();
+										}
 										hexlen=0;
 									}
 							}
