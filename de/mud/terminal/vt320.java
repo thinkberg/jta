@@ -1965,7 +1965,8 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 'd': // CVA
 	R = DCEvars[0];
-        System.out.println("ESC [ "+DCEvars[0]+" d");
+        if (debug>1)
+	   System.out.println("ESC [ "+DCEvars[0]+" d");
 	break;
       case 'D':
         if (DCEvars[0]==0)
