@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -18,19 +18,13 @@
  */
 package de.mud.jta;
 
-import de.mud.jta.PluginLoader;
-import de.mud.jta.VisualPlugin;
-import de.mud.jta.Plugin;
 import de.mud.jta.event.ConfigurationRequest;
-import de.mud.jta.event.SocketRequest;
 
-import java.util.Properties;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.awt.*;
 import java.util.Enumeration;
-
-import java.awt.Component;
-import java.awt.Menu;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * The common part of the <B>The Java<SUP>tm</SUP> Telnet Application</B>
@@ -55,12 +49,12 @@ public class Common extends PluginLoader {
     System.out.println("** The Java(tm) Telnet Application");
     System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
     System.out.println("** Copyright (c) 1996-2000 Matthias L. Jugel, "
-                      +"Marcus Meissner");
+                       + "Marcus Meissner");
     try {
-      Version build = 
-        (Version)Class.forName("de.mud.jta.Build").newInstance();
-      System.out.println("** Build: "+build.getDate());
-    } catch(Exception e) {
+      Version build =
+              (Version) Class.forName("de.mud.jta.Build").newInstance();
+      System.out.println("** Build: " + build.getDate());
+    } catch (Exception e) {
       System.out.println("** Build: patched or selfmade, no date");
       System.err.println(e);
     }
@@ -70,38 +64,39 @@ public class Common extends PluginLoader {
     menus = new Hashtable();
 
     Vector names = split(config.getProperty("plugins"), ',');
-    if(names == null) {
+    if (names == null) {
       System.err.println("jta: no plugins found! aborting ...");
       return;
     }
 
     Enumeration e = names.elements();
-    while(e.hasMoreElements()) {
-      String name = (String)e.nextElement();
-      String id = null; int idx;
-      if((idx = name.indexOf("(")) > 1) {
-        if(name.indexOf(")", idx) > idx)
+    while (e.hasMoreElements()) {
+      String name = (String) e.nextElement();
+      String id = null;
+      int idx;
+      if ((idx = name.indexOf("(")) > 1) {
+        if (name.indexOf(")", idx) > idx)
           id = name.substring(idx + 1, name.indexOf(")", idx));
-	else
-	  System.err.println("jta: missing ')' for plugin '"+name+"'");
+        else
+          System.err.println("jta: missing ')' for plugin '" + name + "'");
         name = name.substring(0, idx);
       }
-      System.out.println("jta: loading plugin '"+name+"'"
-                        +(id != null && id.length() > 0 ? 
-			    ", ID: '"+id+"'" : ""));
+      System.out.println("jta: loading plugin '" + name + "'"
+                         + (id != null && id.length() > 0 ?
+                            ", ID: '" + id + "'" : ""));
       Plugin plugin = addPlugin(name, id);
-      if(plugin == null) {
-        System.err.println("jta: ignoring plugin '"+name+"'"
-                          +(id != null && id.length() > 0 ? 
-			      ", ID: '"+id+"'" : ""));
-	continue;
+      if (plugin == null) {
+        System.err.println("jta: ignoring plugin '" + name + "'"
+                           + (id != null && id.length() > 0 ?
+                              ", ID: '" + id + "'" : ""));
+        continue;
       }
       plugins.put(name, plugin);
-      if(plugin instanceof VisualPlugin) {
-        Component c = ((VisualPlugin)plugin).getPluginVisual();
-	if(c != null) components.put(name+(id != null ? "("+id+")" : ""), c);
-	Menu menu = ((VisualPlugin)plugin).getPluginMenu();
-	if(menu != null) menus.put(name+(id != null ? "("+id+")" : ""), menu);
+      if (plugin instanceof VisualPlugin) {
+        Component c = ((VisualPlugin) plugin).getPluginVisual();
+        if (c != null) components.put(name + (id != null ? "(" + id + ")" : ""), c);
+        Menu menu = ((VisualPlugin) plugin).getPluginMenu();
+        if (menu != null) menus.put(name + (id != null ? "(" + id + ")" : ""), menu);
       }
     }
 
@@ -127,15 +122,15 @@ public class Common extends PluginLoader {
    * @return a vector containing the path
    */
   private static Vector getPluginPath(String path) {
-    if(path == null)
+    if (path == null)
       path = DEFAULT_PATH;
 
-    // I am not sure that this is desirable, as the applet administrator
-    // might use UNIX and thus ':' but the applet user might have a Windows
-    // system and thus uses ';' and thus the whole thing will collapse.
-    // String separator = System.getProperty("path.separator");
-    // if(separator == null)
-    //  separator = ":";
+// I am not sure that this is desirable, as the applet administrator
+// might use UNIX and thus ':' but the applet user might have a Windows
+// system and thus uses ';' and thus the whole thing will collapse.
+// String separator = System.getProperty("path.separator");
+// if(separator == null)
+//  separator = ":";
 
     return split(path, ':');
   }
@@ -147,14 +142,14 @@ public class Common extends PluginLoader {
    * @return an array of strings
    */
   public static Vector split(String s, char separator) {
-    if(s == null) return null;
+    if (s == null) return null;
     Vector v = new Vector();
     int old = -1, idx = s.indexOf(separator);
-    while(idx >= 0) {
+    while (idx >= 0) {
       v.addElement(s.substring(old + 1, idx));
       old = idx;
       idx = s.indexOf(separator, old + 1);
-    } 
+    }
     v.addElement(s.substring(old + 1));
     return v;
   }
