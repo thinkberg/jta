@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -24,7 +24,8 @@ Telnet Application/Applet: Terminal Plugin</font></font></h1></div>
 <a href="mailto:marcus@mud.de">Marcus
 Mei&szlig;ner</a></i>
 <p><b>Version 2.0 <i>RC2 </i>/ Java 2 and 1.1.x</b>
-<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+<br>Available under <a href="../../license/COPYING">GNU General Public
+License</a></td>
 </tr>
 
 <tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
@@ -96,8 +97,16 @@ This is just like the encoding you use in HTML.</td>
 
 <td>Use this property to define a complete color set for the terminal.
 A color set contains eight colors as defined by the ANSI standard.
-<i><font color="#CC0000">(not
-yet implemented)</font></i></td>
+<p>The colorset should be in a file that is referenced by this property
+as either a file name relative to the jar file or a complete URL.
+<p>The default value is <i>/de/mud/terminal/colorSet.conf</i>.
+<p>The file contains a line for each color:
+<p><tt>color0 =&nbsp;color</tt>
+<br><tt>color1 =&nbsp;color</tt>
+<br><tt>...</tt>
+<br><tt>color7 =&nbsp;color</tt>
+<p><tt>color</tt> can be either a name or a number similar to the foreground
+and background above.</td>
 </tr>
 
 <tr>
@@ -257,9 +266,11 @@ character:</font></dt>
 <p>&nbsp;
 <br>&nbsp;
 <br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
 <p><font color="#000000">As you can see the string you can define may contain
 special characters which may be escaped using the backslash (\). Allowed
-special characters follow in the table below:</font><font color="#000000"></font>
+special characters follow in the table below:</font>
 <p><font color="#CC0000"><font size=-1>(<b>Important</b>: for some of the
 escape codes you need two backslashes as these are our own definitions
 and not known by the Java Property mechanism)</font></font>
