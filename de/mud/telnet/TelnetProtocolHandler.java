@@ -69,7 +69,7 @@ public abstract class TelnetProtocolHandler {
   /**
    * Generate an EOR (end of record) request. For use by prompt displaying.
    */
-  protected abstract void EndOfRecord();
+  protected abstract void notifyEndOfRecord();
 
   /**
    * Send data to the remote host.

@@ -72,7 +72,7 @@ public class Telnet extends Plugin implements FilterPlugin {
         bus.broadcast(new LocalEchoRequest(echo));
       }
       /** notify about EOR end of record */
-      public void EndOfRecord() {
+      public void notifyEndOfRecord() {
         bus.broadcast(new EndOfRecordRequest());
       }
       /** write data to our back end */
