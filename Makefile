@@ -74,11 +74,15 @@ jar:	app build
 	@rm -f Created-*
 	@echo Created jar/$(PKGNAME).jar
 
+opt:
+	@[ -f ../Jopt.jar ] && $(JAVA) -jar ../Jopt.jar jar/$(PKGNAME).jar
+	@echo Created jar/$(PKGNAME)_o.jar
+
 cont:
 	@echo Compiling contributed software ...
 	@(cd contrib; make)
 
-dist:	all revision changes
+dist:	all opt revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
@@ -133,9 +137,9 @@ revision:
 	  > REVISION
 	  @echo Created REVISION.
 
-small:
+small: app
 	jar cvf jar/jta20-small.jar \
-		license/COPYING* \
+		license/README \
 		de/mud/jta/SmallApplet*class \
 		de/mud/telnet/TelnetProtocolHandler.class \
 		de/mud/terminal/VDU*class \
