@@ -377,6 +377,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private final static int TSTATE_SETG2= 9;     /* ESC *? */
   private final static int TSTATE_SETG3= 10;    /* ESC +? */
   private final static int TSTATE_CSI_DOLLAR  = 11; /* ESC [ Pn $ */
+  private final static int TSTATE_CSI_EX  = 12; /* ESC [ ! */
 
   /* The graphics charsets
    * B - default ASCII
@@ -1517,7 +1518,19 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       }
       break;
+    case TSTATE_CSI_EX:
+      term_state = TSTATE_DATA;
+      switch (c) {
+      case ESC:
+      	term_state = TSTATE_ESC;
+	break;
+      default:
+        System.out.println("Unknown character ESC[! character is " + (int)c );
+	break;
+      }
+      break;
     case TSTATE_CSI_DOLLAR:
+      term_state = TSTATE_DATA;
       switch (c) {
       case '}':
 	System.out.println("Active Status Display now "+DCEvars[0]);
@@ -1535,13 +1548,15 @@ public abstract class vt320 extends VDU implements KeyListener {
 	System.out.println("UNKNOWN Status Display code "+c+", with Pn="+DCEvars[0]);
 	break;
       }
-      term_state = TSTATE_DATA;
       break;
     case TSTATE_CSI:
       term_state = TSTATE_DATA;
       switch (c) {
       case '$':
 	term_state=TSTATE_CSI_DOLLAR;
+	break;
+      case '!':
+	term_state=TSTATE_CSI_EX;
 	break;
       case '?':
         DCEvar=0;
@@ -1840,6 +1855,20 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("ESC [ "+DCEvars[0]+" n??");
           break;
         }
+        break;
+      case 's':  /* DECSC - save cursor */
+        Sc = C;
+        Sr = R;
+        Sa = attributes;
+        if (debug>1)
+          System.out.println("ESC[s");
+        break;
+      case 'u': /* DECRC - restore cursor */
+        C = Sc;
+        R = Sr;
+        attributes = Sa;
+        if (debug>1)
+          System.out.println("ESC[u");
         break;
       case 'm':  /* attributes as color, bold , blink,*/
         if (debug>3)
