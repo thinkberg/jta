@@ -19,6 +19,8 @@
 
 package de.mud.jta;
 
+import de.mud.jta.plugin.Terminal;
+
 import java.util.Properties;
 import java.util.Vector;
 import java.util.Enumeration;

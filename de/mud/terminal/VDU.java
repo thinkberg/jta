@@ -1016,7 +1016,8 @@ public class VDU extends Component
           bg = darken(darken(color[((currAttr & COLOR_BG) >> 8) - 1]));
 
         if((currAttr & BOLD) != 0) {
-          g.setFont(normalFont.deriveFont(Font.BOLD));
+          g.setFont(new Font(normalFont.getName(),Font.BOLD,normalFont.getSize()));
+          // does not work with IE6: g.setFont(normalFont.deriveFont(Font.BOLD));
           if(null != color[COLOR_BOLD]) {
             fg = color[COLOR_BOLD];
           }
