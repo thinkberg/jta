@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -34,10 +34,10 @@ import java.lang.Byte;
  * for several methods to handle the telnet options and to be able to
  * read and write the buffer.
  * <P>
- * <B>Maintainer:</B> Marcus Meiﬂner
+ * <B>Maintainer:</B> Marcus Meissner
  *
  * @version $Id$
- * @author  Matthias L. Jugel, Marcus Meiﬂner
+ * @author  Matthias L. Jugel, Marcus Meissner
  */
 public abstract class TelnetProtocolHandler {
   /** contains the current revision id */
@@ -309,9 +309,8 @@ public abstract class TelnetProtocolHandler {
    * Handle telnet protocol negotiation. The buffer will be parsed
    * and necessary actions are taken according to the telnet protocol.
    * See <A HREF="RFC-Telnet-URL">RFC-Telnet</A>
-   * @param buf the byte buffer used for negotiation
-   * @param count the amount of bytes in the buffer
-   * @return a new buffer after negotiation
+   * @param nbuf the byte buffer put out after negotiation
+   * @return number of bytes processed, 0 for none, and -1 for end of buffer.
    */
   public int negotiate(byte nbuf[])
   throws IOException
