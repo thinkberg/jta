@@ -57,6 +57,11 @@ public class Common extends PluginLoader {
     menus = new Hashtable();
 
     Vector names = split(config.getProperty("plugins"));
+    if(names == null) {
+      System.err.println("jta: no plugins found! aborting ...");
+      return;
+    }
+
     Enumeration e = names.elements();
     while(e.hasMoreElements()) {
       String name = (String)e.nextElement();
@@ -88,6 +93,7 @@ public class Common extends PluginLoader {
    * @return an array of strings
    */
   private static Vector split(String s) {
+    if(s == null) return null;
     Vector v = new Vector();
     int old = -1, idx = s.indexOf(',');
     while(idx >= 0) {
