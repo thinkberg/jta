@@ -1,2 +1,2 @@
 #! /bin/sh
-java -classpath $CLASSPATH:`dirname $0`/.. de.mud.jta.Main $*
+java -jar `dirname $0`/../jar/jta20.jar $*

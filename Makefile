@@ -64,7 +64,7 @@ jar:	app
 	@echo Creating binary archive ...
 	@if [ ! -d jar ]; then mkdir jar; fi
 	@touch "Created-$(DATE)"
-	@$(JAR) cvf jar/$(PKGNAME).jar \
+	@$(JAR) cvfm jar/$(PKGNAME).jar jta.manifest \
 	  "Created-$(DATE)" README \
 	  license/COPYING license/COPYING.LIB \
 	  de/mud/ssh/license.txt \
