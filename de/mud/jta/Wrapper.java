@@ -67,7 +67,7 @@ import de.mud.telnet.ScriptHandler;
 public class Wrapper {
 
   /** debugging level */
-  private final static int debug = 1;
+  private final static int debug = 0;
 
   protected ScriptHandler scriptHandler = new ScriptHandler();
   private Thread reader;
