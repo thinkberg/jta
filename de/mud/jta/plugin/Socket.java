@@ -90,6 +90,7 @@ public class Socket extends Plugin
    * be published to be online.
    */
   public void connect(String host, int port) throws IOException {
+    if(host == null) return;
     if(debug>0) System.err.println("Socket: connect("+host+","+port+")");
     try {
       // check the relay settings, this is for the mrelayd only!
@@ -133,7 +134,7 @@ public class Socket extends Plugin
   public void disconnect() throws IOException {
     if(debug>0) System.err.println("Socket: disconnect()");
     bus.broadcast(new OnlineStatus(false));
-    socket.close();
+    if(socket != null) socket.close();
   }
 
   public void setFilterSource(FilterPlugin plugin) {
