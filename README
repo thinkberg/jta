@@ -39,6 +39,8 @@ jar/
 	Using the make file to compile the source and building jar
 	files will result in the packages to be stored in that
 	directory.
+jni/
+	Implementation of native methods for different platforms.
 license/
 	Contains the license this software is covered by in text format.
 
