@@ -61,11 +61,13 @@ public abstract class vt320 extends VDU implements KeyListener {
   public void putString(String s) {
     int  i,len=s.length();
 
-    markLine(R,1);
-    for (i=0;i<len;i++)
-      putChar(s.charAt(i),false);
-    setCursorPosition(C, R);
-    redraw();
+    if(len > 0) {
+      markLine(R,1);
+      for (i=0;i<len;i++)
+        putChar(s.charAt(i),false);
+      setCursorPosition(C, R);
+      redraw();
+    }
   }
 
   /**
