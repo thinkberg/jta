@@ -20,6 +20,7 @@ package de.mud.jta;
 
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.SocketRequest;
+import de.mud.jta.event.AppletRequest;
 
 import java.util.Properties;
 import java.util.Hashtable;
@@ -172,6 +173,8 @@ public class Applet extends java.applet.Applet {
         ((Frame)appletFrame).pack();
 	((Frame)appletFrame).show();
       }
+
+      pluginLoader.broadcast(new AppletRequest(this));
     }
   }
 
