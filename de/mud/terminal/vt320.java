@@ -42,7 +42,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   public final static String ID = "$Id$";
 
   /** the debug level */
-  private final static int debug = 3;
+  private final static int debug = 0;
 
   /**
    * Write an answer back to the remote host. This is needed to be able to
