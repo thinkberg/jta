@@ -181,25 +181,22 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     addMouseListener(this);
     addMouseMotionListener(this);
 
-/*
     addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
-        System.err.println(evt);
 	markLine(0, 24);
         if(evt.isControlDown()) {
-          PrinterJob printJob = PrinterJob.getPrinterJob();
-          printJob.setPrintable(VDU.this);
-          if(printJob.printDialog()) {
-            try {
-              printJob.print();
-            } catch (Exception ex) {
-              ex.printStackTrace();
-            }
-          }
+	  java.awt.Component frame = VDU.this;
+	  while(frame != null && !(frame instanceof java.awt.Frame))
+	    frame = frame.getParent();
+          java.awt.PrintJob printJob = 
+	    getToolkit().getPrintJob((java.awt.Frame)frame,
+	                             "VDU terminal printout",
+				     null);
+          print(printJob.getGraphics());
         }
       }
     });
-*/
+
     selection = null;
   }
   
@@ -1062,7 +1059,11 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
     return Printable.PAGE_EXISTS;
   }
 */
-    // draw cursor
+
+  public void print(Graphics g) {
+    for(int i = 0; i <= size.height; i++) update[i] = true;
+    paint(g);
+  }
 
   private int checkBounds(int value, int lower, int upper) {
     if(value < lower) return lower;
