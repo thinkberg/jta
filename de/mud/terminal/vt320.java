@@ -1447,6 +1447,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	/* unimplemented stuff, fall through */
         /* 4  - scrolling mode, smooth */
         /* 5  - light background */
+        /* 7  - DECAWM - wrap around mode */
         /* 12 - local echo off */
         /* 18 - DECPFF - Printer Form Feed Mode -> On */
         /* 19 - DECPEX - Printer Extent Mode -> Screen */
@@ -1500,6 +1501,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	/* Unimplemented stuff: */
         /* 4  - scrolling mode, jump */
         /* 5  - dark background */
+        /* 7  - DECAWM - no wrap around mode */
         /* 12 - local echo on */
         /* 18 - DECPFF - Printer Form Feed Mode -> Off*/
         /* 19 - DECPEX - Printer Extent Mode -> Scrolling Region */
@@ -1944,6 +1946,10 @@ public abstract class vt320 extends VDU implements KeyListener {
             attributes &= ~(0xf<<7);
             break;
 
+        /* 10 - ANSI X3.64-1979, select primary font, don't display control
+	 *      chars, don't set bit 8 on output */
+        /* 11 - ANSI X3.64-1979, select second alt. font, display control
+	 *      chars, set bit 8 on output */
           default:
             System.out.println("ESC [ "+DCEvars[i]+" m unknown...");
             break;
