@@ -26,6 +26,7 @@ import de.mud.jta.FilterPlugin;
 import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketRequest;
+import de.mud.jta.event.TelnetCommandRequest;
 
 import java.util.Properties;
 import java.util.Hashtable;
@@ -329,6 +330,10 @@ public class ButtonBar extends Plugin
       if(oldidx <= tmp.length()) cmd += tmp.substring(oldidx, tmp.length());
       
       if(function != null) {
+	if(function.equals("break")) { 
+	  bus.broadcast(new TelnetCommandRequest((byte)243)); // BREAK
+	  return;
+	}
 	if(function.equals("exit")) { 
 	  try {
 	    System.exit(0);
