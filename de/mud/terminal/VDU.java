@@ -1099,6 +1099,7 @@ public class VDU extends Component
   }
 
   public void print(Graphics g) {
+    System.err.println("DEBUG: print()");
     for(int i = 0; i <= size.height; i++) update[i] = true;
     Color fg = null, bg = null, colorSave[] = null;
     int boldSave = 0;

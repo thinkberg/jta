@@ -131,13 +131,17 @@ public class URLFilter extends Plugin
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
 	String s;
-        if((s = config.getProperty("protocols", id)) != null) {
+        if((s = config.getProperty("URLFilter", id, "protocols")) != null) {
 	  int old = -1, idx = s.indexOf(',');
 	  while(idx >= 0) {
+	    System.out.println("URLFilter: adding protocol '"+
+	                       s.substring(old + 1, idx)+"'");
 	    protocols.addElement(s.substring(old + 1, idx));
 	    old = idx;
 	    idx = s.indexOf(',', old + 1);
 	  }
+	  System.out.println("URLFilter: adding protocol '"+
+	                     s.substring(old + 1)+"'");
 	  protocols.addElement(s.substring(old + 1));
 	} else {
 	  protocols.addElement("http");
