@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61C-CCK-MCD Caldera Systems OpenLinux [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.16 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -92,12 +92,27 @@ values:
 This is just like the encoding you use in HTML.</td>
 </tr>
 
+<tr NOSAVE>
+<td>Terminal.cursor.foreground</td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE>Set the cursor foreground color. If unset
+this is the inverted current foreground.</td>
+</tr>
+
+<tr>
+<td>Terminal.cursor.background</td>
+
+<td>Set the cursor background color. If unset this is the inverted current
+background.</td>
+</tr>
+
 <tr>
 <td>Terminal.localecho</td>
 
-<td>While both SSH&nbsp;and Telnet client part detect localechostate automatically,
-it can be overridden using this option. This is only recommended if you
-really need it.
+<td>While both SSH and Telnet client part detect localechostate automatically,
+it
+can be overridden using this option. This is only recommended if you really
+need it.
 <br>Set to <b>true</b> for always localecho and <b>false</b> for never.</td>
 </tr>
 
@@ -145,6 +160,14 @@ or zero. It may be set to "<b><tt>true</tt></b>" or "<b><tt>false</tt></b>".</td
 <td>Adds a scroll bar to the terminal using the direction set in the property.
 Possible directions are "<b><tt>East</tt></b>" and "<b><tt>West</tt></b>".
 Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
+</tr>
+
+<tr NOSAVE>
+<td>Terminal.beep</td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE>If this property points to a fully qualified
+URL&nbsp;of a sound file this will be played in case of a terminal <b>bell</b>
+signal. This works for applets only.</td>
 </tr>
 
 <tr NOSAVE>
@@ -238,6 +261,16 @@ a VMS system.</td>
 <td>Set this to "<b><tt>true</tt></b>" if you would like to use PC ANSI
 graphics characters as used by some BBS's.</td>
 </tr>
+
+<tr>
+<td>Terminal.encoding</td>
+
+<td>Use this property if you have real UNICODE fonts installed on your
+system or at least fonts that include the characters you would like to
+display. The default setting it <b>UTF-8</b> but it may be used to make
+the terminal aware of special characters like in the japanese (i.e. <b>SJIS</b>)
+or chinese region.</td>
+</tr>
 </table></center>
 
 <h3>
@@ -279,25 +312,9 @@ character:</font></dt>
 <dd>
 <tt><font color="#000000">AF12 = \\e</font></tt></dd>
 
-<br>&nbsp;
-<p>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<br>&nbsp;
-<p><font color="#000000">As you can see the string you can define may contain
-special characters which may be escaped using the backslash (\). Allowed
-special characters follow in the table below:</font>
+<p><br><font color="#000000">As you can see the string you can define may
+contain special characters which may be escaped using the backslash (\).
+Allowed special characters follow in the table below:</font>
 <p><font color="#CC0000"><font size=-1>(<b>Important</b>: for some of the
 escape codes you need two backslashes as these are our own definitions
 and not known by the Java Property mechanism)</font></font>

@@ -69,7 +69,7 @@ jar:	app build
 	  "Created-$(DATE)" README \
 	  license/COPYING license/COPYING.LIB \
 	  de/mud/ssh/license.txt \
-	  `find $(SRCDIR) -name *.class` \
+	  `find $(SRCDIR) -name \*.class` \
 	  `find $(SRCDIR) -name \*.conf` > /dev/null
 	@rm -f Created-*
 	@echo Created jar/$(PKGNAME).jar

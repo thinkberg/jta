@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.16 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Applet</title>
@@ -23,7 +23,7 @@ Telnet Application/Applet: Applet</font></font></h1></div>
 <i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
 <a href="mailto:marcus@mud.de">Marcus
 Mei&szlig;ner</a></i>
-<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
 <br>Available under <a href="../license/COPYING">GNU General Public License</a></td>
 </tr>
 
@@ -215,10 +215,8 @@ a width of 590 pixels and a height of 360 pixels. Adapt this according
 to your needs. In general the applet adapts its font size to match the
 size of the applet.</font></dd>
 
-<br>&nbsp;
-<p>&nbsp;
-<p>Everything else will be explained below and finally you need to close
-the applet definition using the <tt>&lt;/applet></tt> tag.
+<p><br>Everything else will be explained below and finally you need to
+close the applet definition using the <tt>&lt;/applet></tt> tag.
 <p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
 and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
 tags.
@@ -248,6 +246,24 @@ below</a></td>
 window and run in a separate window. Use with care.
 <br>The <i>boolean</i> value may either be <tt>true</tt> or <tt>false</tt>.
 S<i>ee below!</i></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.fullscreen"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>When detaching make the resulting
+window fill the whole screen. This might be useful for systems where people
+have to remote login and should get the biggest font that is possible on
+their screen.</tt></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.title"</tt>
+<br><tt>VALUE="</tt><i>string</i><tt>"</tt></td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE>Sets the window title of the detached
+applet.</td>
 </tr>
 
 <tr NOSAVE>

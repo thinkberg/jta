@@ -34,6 +34,8 @@ import de.mud.jta.event.WindowSizeListener;
 import de.mud.jta.event.LocalEchoListener;
 import de.mud.jta.event.FocusStatus;
 import de.mud.jta.event.ReturnFocusListener;
+import de.mud.jta.event.AppletListener;
+import de.mud.jta.event.SoundRequest;
 
 import java.awt.Component;
 import java.awt.Panel;
@@ -61,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URL;
+import java.net.MalformedURLException;
 
 import java.util.Properties;
 import java.util.Hashtable;
@@ -85,6 +88,10 @@ public class Terminal extends Plugin
   
   /** holds the actual terminal emulation */
   protected vt320 terminal;
+  /** the default encoding is ISO 8859-1 (western) */
+  protected String encoding = "ISO8859_1";
+  /** if we have a url to an audioclip use it as ping */
+  protected SoundRequest audioBeep = null;
 
   /** the terminal panel that is displayed on-screen */
   protected Panel tPanel;
@@ -206,6 +213,11 @@ public class Terminal extends Plugin
 	} catch(IOException e) {
 	  reader = null;
 	}
+      }
+
+      // provide audio feedback if that is configured
+      public void beep() {
+	if(audioBeep != null) bus.broadcast(audioBeep);
       }
     };
 
@@ -335,6 +347,21 @@ public class Terminal extends Plugin
         terminal.setColorSet(set);
       }
     }
+
+    String cFG = cfg.getProperty("Terminal", id, "cursor.foreground");
+    String cBG = cfg.getProperty("Terminal", id, "cursor.background");
+    if(cFG != null || cBG != null)
+     try {
+       Color fg = (cFG == null ? 
+         terminal.getBackground() :
+         (Color.getColor(cFG) != null ? Color.getColor(cFG):Color.decode(cFG)));
+       Color bg = (cBG == null ?
+         terminal.getForeground() :
+         (Color.getColor(cBG) != null ? Color.getColor(cBG):Color.decode(cBG)));
+       terminal.setCursorColors(fg, bg);
+     } catch(Exception e) {
+       error("ignoring unknown cursor color code: "+tmp);
+     }
  
     if((tmp = cfg.getProperty("Terminal", id, "border")) != null) {
       String size = tmp;
@@ -428,6 +455,15 @@ public class Terminal extends Plugin
       terminal.setVMS((Boolean.valueOf(tmp)).booleanValue());
     if((tmp = cfg.getProperty("Terminal", id, "IBM")) != null)
       terminal.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
+    if((tmp = cfg.getProperty("Terminal", id, "encoding")) != null)
+      encoding = tmp;
+
+    if((tmp = cfg.getProperty("Terminal", id, "beep")) != null)
+      try {
+        audioBeep = new SoundRequest(new URL(tmp));
+      } catch(MalformedURLException e) {
+        error("incorrect URL for audio ping: "+e);
+      }
 
     tPanel.setBackground(terminal.getBackground());
   }
@@ -441,8 +477,8 @@ public class Terminal extends Plugin
     while(n >= 0) try {
       n = read(b);
       if(debug > 0 && n > 0) 
-        System.err.println("Terminal: \""+(new String(b, 0, n, "latin1"))+"\"");
-      if(n > 0) terminal.putString(new String(b, 0, n, "latin1"));
+        System.err.println("Terminal: \""+(new String(b, 0, n, encoding))+"\"");
+      if(n > 0) terminal.putString(new String(b, 0, n, encoding));
       tPanel.repaint();
     } catch(IOException e) {
       reader = null;

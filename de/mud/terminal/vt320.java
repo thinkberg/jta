@@ -54,6 +54,11 @@ public abstract class vt320 extends VDU implements KeyListener {
   protected abstract void write(byte[] b);
 
   /**
+   * Play the beep sound ...
+   */
+  protected void beep() { /* do nothing by default */ }
+
+  /**
    * Put string at current cursor position. Moves cursor
    * according to the String. Does NOT wrap.
    * @param s the string
@@ -1067,8 +1072,9 @@ public abstract class vt320 extends VDU implements KeyListener {
     if (c>255) {
       if (debug>0)
         System.out.println("char > 255:"+(int)c);
-      return;
+      //return;
     }
+    
 
     switch (term_state) {
     case TSTATE_DATA:
@@ -1177,6 +1183,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	else
 	  R++;
         break;
+      case 7:
+        beep();
+	break;
       case '\016':
         /* ^N, Shift out - Put G1 into GL */
         gl = 1;

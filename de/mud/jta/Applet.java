@@ -23,6 +23,7 @@ import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.ReturnFocusRequest;
 import de.mud.jta.event.FocusStatusListener;
 import de.mud.jta.event.AppletRequest;
+import de.mud.jta.event.SoundListener;
 
 import java.util.Properties;
 import java.util.Hashtable;
@@ -203,6 +204,12 @@ public class Applet extends java.applet.Applet {
 	}
       }
 
+      pluginLoader.registerPluginListener(new SoundListener() {
+        public void playSound(URL audioClip) {
+	  Applet.this.getAudioClip(audioClip).play();
+	}
+      });
+
       pluginLoader.broadcast(new AppletRequest(this));
       if(appletFrame != this) {
 	final String startText = options.getProperty("Applet.detach.startText");
@@ -214,12 +221,16 @@ public class Applet extends java.applet.Applet {
 	  // this works for Netscape only!
 	  PrivilegeManager.enablePrivilege("UniversalSystemClipboardAccess");
           clipboard = appletFrame.getToolkit().getSystemClipboard();
+	} catch(NoClassDefFoundError nc) {
+	  System.err.println("Applet: This is not Netscape ...");
         } catch(Exception e) {
           System.err.println("Applet: system clipboard access denied: "+e);
-          System.err.println("Applet: copy & paste only within the JTA");
-          clipboard = new Clipboard("de.mud.jta.Main");
+        } finally {
+	  if(clipboard != null) {
+            System.err.println("Applet: copy & paste only within the JTA");
+            clipboard = new Clipboard("de.mud.jta.Main");
+	  }
         }
-
 	  
 	if((new Boolean(options.getProperty("Applet.detach.immediately"))
 	     .booleanValue())) {

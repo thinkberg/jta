@@ -905,7 +905,6 @@ public class VDU extends Component
     l = checkBounds(l, 0, size.height - 1);
     for(int i = 0; (i < n) && (l + i < size.height); i++)
       update[l + i + 1] = true;
-    update[0] = true;
   }
   
   /**
