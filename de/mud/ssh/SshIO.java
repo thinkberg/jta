@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * Secure Shell IO
@@ -754,18 +755,17 @@ public abstract class SshIO {
 
     /// java.util.Date date = new java.util.Date(); ////the number of milliseconds since January 1, 1970, 00:00:00 GMT.
     //Math.random()   a pseudorandom double between 0.0 and 1.0.
-    random_bits2 = random_bits1 =
-      // md5.hash("" + Math.random() * (new java.util.Date()).getDate());
-      md5.digest(("" + Math.random() * (new java.util.Date()).getTime()).getBytes());
+    // random_bits2 = random_bits1 =
+    // md5.hash("" + Math.random() * (new java.util.Date()).getDate());
+    // md5.digest(("" + Math.random() * (new java.util.Date()).getTime()).getBytes());
 
-    random_bits1 = md5.digest(SshMisc.addArrayOfBytes(md5.digest((password + login).getBytes()),
-                                                      random_bits1));
-    random_bits2 = md5.digest(SshMisc.addArrayOfBytes(md5.digest((password + login).getBytes()),
-                                                      random_bits2));
+    //random_bits1 = md5.digest(SshMisc.addArrayOfBytes(md5.digest((password + login).getBytes()), random_bits1));
+    //random_bits2 = md5.digest(SshMisc.addArrayOfBytes(md5.digest((password + login).getBytes()), random_bits2));
 
-    // SecureRandom random = new java.security.SecureRandom(random_bits1); //no supported by netscape :-(
-    // random.nextBytes(random_bits1);
-    // random.nextBytes(random_bits2);
+
+    SecureRandom random = new java.security.SecureRandom(random_bits1); //no supported by netscape :-(
+    random.nextBytes(random_bits1);
+    random.nextBytes(random_bits2);
 
     session_key = SshMisc.addArrayOfBytes(random_bits1, random_bits2);
 

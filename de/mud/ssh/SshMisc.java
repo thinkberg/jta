@@ -23,27 +23,14 @@
  */
 package de.mud.ssh;
 
-
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * @author Marcus Meissner
  * @version $Id$
  */
 public class SshMisc {
-  static MessageDigest md5;
-
-  static {
-    try {
-      md5 = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      System.err.println("SshMisc: unable to load message digest algorithm: "+e);
-      e.printStackTrace();
-    }
-  }
-
   /**
    * return the strint at the position offset in the data
    *  First 4 bytes are the length of the string, msb first (not
@@ -78,18 +65,15 @@ public class SshMisc {
   }
 
   static public byte getNotZeroRandomByte() {
+    byte[] randomBytes = new byte[32];
 
-    java.util.Date date = new java.util.Date();
-    String randomString = String.valueOf(date.getTime() * Math.random());
-    byte[] randomBytes = md5.digest(randomString.getBytes());
-    int i = 0;
-    while (i < 20) {
-      byte b = 0;
-      if (i < randomBytes.length) b = randomBytes[i];
-      if (b != 0) return b;
-      i++;
+    SecureRandom random = new java.security.SecureRandom(randomBytes);
+    while (true) {
+      random.nextBytes(randomBytes);
+      for (int i = 0; i < randomBytes.length; i++)
+        if (randomBytes[i] != 0)
+          return randomBytes[i];
     }
-    return getNotZeroRandomByte();
   }
 
   static public byte[] addArrayOfBytes(byte[] a, byte[] b) {
