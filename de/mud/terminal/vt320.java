@@ -2162,6 +2162,7 @@ public abstract class vt320 extends VDU implements KeyListener {
             break;
 	  case 2:
 	    attributes |= LOW;
+	    break;
           case 4:
             attributes |= UNDERLINE;
             break;
