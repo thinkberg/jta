@@ -1,0 +1,3 @@
+This directory contains the relay daemon provided for the convenience
+of the applet user. It allows applets to connect to others hosts than
+the web server by forwarding the connection.

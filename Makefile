@@ -81,14 +81,15 @@ dist:	jar doc revision changes
 	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/index.html \
 	                                  > $(PKGNAME)/index.new && \
 	  mv $(PKGNAME)/index.new $(PKGNAME)/index.html && \
-	  echo "s/<!-- DATE -->/$(DATE)/g" > /tmp/jta.sed \
-	  (cd jar; for i in *.jar; do; \
-	    echo 's/<!-- SIZE-'$i' -->/'`\ls -l $i | \
-	          awk '{printf("%dk", $5/1024);}' `'/g'; done) >> /tmp/jta.sed \
+	  echo "s/<!-- DATE -->/$(DATE)/g" > /tmp/jta.sed && \
+	  (cd jar; for i in *.jar; do \
+	    echo 's/<!-- SIZE-'$$i' -->/'`\ls -l $$i | \
+	          awk '{printf("%dk", $$5/1024);}' `'/g'; \
+	  done; rm -f /tmp/jta.sed) >> /tmp/jta.sed && \
 	  sed -f /tmp/jta.sed < $(PKGNAME)/html/download.html \
 	                      > $(PKGNAME)/html/download.new && \
 	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
-	  rm -f $(PKGNAME)/tools/* \
+	  rm -f $(PKGNAME)/tools/* && \
 	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
 	 @rm -rf $(PKGNAME) 
 	 @echo Created jar/$(PKGNAME)-src.jar

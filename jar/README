@@ -3,3 +3,5 @@ This is the directory for distribution packages.
 Each package name is constructed out of the package name "jta", the
 version "20". The date of the compilation is contained in the archive
 as an empty file whose name indicates the date of creation.
+
+Additional packages may have other names.
