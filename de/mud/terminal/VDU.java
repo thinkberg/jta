@@ -126,8 +126,8 @@ public class VDU extends Component
    */
   private Color brighten(Color clr) {
     return new Color(Math.max((int) (clr.getRed() *.85), 0),
-		     Math.max((int) (clr.getGreen() * .85), 0),
-		     Math.max((int) (clr.getBlue() * .85), 0));
+		     Math.max((int) (clr.getGreen() *.85), 0),
+		     Math.max((int) (clr.getBlue() *.85), 0));
   }
 
   /** A list of colors used for representation of the display */
@@ -181,6 +181,8 @@ public class VDU extends Component
   public final static int UNDERLINE  = 0x02;
   /** Invert character. */ 
   public final static int INVERT  = 0x04;
+  /** Lower intensity character. */ 
+  public final static int LOW  = 0x08;
 
   /** 
    * Create a new video display unit with the passed width and height in
@@ -981,13 +983,14 @@ public class VDU extends Component
           bg = color[((currAttr & COLOR_BG) >> 7)-1].darker();
 
         if((currAttr & BOLD) != 0)
-          if(fg.equals(Color.black))
+          if(fg.equals(Color.black)) {
             fg = Color.gray;
-          else {
+          } else {
 	    fg = fg.brighter();
 	    // bg = bg.brighter(); -- make some programs ugly
 	  }
 
+        if((currAttr & LOW) != 0) { fg=fg.darker(); }
         if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }
 
         if (sf.inSoftFont(charArray[windowBase + l][c])) {
