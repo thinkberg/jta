@@ -1222,7 +1222,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           if (c!=0)
             if (debug>0)
               System.out.println("TSTATE_DATA char: "+((int)c));
-          break;
+          /*break; some BBS really want those characters, like hearst etc. */
         }
         if(C >= columns) {
           if(R < rows - 1)
