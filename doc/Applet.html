@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Applet</title>
@@ -215,8 +215,10 @@ a width of 590 pixels and a height of 360 pixels. Adapt this according
 to your needs. In general the applet adapts its font size to match the
 size of the applet.</font></dd>
 
-<p><br>Everything else will be explained below and finally you need to
-close the applet definition using the <tt>&lt;/applet></tt> tag.
+<br>&nbsp;
+<p>&nbsp;
+<p>Everything else will be explained below and finally you need to close
+the applet definition using the <tt>&lt;/applet></tt> tag.
 <p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
 and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
 tags.
@@ -244,7 +246,8 @@ below</a></td>
 
 <td>Detach the actual terminal display and its components from the browser
 window and run in a separate window. Use with care.
-<br>The <i>boolean</i> value may either be <tt>true</tt> or <tt>false</tt>.</td>
+<br>The <i>boolean</i> value may either be <tt>true</tt> or <tt>false</tt>.
+S<i>ee below!</i></td>
 </tr>
 
 <tr NOSAVE>
@@ -254,6 +257,31 @@ window and run in a separate window. Use with care.
 <td>If set to <tt>true</tt>, the applet will disconnect from the remote
 host if you leave the web page. If <tt>false</tt>, the applet will stay
 connected and allows the user to continue the session.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.immediately"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>This parameter is usually set to false and determines if the applet
+should detach immediately and run if set to <i>true</i> or simply display
+the button and wait until it is pressed if <i>false</i>.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.startText"</tt>
+<br><tt>VALUE=</tt>"<i>string</i>"</td>
+
+<td>Set this parameter if you want to use a start button to detach the
+applet. The default value is "Connect".</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.stopText"</tt>
+<br><tt>VALUE="</tt><i>string</i><tt>"</tt></td>
+
+<td>The value set here will appear as the label of the button if the applet
+is in detached mode and running. The default value is "Disconnect".</td>
 </tr>
 </table></center>
 

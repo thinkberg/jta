@@ -32,7 +32,8 @@ import java.net.URL;
 
 import java.awt.Frame;
 import java.awt.BorderLayout;
-import java.awt.Dialog;
+import java.awt.GridLayout;
+import java.awt.Panel;
 import java.awt.Label;
 import java.awt.Button;
 import java.awt.Color;
@@ -41,6 +42,8 @@ import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.MenuShortcut;
+
+import java.awt.datatransfer.Clipboard;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -78,6 +81,9 @@ public class Applet extends java.applet.Applet {
 
   /** disconnect on leave, this is to force applets to break the connection */
   private boolean disconnect = true;
+
+  private Plugin focussedPlugin;
+  private Clipboard clipboard;
 
   /**
    * Read all parameters from the applet configuration and
@@ -171,19 +177,108 @@ public class Applet extends java.applet.Applet {
       }
 
       if(appletFrame != this) {
-	/*
-        ((Frame)appletFrame).addWindowListener(new WindowAdapter() {
-	  public void windowClosing(WindowEvent evt) {
-	    Applet.this.stop();
-            ((Frame)appletFrame).dispose();
-	  }
+	final String startText = options.getProperty("Applet.detach.startText");
+	final String stopText = options.getProperty("Applet.detach.stopText");
+	final Button close =  new Button();
+	  
+	if((new Boolean(options.getProperty("Applet.detach.immediately"))
+	     .booleanValue())) {
+          ((Frame)appletFrame).pack();
+	  ((Frame)appletFrame).show();
+          pluginLoader.broadcast(new AppletRequest(this));
+	  close.setLabel(startText != null ? stopText : "Disconnect");
+	} else
+	  close.setLabel(startText != null ? startText : "Connect");
+
+	close.addActionListener(new ActionListener() {
+	  public void actionPerformed(ActionEvent evt) {
+	    if(((Frame)appletFrame).isVisible()) {
+	      pluginLoader.broadcast(new SocketRequest());
+	      ((Frame)appletFrame).setVisible(false);
+	      close.setLabel(startText != null ? startText : "Connect");
+	    } else {
+	      ((Frame)appletFrame).pack();
+              ((Frame)appletFrame).show();
+	      Applet.this.start();
+	      close.setLabel(stopText != null ? stopText : "Disconnect");
+	    }
+          }
 	});
-	*/
-        ((Frame)appletFrame).pack();
-	((Frame)appletFrame).show();
+
+	setLayout(new BorderLayout());
+	add("Center", close);
+
+	// add a menu bar
+        MenuBar mb = new MenuBar();
+        Menu file = new Menu("File");
+        file.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
+        MenuItem tmp;
+        file.add(tmp = new MenuItem("Connect"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            pluginLoader.broadcast(new SocketRequest(host, 
+	                                             Integer.parseInt(port)));
+          }
+        });
+        file.add(tmp = new MenuItem("Disconnect"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            pluginLoader.broadcast(new SocketRequest());
+          }
+        });
+	file.add(new MenuItem("-"));
+        file.add(tmp = new MenuItem("Exit"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            ((Frame)appletFrame).setVisible(false);
+	    pluginLoader.broadcast(new SocketRequest());
+	    close.setLabel(startText != null ? startText : "Connect");
+          }
+        });
+	mb.add(file);
+
+	Menu edit = new Menu("Edit");
+        edit.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
+        edit.add(tmp = new MenuItem("Copy"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            if(focussedPlugin instanceof VisualTransferPlugin)
+	      ((VisualTransferPlugin)focussedPlugin).copy(clipboard);
+          }
+        });
+        edit.add(tmp = new MenuItem("Paste"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            if(focussedPlugin instanceof VisualTransferPlugin)
+	      ((VisualTransferPlugin)focussedPlugin).paste(clipboard);
+          }
+        });
+        mb.add(edit);
+
+	Hashtable menuList = pluginLoader.getMenus();
+        names = menuList.keys();
+        while(names.hasMoreElements()) {
+          String name = (String)names.nextElement();
+          mb.add((Menu)menuList.get(name));
+        }
+
+        ((Frame)appletFrame).setMenuBar(mb);
+
+	// add window closing event handler
+        try {
+          ((Frame)appletFrame).addWindowListener(new WindowAdapter() {
+	    public void windowClosing(WindowEvent evt) {
+	      pluginLoader.broadcast(new SocketRequest());
+              ((Frame)appletFrame).setVisible(false);
+	      close.setLabel(startText != null ? startText : "Connect");
+	    }
+	  });
+	} catch(Exception e) {
+	  System.err.println("Applet: could not set up Window event listener");
+	  System.err.println("Applet: you will not be able to close it");
+	}
       }
 
-      pluginLoader.broadcast(new AppletRequest(this));
     }
   }
 
@@ -201,12 +296,6 @@ public class Applet extends java.applet.Applet {
   public void stop() {
     if(disconnect)
       pluginLoader.broadcast(new SocketRequest());
-  }
-
-  public void paint(java.awt.Graphics g) {
-    g.drawString("The Java Telnet Applet", 3, 10);
-    g.drawString("(c) 1996-2000 Matthias L. Jugel & Marcus Meiﬂner", 3, 20);
-    g.drawString("[telnet window detached]", 3, 30);
   }
 
   /**

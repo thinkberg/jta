@@ -60,7 +60,7 @@ tex:	app
 	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
 	@echo Source documentation done.
 
-jar:	app 
+jar:	app build
 	@echo Creating binary archive ...
 	@if [ ! -d jar ]; then mkdir jar; fi
 	@touch "Created-$(DATE)"
@@ -77,7 +77,7 @@ cont:
 	@echo Compiling contributed software ...
 	@(cd contrib; make)
 
-dist:	build all revision changes
+dist:	all revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \

@@ -84,6 +84,8 @@ public class Socket extends Plugin
     });
   }
 
+  private String error = null;
+
   /** 
    * Connect to the host and port passed. If the multi relayd (mrelayd) is
    * used to allow connections to any host and the Socket.relay property
@@ -105,31 +107,15 @@ public class Socket extends Plugin
       // send the string to relay to the target host, port
       if(relay != null)
         write(("relay "+host+" "+port+"\n").getBytes());
-      bus.broadcast(new OnlineStatus(true));
     } catch(Exception e) {
-      final Frame frame = new Frame("Java Telnet Applet: Socket Error");
-      Panel p = new Panel(new BorderLayout());
-      TextArea msg = new TextArea(
-        "Your are either behind a firewall or the\n"+
-	"Java Telnet Applet has a broken configuration.\n\n"+
-        "The error is:\n"+e+"\n\n"+
-        "If unsure, please contact the administrator"+
-        "of the web page.\n", 10, 40);
-      msg.setEditable(false);
-      p.add("Center", msg);
-      Button close = new Button("Close Window");
-      close.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-	  frame.dispose();
-	}
-      });
-      p.add("South", close);
-      frame.add("Center", p);
-      frame.pack();
-      frame.show();
+      error = "Sorry, Could not connect: "+e+"\r\n\r\n"+
+              "Your are either behind a firewall or the Java Telnet Applet\r\n"+
+	      "has a broken configuration.\r\n\r\n"+
+              "If unsure, please contact the administrator "+
+              "of the web page.\r\n";
       error("can't connect: "+e);
-      disconnect();
     }
+    bus.broadcast(new OnlineStatus(true));
   }  
 
   /** Disconnect the socket and close the connection. */
@@ -144,7 +130,19 @@ public class Socket extends Plugin
   }
 
   public int read(byte[] b) throws IOException {
-    if(in == null) return -1;
+    // send error messages upward
+    if(error != null && error.length() > 0) {
+      int n = error.length() < b.length ? error.length() : b.length;
+      System.arraycopy(error.getBytes(), 0, b, 0, n);
+      error = error.substring(n);
+      return n;
+    }
+
+    if(in == null) {
+      disconnect();
+      return -1;
+    }
+
     int n = in.read(b);
     if(n < 0) disconnect();
     return n;

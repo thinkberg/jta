@@ -44,28 +44,38 @@ import java.awt.GridLayout;
 import java.awt.List;
 import java.awt.Component;
 import java.awt.Menu;
+import java.awt.MenuItem;
 import java.awt.Dimension;
 import java.awt.Button;
 import java.awt.Label;
 import java.awt.TextField;
+import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 
 /**
+ * The MudConnector (http://www.mudconnector.com) plugin. The plugin will
+ * download a list of MUDs from a special list availabe at the url above
+ * and the user can select the mud and connect to it. This usually requires
+ * the relayd program to be run on the web server as this plugin tries to
+ * establish connections to other hosts than the web server.
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class MudConnector extends Plugin implements VisualPlugin, Runnable {
+public class MudConnector 
+  extends Plugin 
+  implements VisualPlugin, Runnable, ActionListener {
 
   /** debugging level */
   private final static int debug = 0;
 
   protected URL listURL = null;
+  protected int step;
   protected Hashtable mudList = null;
   protected List mudListSelector = new List();
   protected TextField mudName, mudAddr, mudPort;
@@ -74,6 +84,7 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
   protected CardLayout layouter;
   protected ProgressBar progress;
   protected Label errorLabel;
+  protected Menu MCMenu;
 
   /**
    * Implementation of a progress bar to display the progress of
@@ -83,12 +94,23 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
     int max, current;
     String text;
     Dimension size = new Dimension(250, 20);
+    Image backingStore;
 
-    public void setMax(int max) {
-      this.max = max;
+    public void setMax(int max) { this.max = max; }
+
+    public void update(Graphics g) { paint(g); }
+
+    public void paint(Graphics g) {
+      if(backingStore == null) {
+        backingStore = createImage(getSize().width, getSize().height);
+	redraw();
+      } 
+      g.drawImage(backingStore, 0, 0, this);
     }
 
-    public synchronized void paint(Graphics g) {
+    private void redraw() {
+      if(backingStore == null || text == null) return;
+      Graphics g = backingStore.getGraphics();
       int width = (int) (((float)current/(float)max) * getSize().width);
       g.fill3DRect(0, 0, getSize().width, getSize().height, false);
       g.setColor(getBackground());
@@ -101,13 +123,15 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
                    getSize().width/2 - 
 		     getFontMetrics(getFont()).stringWidth(text) / 2, 
 		   getSize().height / 2 + 12);
+      paint(getGraphics());
     }
 
-    public synchronized void adjust(int value, String name) {
+    public void adjust(int value, String name) {
       if((current = value) > max)
         current = max;
       text = name;
-      repaint();
+      if(((float)current / (float)step) == (int)(current / step))
+        redraw();
     }
 
     public void setSize(int width, int height) {
@@ -141,6 +165,16 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 	  errorLabel.setText("Missing list URL");
 	  layouter.show(mudListPanel, "ERROR");
 	}
+
+	String sstep = config.getProperty("MudConnector",id,"step");
+
+	try {
+	  step = Integer.parseInt(sstep);
+	} catch(Exception e) {
+	  if(sstep != null)
+	    MudConnector.this.error("warning: "+sstep+" is not a number");
+	  step = 10;
+	}
       }
     });
 
@@ -173,21 +207,8 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
     panel.add(apanel);
     panel.add(connect = new Button("Connect"));
 
-    ActionListener al = new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        String addr = mudAddr.getText();
-	String port = mudPort.getText();
-	if(addr != null) {
-	  bus.broadcast(new SocketRequest());
-	  if(port == null || port.length() <= 0)
-	    port = "23";
-	  bus.broadcast(new SocketRequest(addr, Integer.parseInt(port)));
-	}
-      }
-    };
-
-    connect.addActionListener(al);
-    mudListSelector.addActionListener(al);
+    connect.addActionListener(this);
+    mudListSelector.addActionListener(this);
 
     mudListSelector.addItemListener(new ItemListener() {
       public void itemStateChanged(ItemEvent evt) {
@@ -208,9 +229,9 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
       }
     });
 
-
-
     layouter.show(mudListPanel, "PROGRESS");
+
+    MCMenu = new Menu("MudConnector");
   }
 
   private void setup() {
@@ -220,6 +241,9 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 
   public void run() {
     try {
+
+      Hashtable menuList = new Hashtable();
+
       mudList = new Hashtable();
       BufferedReader r = 
         new BufferedReader(new InputStreamReader(listURL.openStream()));
@@ -242,7 +266,7 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 
       String name, host;
       Integer port;
-      int token, counter = 0;
+      int token, counter = 0, idx = 0;
 
       while((token = ts.nextToken()) != ts.TT_EOF) {
         name = ts.sval; 
@@ -263,11 +287,20 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 
           if(debug > 0) 
             error(name+" ["+host+","+port+"]");
-          mudList.put(name, new Object[] { host, port });
+          mudList.put(name, new Object[] { host, port, new Integer(idx++) });
           mudListSelector.add(name);
-	  System.out.println("MudConnector: "+name);
 	  progress.adjust(++counter, name);
 	  mudListPanel.repaint();
+
+          Menu subMenu = (Menu)menuList.get(name.charAt(0)+"");
+	  if(subMenu == null) {
+	    subMenu = new Menu(name.charAt(0)+"");
+	    MCMenu.add(subMenu);
+            menuList.put(name.charAt(0)+"", subMenu);
+	  }
+	  MenuItem item = new MenuItem(name);
+	  item.addActionListener(MudConnector.this);
+	  subMenu.add(item);
         }
 	while(token != ts.TT_EOF && token != ts.TT_EOL)
 	  token = ts.nextToken();
@@ -281,11 +314,33 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
     layouter.show(mudListPanel, "MUDLIST");
   }
 
+  public void actionPerformed(ActionEvent evt) {
+    if(evt.getSource() instanceof MenuItem) {
+      String item = evt.getActionCommand();
+      int idx = ((Integer)((Object[])mudList.get(item))[2]).intValue();
+      mudListSelector.select(idx);
+      mudListSelector.makeVisible(idx);
+      mudName.setText(item);
+      Object mud[] = (Object[])mudList.get(item);
+      mudAddr.setText((String)mud[0]);
+      mudPort.setText(((Integer)mud[1]).toString());
+    } 
+
+    String addr = mudAddr.getText();
+    String port = mudPort.getText();
+    if(addr != null) {
+      bus.broadcast(new SocketRequest());
+      if(port == null || port.length() <= 0)
+        port = "23";
+      bus.broadcast(new SocketRequest(addr, Integer.parseInt(port)));
+    }
+  }
+
   public Component getPluginVisual() {
     return mudListPanel;
   }
 
   public Menu getPluginMenu() {
-    return null;
+    return MCMenu;
   }
 }

@@ -112,8 +112,6 @@ public abstract class vt320 extends VDU implements KeyListener {
     KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001b[H";
     KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001b[F";
 
-    Delete = "\u001b[3~";
-
     /* some more VT100 keys */
     Find   = "\u001b[1~";
     Select = "\u001b[4~";
@@ -422,7 +420,6 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String Help, Do, Find, Select;
 
   private String KeyHome[], KeyEnd[], Insert[], Remove[], PrevScn[], NextScn[];
-  private String Delete;
 
   private String osc,dcs;  /* to memorize OSC & DCS control sequence */
 
@@ -484,10 +481,12 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     if (debug>2) System.out.println("vt320: keyTyped "+evt);
 
+    /* DISABLED: this is non-portable :(
     if (keyChar == 0x7f) {
-      write(Delete);
+      write(Remove[0]);
       return;
     }
+    */
     if(shift && (keyChar == '\t')) {
       write(KeyBacktab);
       return;
@@ -614,7 +613,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind]); break;
       case KeyEvent.VK_PAGE_UP: write(PrevScn[xind]); break;
       case KeyEvent.VK_INSERT: write(Insert[xind]); break;
-      case KeyEvent.VK_DELETE: write(Delete); break;
+      case KeyEvent.VK_DELETE: write(Remove[xind]); break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8);
