@@ -135,21 +135,33 @@ public class Applet extends java.applet.Applet {
 	} catch(Exception e) {
 	  try {
 	    url = new URL(getCodeBase() + value);
-	  } catch(Exception ce) { 
+	  } catch(Exception ce) {
 	    System.err.println("jta: could not find config file: "+ce);
 	  }
-	} 
+	}
 
 	if(url != null) {
 	  try {
-	    appletParams.load(url.openStream());
+	    appletParams.load(Applet.class.getResourceAsStream("/de/mud/jta/" + value));
 	    Enumeration ape = appletParams.keys();
 	    while(ape.hasMoreElements()) {
 	      String key = (String)ape.nextElement();
 	      options.put(key, appletParams.getProperty(key));
 	    }
-	  } catch(Exception e) {
-	    System.err.println("jta: could not load config file: "+e);
+	  } catch ( Exception e )
+	  {
+	    try
+	    {
+	      appletParams.load(url.openStream());
+	      Enumeration ape = appletParams.keys();
+	      while(ape.hasMoreElements()) {
+	        String key = (String)ape.nextElement();
+	        options.put(key, appletParams.getProperty(key));
+	      }
+	    } catch ( Exception e2 )
+	    {
+	      System.err.println("jta: could not load config file: "+e2);
+	    }
 	  }
 	}
       }
