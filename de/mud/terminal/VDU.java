@@ -646,9 +646,10 @@ public class VDU extends Component
     c = checkBounds(c, 0, size.width - 1);
     l = checkBounds(l, 0, size.height - 1);
     markLine(cursorY, 1);
+    // FIXME: those are superflous? -Marcus
     cursorX = (c < size.width ? c : size.width);
     cursorY = (l < size.height ? l : size.height);
-    markLine(l, 1);
+    markLine(cursorY, 1);
   }
 
   public void showCursor(boolean doshow) {
@@ -943,10 +944,12 @@ public class VDU extends Component
         bg = getBackground();
 
         // Special handling of BOLD for terminals used on 5ESS 
+	/* I do not get this part.
         if(((currAttr & BOLD) != 0)   &&
            ((currAttr & COLOR_FG) == 0) &&
 	   ((currAttr & COLOR_BG) == 0))
 	  fg = color[COLOR_FG_BOLD];
+	*/
 
         if((currAttr & COLOR_FG) != 0)
           fg = color[((currAttr & COLOR_FG) >> 3)-1];
@@ -954,7 +957,7 @@ public class VDU extends Component
           bg = color[((currAttr & COLOR_BG) >> 7)-1];
 
         if((currAttr & BOLD) != 0)
-          if(fg.equals(Color.black) && COLOR_FG_BOLD != 0)
+          if(fg.equals(Color.black) /*&& COLOR_FG_BOLD != 0*/)
             fg = Color.gray;
           else {
 	    fg = fg.brighter();
