@@ -1165,7 +1165,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	System.out.println("FormFeed ... should we clear the page?");
 	C=R=0;
         break;
-      case '\b':
+      case '\b': /* 8 */
         C--;
         if (C<0)
           C=0;
@@ -1935,9 +1935,9 @@ public abstract class vt320 extends VDU implements KeyListener {
           if (C<columns-1)
             deleteArea(C,R,columns-C,1);
           break;
-        case 1:/*clear to the left*/
+        case 1:/*clear to the left, including this */
           if (C>0)
-            deleteArea(0,R,C,1);    // Ray: Should at least include character before this one, not C-1
+            deleteArea(0,R,C+1,1);
           break;
         case 2:/*clear whole line */
           deleteArea(0,R,columns,1);
@@ -1955,7 +1955,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           break;
         case 1:
           if (R>0)
-            deleteArea(0,0,columns,R-1);
+            deleteArea(0,0,columns,R);
           if (C>0)
             deleteArea(0,R,C,1);    // Ray: Should at least include character before this one, not C-1
           break;
