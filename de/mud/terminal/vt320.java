@@ -1,6 +1,6 @@
 /* This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei\u00dfner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -30,10 +30,10 @@ import java.awt.event.KeyEvent;
 /**
  * Implementation of a VT terminal emulation plus ANSI compatible.
  * <P>
- * <B>Maintainer:</B> Marcus Meiﬂner
+ * <B>Maintainer:</B> Marcus Mei\u00dfner
  *
  * @version $Id$
- * @author  Matthias L. Jugel, Marcus Meiﬂner
+ * @author  Matthias L. Jugel, Marcus Mei\u00dfner
  */
 public abstract class vt320 extends VDUBuffer implements VDUInput {
   /** The current version id tag.<P>
@@ -376,6 +376,20 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
    */
   public void setTerminalID(String terminalID) {
     this.terminalID = terminalID;
+
+    if (terminalID.equals("scoansi")) {
+      FunctionKey[1] = "\u001b[M";  FunctionKey[2] = "\u001b[N";
+      FunctionKey[3] = "\u001b[O";  FunctionKey[4] = "\u001b[P";
+      FunctionKey[5] = "\u001b[Q";  FunctionKey[6] = "\u001b[R";
+      FunctionKey[7] = "\u001b[S";  FunctionKey[8] = "\u001b[T";
+      FunctionKey[9] = "\u001b[U";  FunctionKey[10] = "\u001b[V";
+      FunctionKey[11] = "\u001b[W"; FunctionKey[12] = "\u001b[X";
+      FunctionKey[13] = "\u001b[Y"; FunctionKey[14] = "?";
+      FunctionKey[15] = "\u001b[a"; FunctionKey[16] = "\u001b[b";
+      FunctionKey[17] = "\u001b[c"; FunctionKey[18] = "\u001b[d";
+      FunctionKey[19] = "\u001b[e"; FunctionKey[20] = "\u001b[f";
+      // more theoretically.
+    }
   }
 
   public void setAnswerBack(String ab) {
@@ -659,6 +673,8 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
     boolean shift = (modifiers & VDUInput.KEY_SHIFT) != 0;
     boolean alt = (modifiers & VDUInput.KEY_ALT) != 0;
 
+    if (debug > 1) System.out.println("keyPressed("+keyCode+", "+(int)keyChar+", "+modifiers+")");
+
     int xind;
     String fmap[];
     xind = 0;
@@ -777,6 +793,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   }
 
   public void keyReleased(KeyEvent evt) {
+    if (debug > 1) System.out.println("keyReleased("+evt+")");
     // ignore
   }
 
@@ -788,6 +805,8 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
     boolean control = (modifiers & VDUInput.KEY_CONTROL) != 0;
     boolean shift = (modifiers & VDUInput.KEY_SHIFT) != 0;
     boolean alt = (modifiers & VDUInput.KEY_ALT) != 0;
+
+    if (debug > 1) System.out.println("keyTyped("+keyCode+", "+(int)keyChar+", "+modifiers+")");
 
     if (keyChar == '\t') {
       if (shift) {
@@ -900,8 +919,6 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
       }
       */
     }
-
-    if (debug > 2) System.out.println("vt320: keyPressed " + keyCode + "\"" + keyChar + "\"");
 
     // FIXME: not used?
     String fmap[];
@@ -2055,9 +2072,36 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             DCEvars[DCEvar] = 0;
             term_state = TSTATE_CSI_EQUAL;
             break;
-	  
+
+          case 'F': /* SCO ANSI foreground */
+	  {
+	    int newcolor;
+
+            attributes &= ~COLOR_FG;
+	    newcolor =	((DCEvars[0] & 1) << 2)	|
+	    		 (DCEvars[0] & 2)	|
+	    		((DCEvars[0] & 4) >> 2) ;
+            attributes |= newcolor << COLOR_FG_SHIFT;
+
+	    break;
+	  }
+          case 'G': /* SCO ANSI background */
+	  {
+	    int newcolor;
+
+            attributes &= ~COLOR_BG;
+	    newcolor =	((DCEvars[0] & 1) << 2)	|
+	    		 (DCEvars[0] & 2)	|
+	    		((DCEvars[0] & 4) >> 2) ;
+            attributes |= newcolor << COLOR_BG_SHIFT;
+	    break;
+          }
+
           default:
-            System.out.println("Unknown ESC [ = ...  \"" + c);
+            System.out.print("Unknown ESC [ = ");
+	    for (int i=0;i<DCEvar;i++)
+		System.out.print(DCEvars[i]+",");
+	    System.out.println("" + c);
             break;
         }
         break;
