@@ -41,8 +41,16 @@ import java.awt.print.PrinterException;
 import java.awt.print.PageFormat;
 */
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.DataFlavor;
+
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseEvent;
 
 /**
  * Video Display Unit emulation. This class implements all necessary
@@ -54,7 +62,7 @@ import java.awt.event.AdjustmentEvent;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public class VDU extends Canvas {
+public class VDU extends Canvas implements MouseListener, MouseMotionListener {
   /** The current version id tag */
   public final static String ID = "$Id$";
 
@@ -174,6 +182,9 @@ public class VDU extends Canvas {
 
     selectBegin = new Point(0,0);
     selectEnd = new Point(0,0); 
+
+    addMouseListener(this);
+    addMouseMotionListener(this);
 
 /*
     addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1178,85 +1189,97 @@ public class VDU extends Canvas {
     return insets;
   }
 
-  /**
-   * Handle mouse events for copy & paste
-   * @param evt the event that occured
-   * @return boolean true if action was taken
-   * @see java.awt.Event
-   */
- /*
-  public void mouseDown(MouseEvent evt) {
-    // handle scrollbar events
-    if(evt != null && evt.arg != null) {
-      int val = ((Integer)evt.arg).intValue();
-      setWindowBase(val);
-      return true;
-    }
-
-    if(evt.id == Event.MOUSE_DOWN || evt.id == Event.MOUSE_UP ||
-       evt.id == Event.MOUSE_DRAG) {
-      int xoffset = (super.size().width - size.width * charWidth) / 2;
-      int yoffset = (super.size().height - size.height * charHeight) / 2;
-      switch(evt.id) {
-      case Event.MOUSE_DOWN:
-        selectBegin.x = (evt.x - xoffset) / charWidth;
-        selectBegin.y = (evt.y - yoffset) / charHeight + windowBase;
-        selectEnd.x = selectBegin.x;
-        selectEnd.y = selectBegin.y;
-        break;
-      case Event.MOUSE_UP:
-      case Event.MOUSE_DRAG:
-        int x = (evt.x - xoffset) / charWidth;
-        int y = (evt.y - yoffset) / charHeight + windowBase;
-        int oldx = selectEnd.x, oldy = selectEnd.y;
-
-        if((x < selectBegin.x && y < selectBegin.y) &&
-           (x < selectEnd.x && y < selectEnd.y)) {
-          selectBegin.x = x;
-          selectBegin.y = y;
-        } else {
-          selectEnd.x = x;
-          selectEnd.y = y;
-        }
-
-        if(evt.id == Event.MOUSE_UP) {
-          if(selectBegin.x == selectEnd.x &&
-             selectBegin.y == selectEnd.y) {
-            repaint();
-            return true;
-          }
-          String tmp = "";
-	  // fix end.x and end.y, they can get over the border
-	  if (selectEnd.x < 0) selectEnd.x = 0;
-	  if (selectEnd.y < 0) selectEnd.y = 0;
-	  if (selectEnd.y >= charArray.length) {
-		selectEnd.y = charArray.length-1;
-	  }
-	  if (selectEnd.x >= charArray[0].length) {
-		selectEnd.x = charArray[0].length-1;
-	  }
-          for(int l = selectBegin.y; l <= selectEnd.y; l++)
-            if(l == selectBegin.y) 
-              tmp = (new String(charArray[l])).substring(selectBegin.x) + "\n";
-            else if(l == selectEnd.y) 
-              tmp += (new String(charArray[l])).substring(0, selectEnd.x);
-            else tmp += new String(charArray[l]) + "\n";
-
-	    // for jdk-1.1
-	  //   String s=(String) ((StringSelection)this.getToolkit().
-	// 		       getSystemClipboard().
-	// 		       getContents(this)).
-	    //   getTransferData(DataFlavor.stringFlavor);
-	    // System.out.println(s);
-	    //
-          repaint();
-        } else
-          if(oldx != x || oldy != y) repaint();
-        break;
-      }
-      return true;
-    }
-    return false;
+  public void mouseMoved(MouseEvent evt) {
+    /* nothing yet we do here */
   }
-  */
+
+  public void mouseDragged(MouseEvent evt) {
+    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+    int x = (evt.getX() - xoffset) / charWidth;
+    int y = (evt.getY() - yoffset) / charHeight + windowBase;
+    int oldx = selectEnd.x, oldy = selectEnd.y;
+
+    if((x < selectBegin.x && y < selectBegin.y) &&
+       (x < selectEnd.x && y < selectEnd.y)) {
+      selectBegin.x = x;
+      selectBegin.y = y;
+    } else {
+      selectEnd.x = x;
+      selectEnd.y = y;
+    }
+    if(oldx != x || oldy != y) 
+      repaint();
+  }
+
+  public void mouseClicked(MouseEvent evt) {
+    /* nothing yet we do here */
+  }
+
+  public void mouseEntered(MouseEvent evt) {
+    /* nothing yet we do here */
+  }
+
+  public void mouseExited(MouseEvent evt) {
+    /* nothing yet we do here */
+  }
+
+  /**
+   * Handle mouse pressed events for copy & paste
+   * @param evt the event that occured
+   * @see java.awt.event.MouseEvent
+   */
+  public void mousePressed(MouseEvent evt) {
+    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+    selectBegin.x = (evt.getX() - xoffset) / charWidth;
+    selectBegin.y = (evt.getY() - yoffset) / charHeight + windowBase;
+    selectEnd.x = selectBegin.x;
+    selectEnd.y = selectBegin.y;
+  }
+
+
+  public void mouseReleased(MouseEvent evt) {
+    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+    mouseDragged(evt);
+
+    if(selectBegin.x == selectEnd.x &&
+       selectBegin.y == selectEnd.y) {
+      repaint();
+      return;
+    }
+    String tmp = "";
+    // fix end.x and end.y, they can get over the border
+    if(selectEnd.x < 0) selectEnd.x = 0;
+    if(selectEnd.y < 0) selectEnd.y = 0;
+    if(selectEnd.y >= charArray.length)
+      selectEnd.y = charArray.length-1;
+    if(selectEnd.x >= charArray[0].length)
+      selectEnd.x = charArray[0].length-1;
+
+    for(int l = selectBegin.y; l <= selectEnd.y; l++)
+      if(l == selectBegin.y) 
+        tmp = (new String(charArray[l])).substring(selectBegin.x) + "\n";
+      else if(l == selectEnd.y) 
+        tmp += (new String(charArray[l])).substring(0, selectEnd.x);
+      else tmp += new String(charArray[l]) + "\n";
+
+    StringSelection selection = new StringSelection(tmp);
+    Toolkit toolkit = getToolkit();
+    Clipboard clipboard = toolkit.getSystemClipboard();
+    clipboard.setContents(selection, selection);
+
+    try {
+      String s = (String)((StringSelection)clipboard.getContents(this))
+          .getTransferData(DataFlavor.stringFlavor);
+      System.out.println(s);
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+
+    repaint();
+  } 
+
+
 }

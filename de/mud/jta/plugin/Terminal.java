@@ -185,13 +185,16 @@ public class Terminal extends Plugin
 	  /* do nothing */ ;
 	else if(key.equals("Terminal.border")) {
 	  boolean raised = false;
-	  if(config.containsKey("Terminal.borderStyle"))
-	    raised = Boolean.getBoolean("Terminal.borderRaised");
+	  if(config.containsKey("Terminal.borderRaised"))
+	    raised = Boolean.valueOf("Terminal.borderRaised").booleanValue();
 	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
 	                     raised);
         } else if(key.equals("Terminal.scrollBar")) {
+	  String direction = config.getProperty(key);
+	  if(!direction.equals("East") && !direction.equals("West"))
+	    direction = "East";
 	  Scrollbar scrollBar = new Scrollbar();
-	  tPanel.add("East", scrollBar);
+	  tPanel.add(direction, scrollBar);
 	  terminal.setScrollbar(scrollBar);
 	} else if(key.equals("Terminal.id"))
 	  terminal.setTerminalID(config.getProperty(key));
