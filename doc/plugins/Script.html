@@ -51,7 +51,7 @@ Test</a></font></b></td>
 <center>
 <h2>
 <font color="#CC0000">Script Plugin</font></h2></center>
-To automatice certain processes like login into guest accounts or BBS'
+To automate certain processes like login into guest accounts or BBS'
 the script plugin enables you to write simple scripts of pattern and answer
 pairs to be sent to the remote host if the pattern was found in the data
 that came from the remote host.
@@ -69,8 +69,7 @@ It first waits for the pattern "<i>login:</i>" and sends the text "<i>leo\n</i>"
 if that appears it sends "<i>mypass\n</i>". Next you could add some pattern
 that looks like your command prompt and issue a shell command.
 <p>You can configure the plugin using the following properties:
-<br>&nbsp;
-<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<center><table BORDER=0 CELLSPACjNG=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
 <tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
 <td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Property</font></font></b></td>
 
@@ -83,6 +82,11 @@ that looks like your command prompt and issue a shell command.
 <td>This property contains the script that is used by the plugin.</td>
 </tr>
 </table></center>
+<p><b>NOTE:</b><br>The Script plugin MUST be <b>BETWEEN</b>
+the Telnet or SSH Plugin and the Terminal plugin.<br>The order of plugins in the
+plugins line is important!<p>
+Example:
+<code>plugins=Status,Socket,Telnet,Script,Terminal</code>
 </td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Additional
