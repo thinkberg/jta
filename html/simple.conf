@@ -1,6 +1,6 @@
 # This file is part of "The Java Telnet Application".
 #
-# (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Righs Reserved.
+# (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
 #
 # The software is licensed under the terms and conditions in the
 # license agreement included in the software distribution package.
