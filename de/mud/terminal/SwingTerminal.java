@@ -63,10 +63,10 @@ import java.awt.event.MouseMotionListener;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public class VDUSwing extends Component
-        implements VDUDisplay, MouseListener, MouseMotionListener {
+public class SwingTerminal extends Component
+        implements VDUDisplay, KeyListener, MouseListener, MouseMotionListener {
 
-  private final static int debug = 1;
+  private final static int debug = 0;
 
   /** the VDU buffer */
   private VDUBuffer buffer;
@@ -88,9 +88,6 @@ public class VDUSwing extends Component
   private int charDescent;                           /* base line descent */
   private int resizeStrategy;                /* current resizing strategy */
 
-  private boolean showcursor = true;		/* show cursor */
-  protected int cursorX;
-  protected int cursorY;                /* current cursor position */
   private Point selectBegin, selectEnd;          /* selection coordinates */
   private String selection;                 /* contains the selected text */
 
@@ -174,8 +171,22 @@ public class VDUSwing extends Component
    * @param buffer a VDU buffer to be associated with the display
    * @param font the font to be used (usually Monospaced)
    */
-  public VDUSwing(VDUBuffer buffer, Font font) {
+  public SwingTerminal(VDUBuffer buffer, Font font) {
     setVDUBuffer(buffer);
+    addKeyListener(this);
+
+    /* we have to make sure the tab key stays within the component */
+    String version = System.getProperty("java.version");
+    if (version.startsWith("1.4")) {
+      try {
+        Class params[] = new Class[]{boolean.class};
+        SwingTerminal.class.getMethod("setFocusable", params).invoke(this, new Object[]{new Boolean(true)});
+        SwingTerminal.class.getMethod("setFocusTraversalKeysEnabled", params).invoke(this, new Object[]{new Boolean(false)});
+      } catch (Exception e) {
+        System.err.println("vt320: unable to reset focus handling for java version " + version);
+        e.printStackTrace();
+      }
+    }
 
     // lightweight component handling
     enableEvents(VDU_EVENTS);
@@ -202,7 +213,7 @@ public class VDUSwing extends Component
   /**
    * Create a display unit with size 80x24 and Font "Monospaced", size 12.
    */
-  public VDUSwing(VDUBuffer buffer) {
+  public SwingTerminal(VDUBuffer buffer) {
     this(buffer, new Font("Monospaced", Font.PLAIN, 11));
   }
 
@@ -412,10 +423,8 @@ public class VDUSwing extends Component
         // determine the maximum of characters we can print in one go
         while ((c + addr < buffer.width) &&
                 ((buffer.charArray[buffer.windowBase + l][c + addr] < ' ') ||
-                (buffer.charAttributes[buffer.windowBase + l][c + addr] == currAttr)
-                ) &&
-                !sf.inSoftFont(buffer.charArray[buffer.windowBase + l][c + addr])
-                ) {
+                (buffer.charAttributes[buffer.windowBase + l][c + addr] == currAttr)) &&
+                !sf.inSoftFont(buffer.charArray[buffer.windowBase + l][c + addr])) {
           if (buffer.charArray[buffer.windowBase + l][c + addr] < ' ') {
             buffer.charArray[buffer.windowBase + l][c + addr] = ' ';
             buffer.charAttributes[buffer.windowBase + l][c + addr] = 0;
@@ -469,14 +478,14 @@ public class VDUSwing extends Component
     }
 
     // draw cursor
-    if (showcursor && (
-            buffer.screenBase + cursorY >= buffer.windowBase &&
-            buffer.screenBase + cursorY < buffer.windowBase + buffer.height)
+    if (buffer.showcursor && (
+            buffer.screenBase + buffer.cursorY >= buffer.windowBase &&
+            buffer.screenBase + buffer.cursorY < buffer.windowBase + buffer.height)
     ) {
       g.setColor(cursorColorFG);
       g.setXORMode(cursorColorBG);
-      g.fillRect(cursorX * charWidth + xoffset,
-                 (cursorY + buffer.screenBase - buffer.windowBase) * charHeight + yoffset,
+      g.fillRect(buffer.cursorX * charWidth + xoffset,
+                 (buffer.cursorY + buffer.screenBase - buffer.windowBase) * charHeight + yoffset,
                  charWidth, charHeight);
       g.setPaintMode();
       g.setColor(color[COLOR_FG_STD]);
@@ -794,6 +803,10 @@ public class VDUSwing extends Component
     int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
     int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
 
+    if (buffer instanceof VDUInput) {
+      ((VDUInput) buffer).mousePressed(xoffset, yoffset, evt.getModifiers());
+    }
+
     // looks like we get no modifiers here ... ... We do? -Marcus
     if (buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
       selectBegin.x = (evt.getX() - xoffset) / charWidth;
@@ -808,13 +821,17 @@ public class VDUSwing extends Component
    * @param evt the mouse event
    */
   public void mouseReleased(MouseEvent evt) {
+    int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
+
+    if (buffer instanceof VDUInput) {
+      ((VDUInput) buffer).mousePressed(xoffset, yoffset, evt.getModifiers());
+    }
+
     if (buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
-//      int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
-//      int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
       mouseDragged(evt);
 
-      if (selectBegin.x == selectEnd.x &&
-              selectBegin.y == selectEnd.y) {
+      if (selectBegin.x == selectEnd.x && selectBegin.y == selectEnd.y) {
         buffer.update[0] = true;
         redraw();
         return;
@@ -838,6 +855,20 @@ public class VDUSwing extends Component
           selection += "\n";
       }
     }
+  }
+
+  public void keyTyped(KeyEvent e) {
+    if (buffer != null)
+      ((VDUInput) buffer).keyTyped(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
+  }
+
+  public void keyPressed(KeyEvent e) {
+    if (buffer != null)
+      ((VDUInput) buffer).keyPressed(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
+  }
+
+  public void keyReleased(KeyEvent e) {
+    // ignore
   }
 
   // lightweight component event handling
@@ -998,5 +1029,14 @@ public class VDUSwing extends Component
           break;
       }
     super.processFocusEvent(evt);
+  }
+
+  private int getModifiers(KeyEvent e) {
+    return
+            (e.isControlDown() ? VDUInput.KEY_CONTROL : 0) |
+            (e.isShiftDown() ? VDUInput.KEY_SHIFT : 0) |
+            (e.isAltDown() ? VDUInput.KEY_ALT : 0) |
+            (e.isActionKey() ? VDUInput.KEY_ACTION : 0);
+
   }
 }

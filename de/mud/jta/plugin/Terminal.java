@@ -40,6 +40,7 @@ import de.mud.jta.event.TelnetCommandRequest;
 import de.mud.jta.event.TerminalTypeListener;
 import de.mud.jta.event.WindowSizeListener;
 import de.mud.terminal.vt320;
+import de.mud.terminal.SwingTerminal;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -87,7 +88,9 @@ public class Terminal extends Plugin
   private final static int debug = 0;
 
   /** holds the actual terminal emulation */
-  protected vt320 terminal;
+  protected SwingTerminal terminal;
+  protected vt320 emulation;
+
   /**
    * The default encoding is ISO 8859-1 (western).
    * However, as you see the value is set to latin1 which is a value that
@@ -131,6 +134,28 @@ public class Terminal extends Plugin
    */
   public Terminal(final PluginBus bus, final String id) {
     super(bus, id);
+
+    // create the terminal emulation
+    emulation = new vt320() {
+      public void write(byte[] b) {
+        try {
+          Terminal.this.write(b);
+        } catch (IOException e) {
+          reader = null;
+        }
+      }
+      // provide audio feedback if that is configured
+      public void beep() {
+        if (audioBeep != null) bus.broadcast(audioBeep);
+      }
+
+      public void sendTelnetCommand(byte cmd) {
+        bus.broadcast(new TelnetCommandRequest(cmd));
+      }
+    };
+
+    // create terminal
+    terminal = new SwingTerminal(emulation);
 
     // initialize colors
     colors.put("black", Color.black);
@@ -217,44 +242,26 @@ public class Terminal extends Plugin
       menu.add(item = new JMenuItem("Buffer +50"));
       item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          terminal.setBufferSize(terminal.getBufferSize() + 50);
+          emulation.setBufferSize(emulation.getBufferSize() + 50);
         }
       });
       menu.add(item = new JMenuItem("Buffer -50"));
       item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          terminal.setBufferSize(terminal.getBufferSize() - 50);
+          emulation.setBufferSize(emulation.getBufferSize() - 50);
         }
       });
       menu.addSeparator();
       menu.add(item = new JMenuItem("Reset Terminal"));
       item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          terminal.reset();
+          emulation.reset();
         }
       });
 
     } // !personalJava
 
-    // create the terminal emulation
-    terminal = new vt320() {
-      public void write(byte[] b) {
-        try {
-          Terminal.this.write(b);
-        } catch (IOException e) {
-          reader = null;
-        }
-      }
 
-      // provide audio feedback if that is configured
-      public void beep() {
-        if (audioBeep != null) bus.broadcast(audioBeep);
-      }
-
-      public void sendTelnetCommand(byte cmd) {
-        bus.broadcast(new TelnetCommandRequest(cmd));
-      }
-    };
 
     // the container for our terminal must use double-buffering
     // or at least reduce flicker by overloading update()
@@ -306,20 +313,20 @@ public class Terminal extends Plugin
 
     bus.registerPluginListener(new TerminalTypeListener() {
       public String getTerminalType() {
-        return terminal.getTerminalID();
+        return emulation.getTerminalID();
       }
     });
 
     bus.registerPluginListener(new WindowSizeListener() {
       public Dimension getWindowSize() {
-        return terminal.getScreenSize();
+        return new Dimension(emulation.getColumns(), emulation.getRows());
       }
     });
 
     bus.registerPluginListener(new LocalEchoListener() {
       public void setLocalEcho(boolean echo) {
         if (!localecho_overridden)
-          terminal.setLocalEcho(echo);
+          emulation.setLocalEcho(echo);
       }
     });
 
@@ -381,12 +388,12 @@ public class Terminal extends Plugin
         // special color for bold
         if ((tmp = colorSet.getProperty("bold")) != null &&
                 (color = codeToColor(tmp)) != null) {
-          set[vt320.COLOR_BOLD] = color;
+          set[SwingTerminal.COLOR_BOLD] = color;
         }
         // special color for invert
         if ((tmp = colorSet.getProperty("invert")) != null &&
                 (color = codeToColor(tmp)) != null) {
-          set[vt320.COLOR_INVERT] = color;
+          set[SwingTerminal.COLOR_INVERT] = color;
         }
         terminal.setColorSet(set);
       }
@@ -416,7 +423,7 @@ public class Terminal extends Plugin
     }
 
     if ((tmp = cfg.getProperty("Terminal", id, "localecho")) != null) {
-      terminal.setLocalEcho(Boolean.valueOf(tmp).booleanValue());
+      emulation.setLocalEcho(Boolean.valueOf(tmp).booleanValue());
       localecho_overridden = true;
     }
 
@@ -433,20 +440,20 @@ public class Terminal extends Plugin
     }
 
     if ((tmp = cfg.getProperty("Terminal", id, "id")) != null)
-      terminal.setTerminalID(tmp);
+      emulation.setTerminalID(tmp);
 
     if ((tmp = cfg.getProperty("Terminal", id, "answerback")) != null)
-      terminal.setAnswerBack(tmp);
+      emulation.setAnswerBack(tmp);
 
     if ((tmp = cfg.getProperty("Terminal", id, "buffer")) != null)
-      terminal.setBufferSize(Integer.parseInt(tmp));
+      emulation.setBufferSize(Integer.parseInt(tmp));
 
     if ((tmp = cfg.getProperty("Terminal", id, "size")) != null)
       try {
         int idx = tmp.indexOf(',');
         int width = Integer.parseInt(tmp.substring(1, idx).trim());
         int height = Integer.parseInt(tmp.substring(idx + 1, tmp.length() - 1).trim());
-        terminal.setScreenSize(width, height);
+        emulation.setScreenSize(width, height);
       } catch (Exception e) {
         error("screen size is wrong: " + tmp);
         error("error: " + e);
@@ -454,11 +461,11 @@ public class Terminal extends Plugin
 
     if ((tmp = cfg.getProperty("Terminal", id, "resize")) != null)
       if (tmp.equals("font"))
-        terminal.setResizeStrategy(terminal.RESIZE_FONT);
+        terminal.setResizeStrategy(SwingTerminal.RESIZE_FONT);
       else if (tmp.equals("screen"))
-        terminal.setResizeStrategy(terminal.RESIZE_SCREEN);
+        terminal.setResizeStrategy(SwingTerminal.RESIZE_SCREEN);
       else
-        terminal.setResizeStrategy(terminal.RESIZE_NONE);
+        terminal.setResizeStrategy(SwingTerminal.RESIZE_NONE);
 
 
     if ((tmp = cfg.getProperty("Terminal", id, "font")) != null) {
@@ -496,13 +503,13 @@ public class Terminal extends Plugin
 
       // set the key codes if we got the properties
       if (keyCodes != null)
-        terminal.setKeyCodes(keyCodes);
+        emulation.setKeyCodes(keyCodes);
     }
 
     if ((tmp = cfg.getProperty("Terminal", id, "VMS")) != null)
-      terminal.setVMS((Boolean.valueOf(tmp)).booleanValue());
+      emulation.setVMS((Boolean.valueOf(tmp)).booleanValue());
     if ((tmp = cfg.getProperty("Terminal", id, "IBM")) != null)
-      terminal.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
+      emulation.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
     if ((tmp = cfg.getProperty("Terminal", id, "encoding")) != null)
       encoding = tmp;
 
@@ -527,7 +534,7 @@ public class Terminal extends Plugin
         n = read(b);
         if (debug > 1 && n > 0)
           System.err.println("Terminal: \"" + (new String(b, 0, n, encoding)) + "\"");
-        if (n > 0) terminal.putString(new String(b, 0, n, encoding));
+        if (n > 0) emulation.putString(new String(b, 0, n, encoding));
         tPanel.repaint();
       } catch (IOException e) {
         reader = null;

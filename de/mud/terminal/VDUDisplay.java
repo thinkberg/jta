@@ -30,4 +30,7 @@ package de.mud.terminal;
  */
 public interface VDUDisplay {
   public void redraw();
+
+  public void setVDUBuffer(VDUBuffer buffer);
+  public VDUBuffer getVDUBuffer();
 }

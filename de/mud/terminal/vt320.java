@@ -24,8 +24,8 @@
 
 package de.mud.terminal;
 
-import java.awt.event.KeyEvent;
 import java.util.Properties;
+import java.awt.event.KeyEvent;
 
 /**
  * Implementation of a VT terminal emulation plus ANSI compatible.
@@ -35,7 +35,7 @@ import java.util.Properties;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public abstract class vt320 extends VDUBuffer {
+public abstract class vt320 extends VDUBuffer implements VDUInput {
   /** The current version id tag.<P>
    * $Id$
    */
@@ -204,19 +204,6 @@ public abstract class vt320 extends VDUBuffer {
     NUMPlus[0] = "+";
     NUMDot = new String[4];
     NUMDot[0] = ".";
-
-    /* we have to make sure the tab key stays within the component */
-    String version = System.getProperty("java.version");
-    if (version.startsWith("1.4")) {
-      try {
-        Class params[] = new Class[]{boolean.class};
-        vt320.class.getMethod("setFocusable", params).invoke(this, new Object[]{new Boolean(true)});
-        vt320.class.getMethod("setFocusTraversalKeysEnabled", params).invoke(this, new Object[]{new Boolean(false)});
-      } catch (Exception e) {
-        System.err.println("vt320: unable to reset focus handling for java version " + version);
-        e.printStackTrace();
-      }
-    }
   }
 
   /**
@@ -666,14 +653,10 @@ public abstract class vt320 extends VDUBuffer {
   /**
    * main keytyping event handler...
    */
-  public void keyPressed(KeyEvent evt) {
-    boolean control = evt.isControlDown();
-    boolean shift = evt.isShiftDown();
-    boolean alt = evt.isAltDown();
-
-    int keyCode = evt.getKeyCode();
-    // char keyChar = evt.getKeyChar();
-    //System.out.println("keyPressed "+evt);
+  public void keyPressed(int keyCode, char keyChar, int modifiers) {
+    boolean control = (modifiers & VDUInput.KEY_CONTROL) != 0;
+    boolean shift = (modifiers & VDUInput.KEY_SHIFT) != 0;
+    boolean alt = (modifiers & VDUInput.KEY_ALT) != 0;
 
     int xind;
     String fmap[];
@@ -785,20 +768,18 @@ public abstract class vt320 extends VDUBuffer {
     }
   }
 
+  public void keyReleased(KeyEvent evt) {
+    // ignore
+  }
+
   /**
    * Handle key Typed events for the terminal, this will get
    * all normal key types, but no shift/alt/control/numlock.
-   * @param evt the event
    */
-  public void keyTyped(KeyEvent evt) {
-    boolean control = evt.isControlDown();
-    boolean shift = evt.isShiftDown();
-    boolean alt = evt.isAltDown();
-
-    int keyCode = evt.getKeyCode();
-    char keyChar = evt.getKeyChar();
-
-    //System.out.println("keyTyped "+evt+",keyChar "+(int)keyChar);
+  public void keyTyped(int keyCode, char keyChar, int modifiers) {
+    boolean control = (modifiers & VDUInput.KEY_CONTROL) != 0;
+    boolean shift = (modifiers & VDUInput.KEY_SHIFT) != 0;
+    boolean alt = (modifiers & VDUInput.KEY_ALT) != 0;
 
     if (keyChar == '\t') {
       if (shift) {
@@ -912,7 +893,7 @@ public abstract class vt320 extends VDUBuffer {
       */
     }
 
-    if (debug > 2) System.out.println("vt320: keyPressed " + evt + "\"" + keyChar + "\"");
+    if (debug > 2) System.out.println("vt320: keyPressed " + keyCode + "\"" + keyChar + "\"");
 
     // FIXME: not used?
     String fmap[];
@@ -936,7 +917,8 @@ public abstract class vt320 extends VDUBuffer {
       writeSpecial(Escape[xind]);
       return;
     }
-    if (evt.isActionKey())
+
+    if ((modifiers & VDUInput.KEY_ACTION) != 0)
       switch (keyCode) {
         case KeyEvent.VK_NUMPAD0:
           writeSpecial(Numpad[0]);

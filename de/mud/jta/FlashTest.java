@@ -25,15 +25,14 @@
 package de.mud.jta;
 
 import de.mud.telnet.TelnetProtocolHandler;
-import de.mud.terminal.SwingTerminal;
+import de.mud.terminal.FlashTerminal;
 import de.mud.terminal.vt320;
-import de.mud.terminal.SwingTerminal;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
@@ -45,9 +44,9 @@ import java.net.Socket;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class SmallApplet extends java.applet.Applet implements Runnable {
+public class FlashTest implements Runnable {
 
-  private final static int debug = 0;
+  private final static int debug = 3;
 
   /** hold the host and port for our connection */
   private String host, port;
@@ -61,23 +60,25 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
 
   /** the terminal */
   private vt320 emulation;
-  private SwingTerminal terminal;
+  private FlashTerminal terminal;
 
   /** the telnet protocol handler */
   private TelnetProtocolHandler telnet;
 
-  private boolean localecho = false;
+  private boolean localecho = true;
 
   /**
    * Read all parameters from the applet configuration and
    * do initializations for the plugins and the applet.
    */
-  public void init() {
+  public static void main(String args[]) {
     if (debug > 0) System.err.println("jta: init()");
+    new FlashTest(args[0], args[1]);
+  }
 
-    host = getParameter("host");
-    port = getParameter("port");
-
+  public FlashTest(String host, String port) {
+    this.host = host;
+    this.port = port;
 
     // we now create a new terminal that is used for the system
     // if you want to configure it please refer to the api docs
@@ -94,11 +95,8 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
       }
     };
 
-    terminal = new SwingTerminal(emulation);
-
-    // put terminal into the applet
-    setLayout(new BorderLayout());
-    add("Center", terminal);
+    terminal = new FlashTerminal();
+    terminal.setVDUBuffer(emulation);
 
     // then we create the actual telnet protocol handler that will negotiate
     // incoming data and transpose outgoing (see above)
@@ -125,9 +123,12 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
 
       /** write data to our back end */
       public void write(byte[] b) throws IOException {
+        System.err.println("writing: "+new String(b));
         os.write(b);
       }
     };
+
+    start();
   }
 
   boolean running = false;
@@ -151,8 +152,26 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
       running = true;
       reader.start();
 
+      Thread writer = new Thread() {
+        public void run() {
+          BufferedReader keyb = new BufferedReader(new InputStreamReader(System.in));
+          String line;
+          try {
+            while ((line = keyb.readLine()) != null) {
+              System.err.println("got: "+line);
+              emulation.putString(line+"\r");
+              telnet.transpose((line+"\r").getBytes());
+            }
+          } catch (IOException e) {
+            System.err.println("end of keyboard input");
+          }
+        }
+      };
+      writer.start();
+
     } catch (Exception e) {
       System.err.println("jta: error connecting: " + e);
+      e.printStackTrace();
       stop();
     }
   }
@@ -186,25 +205,29 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
   public void run() {
     if (debug > 0)
       System.err.println("jta: run()");
-    byte[] b = new byte[256];
+    byte[] b = new byte[4096];
     int n = 0;
-    while (running && n >= 0)
+    while (running && n >= 0) {
       try {
         do {
+          System.err.println("negotiating: "+n);
           n = telnet.negotiate(b);
           if (debug > 0 && n > 0)
             System.err.println("jta: \"" + (new String(b, 0, n)) + "\"");
           if (n > 0) emulation.putString(new String(b, 0, n));
         } while (running && n > 0);
+        System.err.println("waiting for input ...." +is.available());
         n = is.read(b);
+        System.err.println("n="+n);
         telnet.inputfeed(b, n);
       } catch (IOException e) {
+        e.printStackTrace();
         stop();
         break;
       }
+      System.err.println("check: "+running+" n="+n);
+    }
+    System.err.println("THE END");
   }
 
-  public void update(Graphics g) {
-    paint(g);
-  }
 }
