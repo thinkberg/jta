@@ -19,6 +19,7 @@ JAVA	=	java
 JAR	=	jar
 JAVAC	=	javac
 JAVADOC =	javadoc
+JAVAH 	=	javah
 #JAVA	=	/q/opt/jdk1.2.2/bin/java
 #JAR	=	/q/opt/jdk1.2.2/bin/jar
 #JAVAC	=	/q/opt/jdk1.2.2/bin/javac
