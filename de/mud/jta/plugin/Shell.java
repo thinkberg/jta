@@ -28,30 +28,24 @@ import de.mud.jta.event.SocketListener;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatus;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+// import java.io.InputStream;
+// import java.io.OutputStream;
 import java.io.IOException;
 
 /**
  * The shell plugin is the backend component for terminal emulation using
  * a shell. It provides the i/o streams of the shell as data source.
  * <P>
- * Thomas Kriegelstein wrote a hack that converted newlines to \r\n which
- * was used as an example for improving this plugin.
- * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Meiﬂner, Pete Zaitcev
  */
 public class Shell extends Plugin implements FilterPlugin {
 
-  private final static int debug = 1;
-
   protected String shellCommand;
-  protected InputStream in, err;
-  protected OutputStream out;
-  protected Process p;
+
+  private HandlerPTY pty;
 
   public Shell(final PluginBus bus, final String id) {
     super(bus, id);
@@ -59,103 +53,54 @@ public class Shell extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig cfg) {
         String tmp;
-	if((tmp = cfg.getProperty("Shell", id, "command")) != null)
+	if((tmp = cfg.getProperty("Shell", id, "command")) != null) {
 	  shellCommand = tmp;
+	  // System.out.println("Shell: Setting config " + tmp); // P3
+        } else {
+	  // System.out.println("Shell: Not setting config"); // P3
+	  shellCommand = "/bin/sh";
+        }
       }
     });
-  
+
     bus.registerPluginListener(new SocketListener() {
       // we do actually ignore these parameters
       public void connect(String host, int port) {
-	if(p == null) execute(host);
+        // XXX Fix this together with window size changes
+        // String ttype = (String)bus.broadcast(new TerminalTypeRequest());
+        // String ttype = getTerminalType();
+        // if(ttype == null) ttype = "dumb";
+
+	// XXX Add try around here to catch missing DLL/.so.
+	pty = new HandlerPTY();
+
+        if(pty.start(shellCommand) == 0) {
+	  bus.broadcast(new OnlineStatus(true));
+        } else {
+	  bus.broadcast(new OnlineStatus(false));
+        }
       }
       public void disconnect() {
-	if(p != null) {
-	  p.destroy();
-	  p = null; in = null; out = null;
-	}
-	else execute(null);
+        bus.broadcast(new OnlineStatus(false));
+        pty = null;
       }
     });
-  }
-
-  private void execute(String command) {
-    shellCommand = (command != null) ? command : shellCommand;
-    if(shellCommand == null) return;
-    Runtime rt = Runtime.getRuntime();
-    try {
-      p = rt.exec(shellCommand);
-      in = p.getInputStream();
-      out = p.getOutputStream();
-      err = p.getErrorStream();
-    } catch(Exception e) {
-      Shell.this.error("error: "+e);
-      e.printStackTrace();
-    }
-    bus.broadcast(new OnlineStatus(true));
   }
 
   public void setFilterSource(FilterPlugin plugin) {
     // we do not have a source other than our socket
   }
 
-  private byte[] transpose(byte[] buf) {
-    byte[] nbuf;
-    int nbufptr = 0;
-    nbuf = new byte[buf.length * 2];
-    for(int i = 0; i < buf.length; i++)
-      switch(buf[i]) {
-        case 10: // \n
-	  nbuf[nbufptr++] = 13;
-	  nbuf[nbufptr++] = 10;
-	  break;
-	default:
-	  nbuf[nbufptr++] = buf[i];
-    }
-    byte[] xbuf = new byte[nbufptr];
-    System.arraycopy(nbuf, 0, xbuf, 0, nbufptr);
-    return xbuf;
-  }
-
-  private byte buffer[];
-  private int pos;
-
   public int read(byte[] b) throws IOException {
-    // empty the buffer before reading more data
-    if(buffer != null) {
-      int amount = (buffer.length - pos) <= b.length ? 
-                      buffer.length - pos : b.length;
-      System.arraycopy(buffer, pos, b, 0, amount);
-      if(pos + amount < buffer.length) {
-        pos += amount;
-      } else 
-        buffer = null;
-      return amount;
+    if(pty == null) return 0;
+    int ret = pty.read(b);
+    if(ret <= 0) {
+      throw new IOException("EOF on PTY");
     }
-
-    // now we are sure the buffer is empty and read on 
-    int n = (err.available() > 0) ? err.read(b) : in.read(b);
-    if(n > 0) {
-      byte[] tmp = new byte[n];
-      System.arraycopy(b, 0, tmp, 0, n);
-      buffer = transpose(tmp);
-      if(buffer != null && buffer.length > 0) {
-        int amount = buffer.length <= b.length ? buffer.length : b.length;
-        System.arraycopy(buffer, 0, b, 0, amount);
-        pos = n = amount;
-        if(amount == buffer.length) {
-          buffer = null;
-          pos = 0;
-        }
-      } else
-        return 0;
-    }
-    return n;
+    return ret;
   }
-
 
   public void write(byte[] b) throws IOException {
-    out.write(b);
-    out.flush();
+    if(pty != null) pty.write(b);
   }
 }
