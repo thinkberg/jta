@@ -90,13 +90,12 @@ public class BSXObject
 			int px,py;
 			px = data[polys][2*points+1];
 			py = data[polys][2*points+2];
-			px = px*2;
-			px = -256 + px;
-			px = 510*x/15 + px;         // 0<=x<=15
-			py =  384 - py;
-			py = -4*y + py;             // 0<=y<=7
-			poly[2*polys+0][points]=px;
-			poly[2*polys+1][points]=py;
+			px = px-127;
+			px = px+x*16;
+			py = py-127;
+			py = py+4*y;
+			poly[2*polys+0][points]=px*2;
+			poly[2*polys+1][points]=255-py;
 		    }
 		g.fillPolygon(poly[2*polys], 
 			      poly[2*polys+1], 
