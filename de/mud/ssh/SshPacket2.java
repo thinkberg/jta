@@ -1,5 +1,5 @@
 /**
- * SshPacket
+ * SshPacket2
  * --
  *
  * This class provides the Ssh packet layer protocol
@@ -10,29 +10,9 @@
 package de.mud.ssh;
 
 
-//SshPacket2(newData, newType)	//create the corresponding packet
-				//(length + padding + packet_type + data + crc)
-				//encrypts it -> encryptedBlock
-
-//setBlock()			//block <- padding + packet_type + data +crc
-
-//getBytes			//return packet_length + encrypted_block
-
-//getPacketfromBytes		//-> packet_length_array and encrypted_block
-				// decrypt(encrypted_block) -> decryptedBlock
-				// setPacketFromDecryptedBlock
-				// checkCrc
-
-
-//setPacketFromDecryptedBlock	//  decryptedBlock -> padding + packet_type + data +crc
-
-//getType
-
-//getData
-
-
 import java.io.IOException;
-
+import de.mud.ssh.MD5;
+import java.math.BigInteger;
 
 class SshPacket2 extends SshPacket {
 
@@ -42,122 +22,157 @@ class SshPacket2 extends SshPacket {
   private byte[] packet_length_array = new byte[5];				// 4 bytes
   private int packet_length = 0;	// 32-bit sign int
   private int padlen = 0;		// packet length 1 byte unsigned
-  private byte[] padding = null;	// 1-8 bytes of random data (or zeroes if not encrypting).
-  private byte packet_type;		// byte : we 'll have to convert a byte to a short(signed/unsigned)
-  private short last_packet_type;
-  private byte[] data = null;		// the data ..
   private byte[] crc_array = new byte[4];	// 32-bit crc
-  private byte[] block = null;		// (Padding + Type + Data + Check)
-  private byte[] encryptedBlock = null;	// encrypted part (Padding + Type + Data + Check)
-  private byte[] decryptedBlock = null;	// decrypted part (Padding + Type + Data + Check)
 
-
-  //create an encrypted packey from newData and newType
-  public SshPacket2(byte newType, byte[] newData,boolean encryption,SshCrypto crypto) throws IOException {
-
-    data = newData;
-    packet_type = newType;
-
-    //packet length
-    if (data!=null) packet_length = data.length + 5;
-    else packet_length = 5;
-    packet_length_array[3] = (byte) (packet_length & 0xff);
-    packet_length_array[2] = (byte) ((packet_length>>8) & 0xff);
-    packet_length_array[1] = (byte) ((packet_length>>16) & 0xff);
-    packet_length_array[0] = (byte) ((packet_length>>24) & 0xff);
-
-    //padding
-    padding = new byte[(8 -(packet_length %8))];
-    if (!encryption) for(int i=0; i<padding.length; i++) padding[i] = 0;
-    else { for(int i=0; i<padding.length; i++) padding[i] = SshMisc.getNotZeroRandomByte();}
-
-		
-    //Compute the crc of [ Padding, Packet type, Data ]
-
-    byte[] tempByte = new byte[packet_length + padding.length - 4];
-    int offset =0;
-    for(int i=0; i<padding.length; i++) tempByte[offset++] = padding[i];
-    tempByte[offset++] = packet_type;
-    if(packet_length > 5) for(int i=0; i<data.length; i++) tempByte[offset++] = data[i];
-
-    long crc = 0;
-    crc = SshMisc.crc32(tempByte, tempByte.length);
-    crc_array[3] = (byte) (crc & 0xff);
-    crc_array[2] = (byte) ((crc>>8) & 0xff);
-    crc_array[1] = (byte) ((crc>>16) & 0xff);
-    crc_array[0] = (byte) ((crc>>24) & 0xff);
-
-    //encrypt
-    setBlock();
-    if (encryption)
-      encryptedBlock = crypto.encrypt(block);
-    else
-      encryptedBlock = block;
-  };
-
-  //block = padding + packet_type + data +crc
-  private void setBlock() throws IOException {
-    block = new byte[packet_length + padding.length];
-    int blockOffset =0;
-
-    for(int i=0; i<padding.length; i++)
-      block[blockOffset++] = padding[i];
-    block[blockOffset++] = packet_type;
-
-    if(packet_length > 5)
-      for(int i=0; i<data.length; i++)
-	block[blockOffset++] = data[i];
-
-    for(int i=0; i<crc_array.length; i++)
-      block[blockOffset++] = crc_array[i];
-  };
-
-  public byte[] getBytes() throws IOException {
-    return SshMisc.addArrayOfBytes(packet_length_array, encryptedBlock);
-  };
-
-
-  public byte[] getData() throws IOException {
-  	return data;
-  };
-
-  public byte getType() throws IOException {
-  	return packet_type;
-  };
 
   private int position 			= 0;
   private int phase_packet 		= 0;
   private final int PHASE_packet_length = 0;
   private final int PHASE_block 	= 1;
 
+  private SshCrypto crypto = null;
 
-  public SshPacket getPacketfromBytes(
-    byte buff[], int offset, int count,boolean encryption,SshCrypto crypto
-  ) throws IOException {
-    int boffset = offset;
+  public SshPacket2(SshCrypto _crypto) {
+    /* receiving packet */
+    position = 0;
+    phase_packet = PHASE_packet_length;
+    crypto = _crypto;
+  }
+
+  public SshPacket2(byte newType) {
+    setType(newType);
+  }
+
+  /**
+   * Return the mp-int at the position offset in the data
+   * First 4 bytes are the number of bytes in the integer, msb first
+   * (for example, the value 0x00012345 would have 17 bits).  The
+   * value zero has zero bits.  It is permissible that the number of
+   * bits be larger than the real number of bits.
+   * The number of bits is followed by (bits + 7) / 8 bytes of binary
+   * data, msb first, giving the value of the integer.
+   */
+	
+  public BigInteger getMpInt() { 
+    return new BigInteger(1,getBytes(getInt32()));
+  }
+
+  public void putMpInt(BigInteger bi) {
+    byte[] mpbytes = bi.toByteArray(), xbytes;
+    int i;
+
+    for (i = 0; (i < mpbytes.length) && ( mpbytes[i] == 0 ) ; i++) /* EMPTY */ ;
+    xbytes = new byte[mpbytes.length - i];
+    System.arraycopy(mpbytes,i,xbytes,0,mpbytes.length - i);
+
+    putInt32(mpbytes.length - i);
+    putBytes(xbytes);
+  }
+
+  public byte[] getPayLoad(SshCrypto xcrypt, long seqnr)
+  throws IOException {
+    byte[] data = getData();
+
+    int blocksize = 8;
+
+    // crypted data is: 
+    // packet length [ payloadlen + padlen + type + data ]
+    packet_length = 4 + 1 + 1;
+    if (data!=null)
+      packet_length += data.length;
+
+    // pad it up to full blocksize.
+    // If not crypto, zeroes, otherwise random. 
+    // (zeros because we do not want to tell the attacker the state of our
+    //  random generator)
+    int padlen = blocksize - (packet_length % blocksize);
+    if (padlen < 4) padlen += blocksize;
+
+    byte[] padding = new byte[padlen];
+    System.out.println("packet length is "+packet_length+", padlen is "+padlen);
+    if (xcrypt == null)
+      for(int i=0; i<padlen; i++) padding[i] = 0;
+    else
+      for(int i=0; i<padlen; i++) padding[i] = SshMisc.getNotZeroRandomByte();
+
+    // [ packetlength, padlength, padding, packet type, data ]
+    byte[] block = new byte[ packet_length + padlen ];
+
+    int xlen = padlen + packet_length - 4;
+    block[3] = (byte) (xlen & 0xff);
+    block[2] = (byte) ((xlen>>8) & 0xff);
+    block[1] = (byte) ((xlen>>16) & 0xff);
+    block[0] = (byte) ((xlen>>24) & 0xff);
+
+    block[4] = (byte)padlen;
+    block[5] = getType();
+    System.arraycopy(data,0,block,6,data.length);
+    System.arraycopy(padding,0,block,6+data.length,padlen);
+
+    byte[] md5sum;
+    if (xcrypt != null) {
+      MD5 md5 = new MD5();
+      byte[] seqint = new byte[4];
+
+      seqint[0] = (byte)((seqnr >> 24) & 0xff);
+      seqint[1] = (byte)((seqnr >> 16) & 0xff);
+      seqint[2] = (byte)((seqnr >>  8) & 0xff);
+      seqint[3] = (byte)((seqnr      ) & 0xff);
+      md5.update(seqint,0,4);
+      md5.update(block,0,block.length);
+      md5sum = md5.digest();
+    } else {
+      md5sum = new byte[0];
+    }
+
+    if (xcrypt != null)
+      block = xcrypt.encrypt(block);
+
+    byte[] sendblock = new byte[block.length + md5sum.length];
+    System.arraycopy(block,0,sendblock,0,block.length);
+    System.arraycopy(md5sum,0,sendblock,block.length,md5sum.length);
+    return sendblock;
+  };
+
+  private byte block[];
+
+  public byte[] addPayload(byte buff[]) {
+    int boffset = 0;
     byte b;
+    byte[] newbuf = null;
+    int hmaclen = 0;
 
-    while(boffset < count) {
-      b=buff[boffset++];
+    if (crypto!=null) hmaclen = 16;
+
+    System.out.println("addPayload2 "+buff.length);
+
+    /*
+     * Note: The whole packet is encrypted, except for the MAC.
+     *
+     * (So I have to rewrite it again).
+     */
+
+    while(boffset < buff.length) {
       switch (phase_packet) {
-
       // 4 bytes
       // Packet length: 32 bit unsigned integer
       // gives the length of the packet, not including the length field
       // and padding.  maximum is 262144 bytes.
 
       case PHASE_packet_length:
-	packet_length_array[position] = b;
-	if (++position>=5) {
+	packet_length_array[position++] = buff[boffset++];
+	if (position==5) {
 	  packet_length =
-	     (packet_length_array[3]&0xff) +
-	    ((packet_length_array[2]&0xff)<<8) +
-	    ((packet_length_array[1]&0xff)<<16) +
+	     (packet_length_array[3]&0xff)	+
+	    ((packet_length_array[2]&0xff)<<8)	+
+	    ((packet_length_array[1]&0xff)<<16)	+
 	    ((packet_length_array[0]&0xff)<<24);
 	  padlen = packet_length_array[4];
 	  position=0;
 	  System.out.println("SSH2: packet length "+packet_length);
 	  System.out.println("SSH2: padlen "+padlen);
+	  packet_length += hmaclen; /* len(md5) */
+	  block = new byte[packet_length-1]; /* padlen already done */
 	  phase_packet++;
 	}
 	break; //switch (phase_packet)
@@ -165,39 +180,55 @@ class SshPacket2 extends SshPacket {
       //8*(packet_length/8 +1) bytes
 
       case PHASE_block  :
-	if (position==0) {
-	  block = new byte[packet_length-1]; /* pad already done */
-	}
-	block[position] = b;
-	if (++position>=block.length) { //the block is complete
-	  if (count>boffset) {  //there is more than 1 packet in buff
-	    toBeFinished = true;
-	    unfinishedBuffer = buff;
-	    positionInUnfinishedBuffer = boffset;
-	  } else
-	    toBeFinished = false;
-
-	  position=0;
-	  phase_packet = PHASE_packet_length;
-	  if (encryption)
-	    decryptedBlock = crypto.decrypt(block);
-	  else
-	    decryptedBlock = block;
-	  setPacketFromDecryptedBlock();
-	  /*
-	  if (!checkCrc()) {
-	    System.err.println("SshPacket: Crc Error !!");
-	    return null;
+	if (position < block.length) {
+	  int amount = buff.length - boffset;
+	  if (amount > 0) {
+	    if (amount > block.length - position)
+	      amount = block.length - position;
+	    System.arraycopy(buff,boffset,block,position,amount);
+	    boffset	+= amount;
+	    position	+= amount;
 	  }
-	  */
-	  return this;
-	} //if (++position>=blo...
+	}
+	if (position==block.length) { //the block is complete
+	  if (buff.length>boffset) {
+	    newbuf = new byte[buff.length-boffset];
+	    System.arraycopy(buff,boffset,newbuf,0,buff.length-boffset);
+	  }
+	  byte[] decryptedBlock = new byte[block.length - hmaclen];
+	  byte[] data;
+	  packet_length -= hmaclen;
+
+	  System.arraycopy(block,0,decryptedBlock,0,block.length-hmaclen);
+
+	  if (crypto != null)
+	    decryptedBlock = crypto.decrypt(decryptedBlock);
+
+	  for (int i = 0; i < decryptedBlock.length; i++)
+		  System.out.print(" "+decryptedBlock[i]);
+	  System.out.println("");
+
+	  setType(decryptedBlock[0]);
+	  System.err.println("Packet type: "+getType());
+	  System.err.println("Packet len: "+packet_length);
+
+	  //data
+	  if(packet_length > padlen+1+1)  {
+	    data = new byte[packet_length-1-padlen-1];
+	    System.arraycopy(decryptedBlock,1,data,0,data.length);
+	    putData(data);
+	  } else {
+	    putData(null);
+	  }
+	  /* MAC! */
+	  return newbuf;
+	}
 	break;
-      } // switch (phase_packet)
-    } //while
-    toBeFinished = false;	//of course :-)
-    return null;		//the packet needs more data...
+      } 
+    } 
+    return null;
   };
+  /*
 
   private boolean checkCrc(){
     byte[] crc_arrayCheck = new byte[4];
@@ -221,29 +252,5 @@ class SshPacket2 extends SshPacket {
     if	(crc_arrayCheck[0] != crc_array[0]) return false;
     return true;
   }
-
-  // the block is decrypted
-  // packet_length has already been set
-  private void setPacketFromDecryptedBlock()
-  throws IOException {
-    int payload_len = packet_length -4 -1 -padlen;
-    int blockOffset = 0;
-   
-    for (int i = 0; i < decryptedBlock.length; i++)
-	    System.out.print(" "+decryptedBlock[i]);
-    System.out.println("");
-
-    packet_type = decryptedBlock[0];
-    if(debug) System.err.println("Packet type: "+packet_type);
-
-    //data
-    if(packet_length > 5)  {
-      data = new byte[packet_length-5-padlen-1];
-      for(int i=0; i<data.length; i++)
-        data[i] = decryptedBlock[1+i];
-    } else
-      data = null;
-
-    /* MAC */
-  };
-} //class
+  */
+}

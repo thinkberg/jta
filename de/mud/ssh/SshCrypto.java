@@ -59,28 +59,28 @@ class SshCrypto {
 
     int offset = 0;
       EncryptionBlock = new byte[server_key_public_modulus.length];
-      EncryptionBlock[0] = 0;
-      EncryptionBlock[1] = 2;
-      offset = 2;
+    EncryptionBlock[0] = 0;
+    EncryptionBlock[1] = 2;
+    offset = 2;
     for (int i = 2; i < (EncryptionBlock.length - clearData.length - 1); i++)
-        EncryptionBlock[offset++] = SshMisc.getNotZeroRandomByte ();
-      EncryptionBlock[offset++] = 0;
+      EncryptionBlock[offset++] = SshMisc.getNotZeroRandomByte ();
+    EncryptionBlock[offset++] = 0;
     for (int i = 0; i < clearData.length; i++)
-        EncryptionBlock[offset++] = clearData[i];
+      EncryptionBlock[offset++] = clearData[i];
 
     //EncryptionBlock can be encrypted now !
     BigInteger m, e, message;
-      byte[] messageByte;
+    byte[] messageByte;
 
 
       m = new BigInteger (1, server_key_public_modulus);
       e = new BigInteger (1, server_key_public_exponent);
-      message = new BigInteger (1, EncryptionBlock);
+    message = new BigInteger (1, EncryptionBlock);
     //      byte[] messageByteOld1 = message.toByteArray();
 
       message = message.modPow (e, m);	//RSA Encryption !!
 
-      byte[] messageByteTemp = message.toByteArray ();	//messageByte holds the encypted data.
+    byte[] messageByteTemp = message.toByteArray ();	//messageByte holds the encypted data.
     //there should be no zeroes a the begining but we have to fix it (JDK bug !!)
       messageByte = new byte[server_key_public_modulus.length];
     int tempOffset = 0;
@@ -94,39 +94,39 @@ class SshCrypto {
     // we can't check that the crypted message is OK : no way to decrypt :-( 
 
     //according to the ssh source  !!!!! Not well explained in the protocol!!!
-      clearData = messageByte;
+    clearData = messageByte;
 
     //SECOND ROUND !!
 
-      offset = 0;
+    offset = 0;
       EncryptionBlock = new byte[host_key_public_modulus.length];
-      EncryptionBlock[0] = 0;
-      EncryptionBlock[1] = 2;
+    EncryptionBlock[0] = 0;
+    EncryptionBlock[1] = 2;
 
-      offset = 2;
+    offset = 2;
     for (int i = 2; i < (EncryptionBlock.length - clearData.length - 1); i++)
         EncryptionBlock[offset++] = SshMisc.getNotZeroRandomByte ();	//random !=0
-      EncryptionBlock[offset++] = 0;
+    EncryptionBlock[offset++] = 0;
     for (int i = 0; i < clearData.length; i++)
-        EncryptionBlock[offset++] = clearData[i];
+      EncryptionBlock[offset++] = clearData[i];
 
     //EncryptionBlock can be encrypted now !
 
       m = new BigInteger (1, host_key_public_modulus);
       e = new BigInteger (1, host_key_public_exponent);
-      message = new BigInteger (1, EncryptionBlock);
+    message = new BigInteger (1, EncryptionBlock);
 
       message = message.modPow (e, m);
 
-      messageByteTemp = message.toByteArray ();	//messageByte holds the encypted data.
+    messageByteTemp = message.toByteArray ();	//messageByte holds the encypted data.
     //there should be no zeroes a the begining but we have to fix it (JDK bug !!)
       messageByte = new byte[host_key_public_modulus.length];
-      tempOffset = 0;
+    tempOffset = 0;
     while (messageByteTemp[tempOffset] == 0)
-        tempOffset++;
+      tempOffset++;
     for (int i = messageByte.length - messageByteTemp.length + tempOffset;
 	 i < messageByte.length; i++)
-        messageByte[i] = messageByteTemp[tempOffset++];
+      messageByte[i] = messageByteTemp[tempOffset++];
 
     //Second encrypted key : encrypted_session_key //mp-int
     byte[] encrypted_session_key = new byte[host_key_public_modulus.length+2];	//encrypted_session_key is a mp-int !!!
@@ -134,7 +134,7 @@ class SshCrypto {
     //the lengh of the mp-int.
     
        encrypted_session_key[1] = (byte) ((8 * host_key_public_modulus.length) & 0xff);
-    
+
     encrypted_session_key[0] = (byte) (((8 * host_key_public_modulus.length) >> 8) & 0xff);
     //the mp-int
     for (int i = 0; i < host_key_public_modulus.length; i++)
