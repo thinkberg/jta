@@ -26,6 +26,7 @@
 package de.mud.ssh;
 
 import de.mud.telnet.ScriptHandler;
+import de.mud.jta.Wrapper;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -57,25 +58,15 @@ import java.awt.Dimension;
  * download the class file. So use this only for public accounts or if
  * you are absolutely sure nobody can see the file.
  * <P>
- * <B>Maintainer:</B>Marcus Meissner
+ * <B>Maintainer:</B>Marcus Meißner
  *
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class SshWrapper {
+public class SshWrapper extends Wrapper {
   protected SshIO handler;
   /** debugging level */
   private final static int debug = 0;
-
-  protected ScriptHandler scriptHandler = new ScriptHandler();
-  private Thread reader;
-
-  protected InputStream in;
-  protected OutputStream out;
-  protected Socket socket;
-  protected String host;
-  protected int port = 23;
-  protected Vector script = new Vector();
 
   public SshWrapper() {
     handler = new SshIO() {
@@ -98,46 +89,6 @@ public class SshWrapper {
     };
   }
 
-  /** Connect the socket and open the connection. */
-  public void connect(String host, int port) throws IOException {
-    if(debug>0) System.err.println("SSHWrapper: connect("+host+","+port+")");
-    try {
-      socket = new java.net.Socket(host, port);
-      in = socket.getInputStream();
-      out = socket.getOutputStream();
-    } catch(Exception e) {
-      System.err.println("SshWrapper: "+e);
-      disconnect();
-      throw ((IOException)e);
-    }
-  }  
- 
-  /** Disconnect the socket and close the connection. */
-  public void disconnect() throws IOException {
-    if(debug>0) System.err.println("SshWrapper: disconnect()");
-    if (socket != null)
-	socket.close();
-  }
-
-  /**
-   * Login into remote host. This is a convenience method and only
-   * works if the prompts are "login:" and "Password:".
-   * @param user the user name 
-   * @param pwd the password
-   */
-  public void login(String user, String pwd) throws IOException {
-    handler.setLogin(user);
-    handler.setPassword(pwd);
-  }
-
-  /**
-   * Set the prompt for the send() method.
-   */
-  private String prompt = null;
-  public void setPrompt(String prompt) {
-    this.prompt = prompt;
-  }
-
   /**
    * Send a command to the remote host. A newline is appended and if
    * a prompt is set it will return the resulting data until the prompt
@@ -157,55 +108,9 @@ public class SshWrapper {
         }
     }
     handler.sendData(new String(arr));
-    if(prompt != null)
-      return waitfor(prompt);
+    if(getPrompt() != null)
+      return waitfor(getPrompt());
     return null;
-  }
-
-  /**
-   * Wait for a string to come from the remote host and return all
-   * that characters that are received until that happens (including
-   * the string being waited for).
-   *
-   * @param match the string to look for
-   * @return skipped characters
-   */
-
-  public String waitfor( String[] searchElements ) throws IOException {
-    ScriptHandler[] handlers = new ScriptHandler[searchElements.length];
-    for ( int i = 0; i < searchElements.length; i++ ) {
-      // initialize the handlers
-      handlers[i] = new ScriptHandler();
-      handlers[i].setup( searchElements[i] );
-    }
-
-    byte[] b = new byte[256];
-    int n = 0;
-    StringBuffer ret = new StringBuffer();
-    String current;
-
-    while(n >= 0) {
-      n = read(b);
-      if(n > 0) {
-	current = new String( b, 0, n );
-	if (debug > 0)
-	  System.err.print( current );
-	ret.append( current );
-	for ( int i = 0; i < handlers.length ; i++ ) {
-	  if ( handlers[i].match( b, n ) ) {
-	    return ret.toString();
-	  } // if
-	} // for
-      } // if
-    } // while
-    return null; // should never happen
-  }
-
-  public String waitfor(String match) throws IOException {
-    String[] matches = new String[1];
-
-    matches[0] = match;
-    return waitfor(matches);
   }
 
   /** Buffer for SSH input */
@@ -258,26 +163,5 @@ public class SshWrapper {
         return 0;
     }
     return n;
-  }
-
-  /**
-   * Write data to the socket.
-   * @param b the buffer to be written
-   */
-  public void write(byte[] b) throws IOException {
-    out.write(b);
-  }
-
-  public String getTerminalType() {
-    return "dumb";
-  }
-
-  public Dimension getWindowSize() {
-    return new Dimension(80,24);
-  }
-
-  public void setLocalEcho(boolean echo) {
-    if(debug > 0)
-      System.err.println("local echo "+(echo ? "on" : "off"));
   }
 }
