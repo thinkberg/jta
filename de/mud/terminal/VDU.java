@@ -1280,9 +1280,9 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
       for(int l = selectBegin.y; l <= selectEnd.y; l++) {
         int start, end;
 	start = (l == selectBegin.y ? start = selectBegin.x : 0);
-	end = (l == selectEnd.y ? end = selectEnd.x : charArray.length - 1);
+	end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length - 1);
         selection += (new String(charArray[l])).substring(start, end);
-	if(end == charArray.length - 1)
+	if(end == charArray[l].length - 1)
 	  selection += "\n";
       }
       repaint();
