@@ -357,7 +357,6 @@ public abstract class TelnetProtocolHandler {
           break;
         case EOR:
           if(debug > 1) System.err.print("EOR ");
-	  System.err.println("EOR received");
   	  notifyEndOfRecord();
           neg_state = STATE_DATA;
           break;
