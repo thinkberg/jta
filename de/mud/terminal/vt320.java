@@ -1987,8 +1987,8 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("ESC[5n");
           break;
         case 6:
-	  // don't forget to offset R and C by 1
-          write(((char)ESC)+"["+(R+1)+";"+(C+1)+"R",false);
+	  // DO NOT offset R and C by 1! (checked against /usr/X11R6/bin/resize
+          write(((char)ESC)+"["+R+";"+C+"R",false);
           if(debug > 1)
             System.out.println("ESC[6n");
           break;
