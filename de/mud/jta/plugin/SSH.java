@@ -156,7 +156,8 @@ public class SSH extends Plugin implements FilterPlugin {
 	}
       }
       public void offline() {
-        // handler.reset();
+        handler.disconnect();
+				auth=false;
       }
     });
   }
