@@ -396,6 +396,12 @@ public abstract class SshIO
 	break;
       }
 
+      if (lastPacketSentType==SSH_CMSG_USER) { 
+        // authentication is NOT needed for this user 
+	Send_SSH_CMSG_REQUEST_PTY(); //request a pseudo-terminal
+	return "\nEmpty password login.\r\n".getBytes();
+      }
+
       if (lastPacketSentType==SSH_CMSG_AUTH_PASSWORD) {// password correct !!!
 	//yahoo
 	System.out.println("login succesful");
