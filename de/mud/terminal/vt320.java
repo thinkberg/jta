@@ -228,15 +228,20 @@ public abstract class vt320 extends VDU implements KeyListener {
           return;
 	java.awt.Point pos = mouseGetPos(evt.getPoint());
 	int mods = evt.getModifiers();
+
+
+	/* problem is tht modifiers still have the released button set in them.
 	mousebut = 3;
 	if ((mods & 16)==16) mousebut=0;
 	if ((mods &  8)==8 ) mousebut=1;
 	if ((mods &  4)==4 ) mousebut=2;
+	 */
+
 	int mousecode;
 	if (mouserpt == 9)
 	    mousecode = 0x20+mousebut;	/* same as press? appears so. */
         else
-	    mousecode = mousebut|0x20|((mods & 7)<<2);
+	    mousecode = '#';
 
 	byte b[] = new byte[6];
 	b[0] = 27; b[1] = '['; b[2] = 'M';
