@@ -321,6 +321,7 @@ public abstract class vt320 extends VDU implements KeyListener {
    * @param s the string to be sent
    */
   private boolean write(String s,boolean doecho) {
+    if (debug>2) System.out.println("write(|"+s+"|,"+doecho);
     write(s.getBytes());
     if (doecho)
     	putString(s);
@@ -556,7 +557,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     pressedWhen = evt.getWhen();
     */
 
-    if(keyCode == KeyEvent.VK_ENTER && !control) {
+    if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
       write("\n",false);
       if (localecho) putString("\r\n"); // bad hack
     } 
@@ -652,7 +653,9 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
       case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
       case KeyEvent.VK_ESCAPE: write(Escape[xind],false); break;
-      case KeyEvent.VK_BACK_SPACE: write(BackSpace[xind],false); break;
+      case KeyEvent.VK_BACK_SPACE:
+      	write(BackSpace[xind]); // do local echo in this case
+	break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8,false);
