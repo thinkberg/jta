@@ -22,6 +22,7 @@ package de.mud.telnet;
 import java.io.IOException;
 import java.awt.Dimension;
 
+import java.lang.Byte;
 /**
  * This is a telnet protocol handler. The handler needs implementations
  * for several methods to handle the telnet options and to be able to
@@ -64,6 +65,11 @@ public abstract class TelnetProtocolHandler {
    * @param echo true for local echo, false for no local echo
    */
   protected abstract void setLocalEcho(boolean echo);
+
+  /**
+   * Generate an EOR (end of record) request. For use by prompt displaying.
+   */
+  protected abstract void EndOfRecord();
 
   /**
    * Send data to the remote host.
@@ -134,6 +140,8 @@ public abstract class TelnetProtocolHandler {
   private final static byte SE  = (byte)240;
   /** Telnet option: echo text */
   private final static byte TELOPT_ECHO  = (byte)1;  /* echo on/off */
+  /** Telnet option: sga */
+  private final static byte TELOPT_SGA   = (byte)3;  /* supress go ahead */
   /** Telnet option: End Of Record */
   private final static byte TELOPT_EOR   = (byte)25;  /* end of record */
   /** Telnet option: Negotiate About Window Size */
@@ -188,6 +196,20 @@ public abstract class TelnetProtocolHandler {
     }
   }
 
+  /**
+   * kickstart the protocol handler to begin option negotiation by
+   * sending a harmless option. Some hosts don't do any negotiation
+   * if they don't first receive an option.
+   */
+  public void startup() throws IOException {
+    byte sendbuf[] = new byte[3];
+
+    sendbuf[0]=IAC;
+    sendbuf[1]=DO;
+    sendbuf[2]=TELOPT_SGA;
+    write(sendbuf);
+    sentDX[TELOPT_SGA] = DO;
+  }
   /**
    * Transpose special telnet codes like 0xff or newlines to values
    * that are compliant to the protocol. This method will also send
@@ -257,6 +279,10 @@ public abstract class TelnetProtocolHandler {
       // to care and provides happily values up to 255
       if (b>=128)
         b=(byte)((int)b-256);
+      if(debug > 2) {
+        Byte B = new Byte(b);
+        System.err.print("byte: " + B.intValue()+ " ");
+      }
       switch (neg_state) {
       case STATE_DATA:
         if (b==IAC)
@@ -309,6 +335,10 @@ public abstract class TelnetProtocolHandler {
           reply = DO;
           setLocalEcho(false);
           break;
+        case TELOPT_SGA:
+          if(debug > 2) System.err.println("SGA");
+          reply = DO;
+          break;
         case TELOPT_EOR:
           if(debug > 2) System.err.println("EOR");
           reply = DO;
@@ -336,6 +366,10 @@ public abstract class TelnetProtocolHandler {
           setLocalEcho(true);
           reply = DONT;
           break;
+        case TELOPT_SGA:
+          if(debug > 2) System.err.println("SGA");
+          reply = DONT;
+          break;
         case TELOPT_EOR:
           if(debug > 2) System.err.println("EOR");
           reply = DONT;
@@ -361,6 +395,10 @@ public abstract class TelnetProtocolHandler {
           if(debug > 2) System.err.println("ECHO");
           reply = WILL;
           setLocalEcho(true);
+          break;
+        case TELOPT_SGA:
+          if(debug > 2) System.err.println("SGA");
+          reply = WILL;
           break;
         case TELOPT_TTYPE:
           if(debug > 2) System.err.println("TTYPE");
@@ -413,6 +451,10 @@ public abstract class TelnetProtocolHandler {
           if(debug > 2) System.err.println("ECHO");
           reply = WONT;
           setLocalEcho(false);
+          break;
+        case TELOPT_SGA:
+          if(debug > 2) System.err.println("SGA");
+          reply = WONT;
           break;
         case TELOPT_NAWS:
           if(debug > 2) System.err.println("NAWS");
