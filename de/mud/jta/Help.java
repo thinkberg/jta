@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2004. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -59,7 +59,7 @@ public class Help {
       helpText.setPage(Help.class.getResource(url));
     } catch (IOException e) {
       System.err.println("unable to load help");
-      helpText.setText("The Java Telnet Applet/Application\r\n(c) 1996-2002 Matthias L. Jugel, Marcus Meiﬂner\r\n\r\n");
+      helpText.setText("The Java Telnet Applet/Application\r\n(c) 1996-2004 Matthias L. Jugel, Marcus Meiﬂner\r\n\r\n");
     }
     helpText.setEditable(false);
 
