@@ -142,7 +142,7 @@ public abstract class SshIO
    * Initialise SshIO
    */
   public SshIO() {
-    SshPacket.encryption = encryption = false;
+    encryption = false;
   }
 
   public void setLogin(String user) {
@@ -204,7 +204,12 @@ public abstract class SshIO
   }
 
   public void disconnect() {
-   System.out.println("ssh: disconnect");
+		System.err.println("In Disconnect");
+		login = "";
+		password = ""; 
+		phase=0;
+    encryption = false;
+		lastPacketReceived = null;
   }
 
 
@@ -251,7 +256,7 @@ public abstract class SshIO
 	break;
       case PHASE_SSH_RECEIVE_PACKET:
 	SshPacket result = 
-	  lastPacketReceived.getPacketfromBytes(buff, boffset-1, count);
+	  lastPacketReceived.getPacketfromBytes(buff, boffset-1, count,encryption,crypto);
 	return 	result;
       } // switch(phase) 
     } 	//while(boffset < count) 
@@ -265,10 +270,9 @@ public abstract class SshIO
   // Create a packet 
   //
 
-  private SshPacket createPacket(byte newType, byte[] newData) 
-    throws IOException { 
-    return new SshPacket(newType, newData);
-  } //createPacket
+  private SshPacket createPacket(byte newType, byte[] newData) throws IOException { 
+    return new SshPacket(newType, newData,encryption,crypto);
+  } 
 	
   private byte[] handlePacket(byte packetType, byte[] packetData) 
     throws IOException { //the message to handle is data and its length is 
@@ -397,7 +401,8 @@ public abstract class SshIO
 
     case SSH_SMSG_FAILURE:
       if (lastPacketSentType==SSH_CMSG_AUTH_PASSWORD) {// password incorrect ???
-	System.out.println("failed to log in");
+				System.out.println("failed to log in");
+				disconnect();
 	return "\nLogin & password not accepted\r\n".getBytes();
       }
       if (lastPacketSentType==SSH_CMSG_USER) { 
@@ -442,11 +447,12 @@ public abstract class SshIO
       // bad bad bad bad bad. We should not do actions in DEBUG messages,
       // but apparently some SSH demons does not send SSH_SMSG_FAILURE for
       // just USER CMS.
+/*
       if(lastPacketSentType==SSH_CMSG_USER) { 
-        /*Send_SSH_CMSG_REQUEST_PTY();*/
         Send_SSH_CMSG_AUTH_PASSWORD();
         break;
       }
+*/
       return str.getBytes();
 
     default: 
@@ -585,8 +591,6 @@ public abstract class SshIO
       for(int i=0; i<16; i++) IDEAKey[i] = session_key[i];
       crypto = new SshCrypto(IDEAKey);
       encryption=true;
-      SshPacket.encryption = encryption;
-      SshPacket.crypto = crypto;
     }
     return null;
   } //Send_SSH_CMSG_SESSION_KEY

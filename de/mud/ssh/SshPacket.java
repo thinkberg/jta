@@ -54,16 +54,13 @@ class SshPacket {
   private byte[] decryptedBlock = null;							// decrypted part (Padding + Type + Data + Check) 
 
 
-  static public boolean encryption = false;
-  static public SshCrypto crypto;
-
   public boolean toBeFinished = false;
   public  byte[] unfinishedBuffer;
   public int positionInUnfinishedBuffer;
 
 
   //create an encrypted packey from newData and newType 
-  public SshPacket(byte newType, byte[] newData) throws IOException { 
+  public SshPacket(byte newType, byte[] newData,boolean encryption,SshCrypto crypto) throws IOException { 
 
     data = newData;
     packet_type = newType;
@@ -142,7 +139,7 @@ class SshPacket {
   private final int PHASE_block 	=	1;
 
 
-  public SshPacket getPacketfromBytes(byte buff[], int offset, int count) 
+  public SshPacket getPacketfromBytes(byte buff[], int offset, int count,boolean encryption,SshCrypto crypto) 
     throws IOException {
 
     int boffset = offset;
