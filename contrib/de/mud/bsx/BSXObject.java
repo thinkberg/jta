@@ -1,18 +1,17 @@
 package de.mud.bsx;
 
-import java.awt.Polygon;
-import java.awt.Image;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.image.ImageObserver;
 
 /**
- * Basic Object for BSX Graphic.
+ * Basic object for BSX Graphic.
  <ul>
  <li>renders its data on a given Graphics object
  </ul>
+ @author  Thomas Kriegelstein
+ @version 1.0
  */
-class BSXObject
+public class BSXObject
 {
     /** the data to be rendered */
     protected int[][] data;
@@ -22,22 +21,22 @@ class BSXObject
     final String id;
     /** BSX Colors */
     public final static Color[] bsxColors = new Color[]
-                            { new Color(  0,   0,  0),
- 			      new Color(  0,   0, 255),
-			      new Color( 34, 139,  34),
-			      new Color(135, 206, 235),
-			      new Color(205,  92,  92),
-			      new Color(255, 105, 180),
-			      new Color(165,  42,  42),
-			      new Color(211, 211, 211),
-			      new Color(105, 105, 105),
-			      new Color(  0, 191, 255),
-			      new Color(  0, 255,   0),
-			      new Color(  0, 255, 255),
-			      new Color(255,  99,  71),
-			      new Color(255,   0, 255),
-			      new Color(255, 255,   0),
-			      new Color(255, 255, 255) };
+	{ new Color(  0,   0,  0),
+	  new Color(  0,   0, 255),
+	  new Color( 34, 139,  34),
+	  new Color(135, 206, 235),
+	  new Color(205,  92,  92),
+	  new Color(255, 105, 180),
+	  new Color(165,  42,  42),
+	  new Color(211, 211, 211),
+	  new Color(105, 105, 105),
+	  new Color(  0, 191, 255),
+	  new Color(  0, 255,   0),
+	  new Color(  0, 255, 255),
+	  new Color(255,  99,  71),
+	  new Color(255,   0, 255),
+	  new Color(255, 255,   0),
+	  new Color(255, 255, 255) };
     /**
      * Constructor for BSXObject.
      @param id identifier of this object
@@ -52,8 +51,8 @@ class BSXObject
     */
     public BSXObject( String id, int[][] data )
     {
-	this.id = id;
-	setData(data);
+		this.id = id;
+		setData(data);
     }
     /**
      * draw image on specified graphics
@@ -62,7 +61,7 @@ class BSXObject
      @param y BSX_YPOS
      @param obs ImageObserver to be notified
     */
-    public void draw( Graphics g, int x, int y , ImageObserver obs)
+    public void draw( Graphics g, int x, int y )
     {
 	for (int polys=0;polys<data.length;polys++)
 	    {
@@ -75,7 +74,7 @@ class BSXObject
 			py = data[polys][2*points+2];
 			px = px*2;
 			px = -256 + px;
-			px = 512*x/15 + px;         // 0<=x<=15
+			px = 510*x/15 + px;         // 0<=x<=15
 			py =  384 - py;
 			py = -4*y + py;             // 0<=y<=7
 			poly[2*polys+0][points]=px;

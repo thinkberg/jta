@@ -1,11 +1,8 @@
 package de.mud.bsx;
 
 import java.awt.Point;
-import java.awt.Image;
 import java.awt.Graphics;
 import java.awt.Color;
-
-import java.awt.image.ImageObserver;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -14,17 +11,15 @@ import java.util.Enumeration;
  * Scene object for BSX Scenes.
  <ul>
  <li>keeps track on objects with their positions
- <li>renders itself in an offscreen image for speed reasons
+ <li>renders its data on a given Graphics object
  </ul>
+ @author  Thomas Kriegelstein
+ @version 1.0
 */
 class BSXScene extends BSXObject
 {
     /** the eight BSX depth layers */
     protected final Hashtable[] layers = new Hashtable[8];
-    /** scene allready rendered */
-    protected boolean rendered = false;
-    /** the offscreen image to render on */
-    protected Image visual;
 
     /**
      * checks if specified object is within this scene
@@ -33,7 +28,7 @@ class BSXScene extends BSXObject
     */
     public boolean containsObject( String id )
     {
-	return (-1==layerOfObject(id)?false:true);
+		return (-1==layerOfObject(id)?false:true);
     }
     /**
      * adds an object to this scene
@@ -43,12 +38,12 @@ class BSXScene extends BSXObject
     */
     public void addObject( String id, int x, int y)
     {
-	int layer;
-	if (-1!=(layer = layerOfObject(id)))
-	    {
-		removeObject(id,layer);
-	    }
-	layers[y].put(id,new Point(x,y));
+		int layer;
+		if (-1!=(layer = layerOfObject(id)))
+			{
+				removeObject(id,layer);
+			}
+		layers[y].put(id,new Point(x,y));
     }
     /**
      * query the layer of the specified object
@@ -57,10 +52,10 @@ class BSXScene extends BSXObject
     */
     public int layerOfObject( String id )
     {
-	for (int layer = 0;layer<layers.length;layer++)
-	    if (layers[layer].containsKey(id))
-		return layer;
-	return -1;
+		for (int layer = 0;layer<layers.length;layer++)
+			if (layers[layer].containsKey(id))
+				return layer;
+		return -1;
     }
     /**
      * removes the specified object from the scene
@@ -69,7 +64,7 @@ class BSXScene extends BSXObject
     */
     public void removeObject( String id , int layer )
     {
-	layers[layer].remove(id);
+		layers[layer].remove(id);
     }
     /**
      * removes the specified object from the scene
@@ -77,9 +72,9 @@ class BSXScene extends BSXObject
     */
     public void removeObject( String id )
     {
-	int layer;
-	if (-1!=(layer=layerOfObject(id)))
-	    removeObject(id, layer);
+		int layer;
+		if (-1!=(layer=layerOfObject(id)))
+			removeObject(id, layer);
     }
     /**
      * querys the location of an object
@@ -88,19 +83,19 @@ class BSXScene extends BSXObject
     */
     public Point locateObject( String id )
     {
-	int layer;
-	layer = layerOfObject( id );
-	if (layer!=-1)
-	    return (Point)layers[layer].get( id );
-	return null;
+		int layer;
+		layer = layerOfObject( id );
+		if (layer!=-1)
+			return (Point)layers[layer].get( id );
+		return null;
     }
     /**
      * removes all objects from all layers
      */
     public void clean()
     {
-	for(int layer=0;layer<=7;layer++)
-	    layers[layer].clear();
+		for(int layer=0;layer<=7;layer++)
+			layers[layer].clear();
     }
     /**
      * Constructor for BSXScene
@@ -108,12 +103,11 @@ class BSXScene extends BSXObject
      @param img offscreenimage to render the data on
      @param data description of this scene
     */
-    public BSXScene( String id, Image img, int[][] data )
+    public BSXScene( String id, int[][] data )
     {
-	super(id, data);
-	this.visual=img;
-	for (int layer=0;layer<layers.length;layer++)
-	    layers[layer]=new Hashtable();
+		super(id, data);
+		for (int layer=0;layer<layers.length;layer++)
+			layers[layer]=new Hashtable();
     }
     /**
      * querys objects on a specific layer in this scene
@@ -122,52 +116,30 @@ class BSXScene extends BSXObject
     */ 
     public Enumeration objects( int layer )
     {
-	return layers[layer].keys();
+		return layers[layer].keys();
     }
     /**
      * draws the scene on a graphics object
      @param g graphics object to draw on
      @param io ImageObserver to be notified
     */
-    public void fill( Graphics g, ImageObserver io )
+    public void fill( Graphics g )
     {
-	if (!rendered)
+	for (int polys=0;polys<data.length;polys++)
 	    {
-		Graphics gg=visual.getGraphics();
-		for (int polys=0;polys<data.length;polys++)
+		Color col=bsxColors[data[polys][0]];
+		g.setColor(col);
+		for (int points=0;points<poly[2*polys].length;points++)
 		    {
-			Color col=bsxColors[data[polys][0]];
-			gg.setColor(col);
-			for (int points=0;points<poly[2*polys].length;points++)
-			    {
-				int px,py;
-				px=data[polys][2*points+1]*2;
-				py=data[polys][2*points+2];
-				poly[2*polys+0][points]=px;
-				poly[2*polys+1][points]=256-py;
-			    }
-			gg.fillPolygon(poly[2*polys], 
-				       poly[2*polys+1], 
-				       poly[2*polys].length );
+			int px,py;
+			px=data[polys][2*points+1]*2;
+			py=data[polys][2*points+2];
+			poly[2*polys+0][points]=px;
+			poly[2*polys+1][points]=256-py;
 		    }
-		rendered=true;
+		g.fillPolygon(poly[2*polys], 
+			      poly[2*polys+1], 
+			      poly[2*polys].length );
 	    }
-	g.drawImage(visual, 0, 0, io);
-    }
-    /**
-     * change the data of this scene
-     @param data new data to be used
-     */ 
-    public void setData( int[][] data )
-    {
-	super.setData(data);
-	rendered=false;
-    }
-    /**
-     * flush offscreenimage to keep memory allocation small
-     */
-    public void flush()
-    {
-	visual.flush();
     }
 }

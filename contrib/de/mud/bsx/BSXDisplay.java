@@ -13,7 +13,11 @@ import java.awt.Dimension;
 import java.awt.Frame;
 
 import java.util.Enumeration;
-
+/**
+ * the visual component for displaying bsx data.
+ @author  Thomas Kriegelstein
+ @version 1.0
+ */
 public final class BSXDisplay extends Canvas
 {
     /** The offscreen doublebuffer */
@@ -31,7 +35,7 @@ public final class BSXDisplay extends Canvas
     /** redraw info */
     protected boolean sceneChanged=true;
     /** my minimum Dimension */
-    protected Dimension dim=new Dimension(512, 256);
+    protected Dimension dim=new Dimension(510, 256);
     /** an empty scene (black rectangle) */
     protected static final int[][] EMPTY_SCENE = 
 	new int[][] { { 4, 0, 0, 255, 255, 255, 255, 0, 0, 0 } }; 
@@ -40,116 +44,120 @@ public final class BSXDisplay extends Canvas
      @return query for scene data if not in cache
      */
     public String showScene(String scene)
-	{
-	    String res=null;
-	    working=(BSXScene)scenes.getEntry(scene);
-	    if (working==null)
-		{
-		    working=new BSXScene(scene,newImage(),EMPTY_SCENE);
-		    scenes.addEntry(scene,working);
-		    res = "#RQS "+scene+"\n";
-	            this.scene=scene;
-		}
-	    else
-		{
-		    if (!this.scene.equals(scene))
-			{
-			    this.scene=scene;
-			    sceneChanged=true;
-			    if (bsxscene!=null)
-				bsxscene.clean();
-			}
-		    bsxscene=working;
-		}
-	    return res;
-	}
+    {
+	String res=null;
+	working=(BSXScene)scenes.getEntry(scene);
+	if (working==null)
+	    {
+		working=new BSXScene(scene,EMPTY_SCENE);
+		scenes.addEntry(scene,working);
+		res = "#RQS "+scene+"\n";
+		this.scene=scene;
+	    } // working==null
+	else
+	    {
+		if (!this.scene.equals(scene))
+		    {
+			this.scene=scene;
+			sceneChanged=true;
+		    }
+		bsxscene=working;
+	    } // working!=null
+	if (bsxscene!=null) bsxscene.clean();
+	return res;
+    }
     /**
      * @DFSscene.data
      */
     public void defineScene(String scene, int[][] data)
-	{
-	    BSXScene _bsxscene;
-	    if (scenes.containsEntry(scene))
-		{
-		    _bsxscene = (BSXScene)scenes.getEntry(scene);
-		    _bsxscene.setData(data);
-		}
-	    else
-		{
-		    _bsxscene=new BSXScene(scene,newImage(),data);
-		    scenes.addEntry(scene,_bsxscene);
-		}
-	    if (this.scene.equals(scene))
-		{
-		    bsxscene=_bsxscene;
-		    sceneChanged=true;
-		}
-	}
+    {
+	BSXScene _bsxscene;
+	if (scenes.containsEntry(scene))
+	    {
+		_bsxscene = (BSXScene)scenes.getEntry(scene);
+		_bsxscene.setData(data);
+	    }
+	else
+	    {
+		_bsxscene=new BSXScene(scene,data);
+		scenes.addEntry(scene,_bsxscene);
+	    }
+	if (this.scene.equals(scene))
+	    {
+		bsxscene=_bsxscene;
+		working=_bsxscene;
+		sceneChanged=true;
+	    }
+    }
     /**
      * @VIOid.xy
      @return query for object data if not in cache
      */
     public String showObject(String obj, int x, int y)
-	{
-	    BSXObject bsxobject;
-	    if (working!=null&&!working.containsObject(obj))
-		{
-		    working.addObject(obj,x,y);
-		    sceneChanged=(working==bsxscene);
-		}
-	    if (!objects.containsEntry(obj))
-		{
-		    return "#RQO "+obj+"\n";
-		}
-	    return null;
-	}
+    {
+	BSXObject bsxobject;
+	if (working!=null)
+	    {
+		if (working.containsObject(obj))
+		    {
+			working.removeObject(obj);
+		    }
+		working.addObject(obj,x,y);
+		sceneChanged=(working==bsxscene);
+	    }
+	if (!objects.containsEntry(obj))
+	    {
+		return "#RQO "+obj+"\n";
+	    }
+	return null;
+    }
     /**
      * @RMOid.
      */
     public void removeObject(String obj)
-	{
-	    if (working.containsObject(obj))
-		{
-		    bsxscene.removeObject(obj);
-		    sceneChanged=(working==bsxscene);
-		}
-	}
+    {
+	if (working.containsObject(obj))
+	    {
+		bsxscene.removeObject(obj);
+		sceneChanged=(working==bsxscene);
+	    }
+    }
     /**
      * @DFOid.
      */
     public void defineObject(String id, int[][] data)
-	{
-	    if (objects.containsEntry(id))
-		{
-		    BSXObject r = objects.getEntry(id);
-		    r.setData(data);
-		}
-	    else
-		{
-		    objects.addEntry(id,new BSXObject(id,data));
-		}
-	    sceneChanged=((bsxscene!=null)&&(bsxscene.containsObject(id)));
-	}
+    {
+	if (objects.containsEntry(id))
+	    {
+		BSXObject r = objects.getEntry(id);
+		r.setData(data);
+	    }
+	else
+	    {
+		objects.addEntry(id,new BSXObject(id,data));
+	    }
+	sceneChanged=((bsxscene!=null)&&(bsxscene.containsObject(id)));
+    }
     /**
      * @RFS
      */
     public void refreshScene()
-	{
-	    // Avoid double computing if not necessary
-	    if (sceneChanged)
-		{
-		    sceneChanged=false;
-		    redraw();
-		    repaint();
-		}
-	}
+    {
+	// Avoid double computing if not necessary
+	if (sceneChanged)
+	    {
+		sceneChanged=false;
+		redraw();
+		repaint();
+	    }
+    }
     // Die eigentliche Malroutine
     private void redraw()
     {
 	if (bsxscene==null) return;
 	Graphics g;
 	g=picture.getGraphics();
-	bsxscene.fill(g,this);
+	bsxscene.fill( g );
 	Enumeration ob_enum;
 	for(int layer=7;layer>=0;layer--)
 	    {
@@ -161,14 +169,18 @@ public final class BSXDisplay extends Canvas
 			if (objects.containsEntry(id))
 			    {
 				BSXObject obj = objects.getEntry(id);
-				obj.draw( g, pos.x, pos.y, this );
+				obj.draw( g, pos.x, pos.y );
 			    }    
 		    }
 	    }
     }
+    public void update(Graphics g)
+    {
+	paint(g);
+    }
     public void paint(Graphics g)
     {
-	g.drawImage( picture, 0, 0, this );
+	g.drawImage( picture, 0, 0, null );
     }
     public void addNotify()
     {
