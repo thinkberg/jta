@@ -35,7 +35,7 @@ DATE	=	`date +%Y%m%d-%H%M`
 #
 # major rules to create files
 #
-all: 	app doc jar tools/mrelayd tools/relayd
+all: 	app cont doc jar tools/mrelayd tools/relayd
 
 run:	app
 	$(JAVA) $(JFLAGS) de.mud.jta.Main
@@ -77,7 +77,7 @@ cont:
 	@echo Compiling contributed software ...
 	@(cd contrib; make)
 
-dist:	jar cont doc revision changes
+dist:	all revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
@@ -88,6 +88,8 @@ dist:	jar cont doc revision changes
 	                                  > $(PKGNAME)/index.new && \
 	  mv $(PKGNAME)/index.new $(PKGNAME)/index.html && \
 	  echo "s/<!-- DATE -->/$(DATE)/g" > /tmp/jta.sed && \
+	  (cd $(PKGNAME); make cont; rm -r contrib/de; \
+	   $(JAR) cvMf ../jar/contrib.jar contrib) &&\
 	  (cd jar; for i in *.jar; do \
 	    echo 's/<!-- SIZE-'$$i' -->/'`\ls -l $$i | \
 	          awk '{printf("%dk", $$5/1024);}' `'/g'; \
@@ -101,8 +103,7 @@ dist:	jar cont doc revision changes
 	  rm -r $(PKGNAME)/tools/* \
 	        $(PKGNAME)/html/users.db \
 	        $(PKGNAME)/bin/users.pl && \
-	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME) && \
-	  (cd $(PKGNAME); make cont; $(JAR) cvMf ../jar/contrib.jar contrib) \
+	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME) \
 	 ) > /dev/null 
 	@rm -rf $(PKGNAME) 
 	@echo Created jar/$(PKGNAME)-src.jar
