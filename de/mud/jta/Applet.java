@@ -21,6 +21,7 @@ package de.mud.jta;
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.ReturnFocusRequest;
+import de.mud.jta.event.FocusStatusListener;
 import de.mud.jta.event.AppletRequest;
 
 import java.util.Properties;
@@ -195,6 +196,15 @@ public class Applet extends java.applet.Applet {
 	final String startText = options.getProperty("Applet.detach.startText");
 	final String stopText = options.getProperty("Applet.detach.stopText");
 	final Button close =  new Button();
+
+        // set up the clipboard
+        try {
+          clipboard = appletFrame.getToolkit().getSystemClipboard();
+        } catch(Exception e) {
+          System.err.println("Applet: system clipboard access denied: "+e);
+          System.err.println("Applet: copy & paste only within the JTA");
+          clipboard = new Clipboard("de.mud.jta.Main");
+        }
 	  
 	if((new Boolean(options.getProperty("Applet.detach.immediately"))
 	     .booleanValue())) {
@@ -274,6 +284,8 @@ public class Applet extends java.applet.Applet {
         edit.add(tmp = new MenuItem("Copy"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
+	    if(debug > 2)
+	      System.err.println("Applet: copy: "+focussedPlugin);
             if(focussedPlugin instanceof VisualTransferPlugin)
 	      ((VisualTransferPlugin)focussedPlugin).copy(clipboard);
           }
@@ -281,6 +293,8 @@ public class Applet extends java.applet.Applet {
         edit.add(tmp = new MenuItem("Paste"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
+	    if(debug > 2)
+	      System.err.println("Applet: paste: "+focussedPlugin);
             if(focussedPlugin instanceof VisualTransferPlugin)
 	      ((VisualTransferPlugin)focussedPlugin).paste(clipboard);
           }
@@ -329,6 +343,21 @@ public class Applet extends java.applet.Applet {
 	    }
 	  }
         });
+
+        // register a focus status listener, so we know when a plugin got focus
+        pluginLoader.registerPluginListener(new FocusStatusListener() {
+          public void pluginGainedFocus(Plugin plugin) {
+            if(Applet.debug > 0)
+	      System.err.println("Applet: "+plugin+" got focus");
+            focussedPlugin = plugin;
+          }
+          public void pluginLostFocus(Plugin plugin) {
+            // we ignore the lost focus
+            if(Applet.debug > 0)
+              System.err.println("Applet: "+plugin+" lost focus");
+          }
+        });
+
       } else
         // if we have no external frame use this online status listener
         pluginLoader.registerPluginListener(new OnlineStatusListener() {

@@ -1005,12 +1005,15 @@ public class VDU extends Component
       // selected previously
       if(l >= selectStartLine && l <= selectEndLine) {
 	int selectStartColumn = (l == selectStartLine ? selectBegin.x : 0);
-	int selectEndColumn = (l == selectEndLine ? selectEnd.x : size.width);
+	int selectEndColumn = 
+	  (l == selectEndLine ? 
+	    (l == selectStartLine ? selectEnd.x - selectStartColumn : 
+	                            selectEnd.x) : size.width);
 	if(selectStartColumn != selectEndColumn) {
 	  if(debug > 0) 
 	    System.err.println("select("+selectStartColumn+"-"
 	                                +selectEndColumn+")");
-          g.setXORMode(color[COLOR_BG_STD]);
+          g.setXORMode(bg);
 	  g.fillRect(selectStartColumn * charWidth + xoffset,
 	             l * charHeight + yoffset,
 		     selectEndColumn * charWidth,
@@ -1277,14 +1280,14 @@ public class VDU extends Component
       int y = (evt.getY() - yoffset) / charHeight + windowBase;
       int oldx = selectEnd.x, oldy = selectEnd.y;
 
-      if((x < selectBegin.x && y < selectBegin.y) &&
-         (x < selectEnd.x && y < selectEnd.y)) {
+      if((x <= selectBegin.x && y <= selectBegin.y)) {
         selectBegin.x = x;
         selectBegin.y = y;
       } else {
         selectEnd.x = x;
         selectEnd.y = y;
       }
+      
       if(oldx != x || oldy != y) {
 	update[0] = true;
 	if(debug > 0)

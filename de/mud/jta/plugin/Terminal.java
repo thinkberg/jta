@@ -223,10 +223,14 @@ public class Terminal extends Plugin
 
     terminal.addFocusListener(new FocusListener() {
       public void focusGained(FocusEvent evt) {
+        if(debug > 0)
+	  System.err.println("Terminal: focus gained");
 	terminal.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         bus.broadcast(new FocusStatus(Terminal.this, evt));
       }
       public void focusLost(FocusEvent evt) {
+        if(debug > 0)
+	  System.err.println("Terminal: focus lost");
 	terminal.setCursor(Cursor.getDefaultCursor());
         bus.broadcast(new FocusStatus(Terminal.this, evt));
       }
