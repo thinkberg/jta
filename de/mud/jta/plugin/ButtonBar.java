@@ -43,6 +43,7 @@ import java.net.URL;
 import java.awt.Component;
 import java.awt.Panel;
 import java.awt.Button;
+import java.awt.Label;
 import java.awt.TextField;
 import java.awt.Event;
 import java.awt.BorderLayout;
@@ -74,6 +75,13 @@ import java.awt.event.ActionEvent;
  * # quote (") characters!
  * #
  * button		Connect		"\$connect(\@host@,\@port@)"
+ * #
+ * # - defining a label:
+ * # A labvel is defined by giving the keyword 'label' followed by the text
+ * # of the label. If the label contains whitespace characters, enclode it in
+ * # quote (") characters!
+ * #
+ * label 		"Hello User"
  * #
  * # - defining an input field:
  * # An input field is defined just like the button above, but it has one more
@@ -202,6 +210,14 @@ public class ButtonBar extends Plugin
 		      ButtonBar.this.error(descr+": missing button command");
 		  } else
 		      ButtonBar.this.error("unexpected end of file");
+	        } else if(setup.sval.equals("label")) {
+	          if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
+		    String descr = setup.sval;
+                    Label b = new Label(descr);
+	            l.setConstraints(b, constraints(c, setup));
+	            panel.add(b);
+		  } else
+		      ButtonBar.this.error("unexpected end of file");
 	        } else if(setup.sval.equals("input")) {
 	          if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
 		    String descr = setup.sval;
@@ -211,6 +227,7 @@ public class ButtonBar extends Plugin
 		      String init = "", command = "";
 		      token = setup.nextToken();
 		      if(setup.sval.equals("button") || 
+		         setup.sval.equals("label") ||
 		         setup.sval.equals("input") ||
 		         setup.sval.equals("stretch") ||
 		         setup.sval.equals("break"))
@@ -219,6 +236,7 @@ public class ButtonBar extends Plugin
                         command = setup.sval;
 		      token = setup.nextToken();
 		      if(setup.sval.equals("button") || 
+		         setup.sval.equals("label") ||
 		         setup.sval.equals("input") ||
 		         setup.sval.equals("stretch") ||
 		         setup.sval.equals("break")) {
