@@ -209,9 +209,16 @@ public class Main {
     help.add(tmp = new MenuItem("About"));
     tmp.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        Dialog d = new Dialog(frame, "About JTA", true);
-	d.add(new Label("Copyright (c) 1996-1999 "
-	               +"Matthias L Jugel, Marcus Meiﬂner"));
+        final Dialog d = new Dialog(frame, "About JTA", true);
+	d.add("Center", new Label("Copyright (c) 1996-1999 "
+	                         +"Matthias L Jugel, Marcus Meiﬂner"));
+	Button close = new Button("Close");
+	close.addActionListener(new ActionListener() {
+	  public void actionPerformed(ActionEvent evt) {
+	    d.dispose();
+	  }
+	});
+	d.add("South", close);
 	d.setResizable(false);
 	d.pack();
 	d.show();

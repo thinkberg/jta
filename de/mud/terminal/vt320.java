@@ -304,7 +304,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   // due to a bug with Windows we need a keypress cache
   private int pressedKey = ' ';
-  private long pressedWhen = ' ';
+  // private long pressedWhen = ' ';
 
   private String terminalID = "vt320";
 
@@ -477,7 +477,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       write(""+((char)(keyChar|0x80)));
     else if(capslock && !shift) 
       write((""+keyChar).toUpperCase());
-    else
+    else if(!(keyChar == '\r' || keyChar == '\n') || control)
       write(""+keyChar);
   }
 
@@ -501,13 +501,14 @@ public abstract class vt320 extends VDU implements KeyListener {
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
 
+    /*
     if(pressedKey == KeyEvent.VK_ENTER && 
         (keyCode == KeyEvent.VK_ENTER || keyChar == 10)
         && evt.getWhen() - pressedWhen < 50) 
-      //  Ray: Elliminate stuttering enter/return
       return;
 
     pressedWhen = evt.getWhen();
+    */
 
     if(keyCode == KeyEvent.VK_ENTER && !control) {
       if(sendcrlf)
