@@ -392,6 +392,8 @@ public abstract class vt320 extends VDU implements KeyListener {
    */
   private boolean write(String s,boolean doecho) {
     if (debug>2) System.out.println("write(|"+s+"|,"+doecho);
+    if (s == null) // aka the empty string.
+        return true;
     write(s.getBytes());
     if (doecho)
     	putString(s);
@@ -412,8 +414,12 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   // X - COLUMNS, Y - ROWS
   int  R,C;
-  int  Sc,Sr,Sa,Stm,Sbm;
   int  attributes  = 0;
+
+  private int  Sc,Sr,Sa,Stm,Sbm;
+  private char Sgr,Sgl;
+  private char Sgx[];
+
   int  insertmode  = 0;
   int  statusmode = 0;
   int  vt52mode  = 0;
@@ -1359,23 +1365,24 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>0)
           System.out.println("ESC >");
         break;
-      case '7': /*save cursor */
-        Sc = C;
-        Sr = R;
+      case '7': /*save cursor, attributes, margins */
+        Sc = C;		Sr = R;
+	Sgl = gl;	Sgr = gr;
         Sa = attributes;
-	Stm = getTopMargin();
-	Sbm = getBottomMargin();
+	Sgx = new char[4];for (int i=0;i<4;i++) Sgx[i]=gx[i];
+	Stm = getTopMargin(); Sbm = getBottomMargin();
         if (debug>1)
           System.out.println("ESC 7");
         break;
-      case '8': /*restore cursor */
-        C = Sc;
-        R = Sr;
+      case '8': /*restore cursor, attributes, margins */
+        C = Sc; 	R = Sr;
+	gl = Sgl;	gr = Sgr;
+	for (int i=0;i<4;i++) gx[i]=Sgx[i];
 	setTopMargin(Stm);
 	setBottomMargin(Sbm);
         attributes = Sa;
         if (debug>1)
-          System.out.println("ESC 7");
+          System.out.println("ESC 8");
         break;
       case '(': /* Designate G0 Character set (ISO 2022) */
         term_state = TSTATE_SETG0;
