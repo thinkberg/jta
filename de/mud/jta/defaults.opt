@@ -18,7 +18,7 @@
 # =======================================================================
 # common program defaults
 # =======================================================================
-plugins			=	Socket,Telnet,Terminal
+plugins			=	Socket,Telnet,Script,Terminal
 layout			=	BorderLayout
 layout.Terminal		=	Center
 
@@ -48,3 +48,8 @@ Terminal.fontSize	=	11
 Terminal.keyCodes	=	@/de/mud/terminal/default.keycodes
 Terminal.VMS		=	false
 Terminal.IBM		=	false
+
+# =======================================================================
+# An example script setup
+# =======================================================================
+Script.script		=	login:|leo|Password|??????|leo@|ls
