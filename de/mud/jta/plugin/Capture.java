@@ -45,6 +45,14 @@ import java.net.URLEncoder;
  * configuration option Capture.url and can be used in
  * conjunction with the UploadServlet from the tools directory.
  * <P>
+ * Parametrize the plugin carefully:<br>
+ * <b>Capture.url</b> should contain a unique URL can may have
+ * parameters for identifying the upload.<br>
+ * <i>Example:</i> http://mg.mud.de/servlet/UpladServlet?id=12345
+ * <p>
+ * The actually captured data will be appended as the parameter
+ * <b>content</b>.
+ * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
@@ -148,8 +156,10 @@ public class Capture extends Plugin
           if (debug > 0) System.out.println("view/hide text: " + frame.isVisible());
           if (frame.isVisible()) {
             frame.setVisible(false);
+            frame.hide();
           } else {
             frame.setVisible(true);
+            frame.show();
           }
         }
       });
