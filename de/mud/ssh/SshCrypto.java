@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -53,8 +53,7 @@ public class SshCrypto {
   //-------------------------------------------------------------------------
 
   static public byte[] encrypteRSAPkcs1Twice(byte[] clearData,
-                                             byte
-    [] server_key_public_exponent,
+                                             byte[] server_key_public_exponent,
                                              byte[] server_key_public_modulus,
                                              byte[] host_key_public_exponent,
                                              byte[] host_key_public_modulus) {
@@ -72,11 +71,24 @@ public class SshCrypto {
     // a zero byte,
     // and the data to be encrypted
 
+    byte[] key1exp, key1mod, key2exp, key2mod;
+
+    if (server_key_public_modulus.length < host_key_public_modulus.length) {
+	key1exp = server_key_public_exponent;
+	key1mod = server_key_public_modulus;
+	key2exp = host_key_public_exponent;
+	key2mod = host_key_public_modulus;
+    } else {
+	key1exp = host_key_public_exponent;
+	key1mod = host_key_public_modulus;
+	key2exp = server_key_public_exponent;
+	key2mod = server_key_public_modulus;
+    }
 
     byte[] EncryptionBlock;	//what will be encrypted
 
     int offset = 0;
-    EncryptionBlock = new byte[server_key_public_modulus.length];
+    EncryptionBlock = new byte[key1mod.length];
     EncryptionBlock[0] = 0;
     EncryptionBlock[1] = 2;
     offset = 2;
@@ -91,16 +103,15 @@ public class SshCrypto {
     byte[] messageByte;
 
 
-    m = new BigInteger(1, server_key_public_modulus);
-    e = new BigInteger(1, server_key_public_exponent);
+    m = new BigInteger(1, key1mod);
+    e = new BigInteger(1, key1exp);
     message = new BigInteger(1, EncryptionBlock);
-    //      byte[] messageByteOld1 = message.toByteArray();
-
     message = message.modPow(e, m);	//RSA Encryption !!
 
-    byte[] messageByteTemp = message.toByteArray();	//messageByte holds the encypted data.
+    byte[] messageByteTemp = message.toByteArray();
+
     //there should be no zeroes a the begining but we have to fix it (JDK bug !!)
-    messageByte = new byte[server_key_public_modulus.length];
+    messageByte = new byte[key1mod.length];
     int tempOffset = 0;
     while (messageByteTemp[tempOffset] == 0)
       tempOffset++;
@@ -108,16 +119,14 @@ public class SshCrypto {
          i < messageByte.length; i++)
       messageByte[i] = messageByteTemp[tempOffset++];
 
-
-    // we can't check that the crypted message is OK : no way to decrypt :-(
-
-    //according to the ssh source  !!!!! Not well explained in the protocol!!!
     clearData = messageByte;
+
+
 
     //SECOND ROUND !!
 
     offset = 0;
-    EncryptionBlock = new byte[host_key_public_modulus.length];
+    EncryptionBlock = new byte[key2mod.length];
     EncryptionBlock[0] = 0;
     EncryptionBlock[1] = 2;
 
@@ -125,20 +134,20 @@ public class SshCrypto {
     for (int i = 2; i < (EncryptionBlock.length - clearData.length - 1); i++)
       EncryptionBlock[offset++] = SshMisc.getNotZeroRandomByte();	//random !=0
     EncryptionBlock[offset++] = 0;
-    for (int i = 0; i < clearData.length; i++)
+    for (int i = 0; (i < clearData.length ) ; i++)
       EncryptionBlock[offset++] = clearData[i];
 
     //EncryptionBlock can be encrypted now !
 
-    m = new BigInteger(1, host_key_public_modulus);
-    e = new BigInteger(1, host_key_public_exponent);
+    m = new BigInteger(1, key2mod);
+    e = new BigInteger(1, key2exp);
     message = new BigInteger(1, EncryptionBlock);
-
     message = message.modPow(e, m);
 
-    messageByteTemp = message.toByteArray();	//messageByte holds the encypted data.
+    messageByteTemp = message.toByteArray();	
+
     //there should be no zeroes a the begining but we have to fix it (JDK bug !!)
-    messageByte = new byte[host_key_public_modulus.length];
+    messageByte = new byte[key2mod.length];
     tempOffset = 0;
     while (messageByteTemp[tempOffset] == 0)
       tempOffset++;
@@ -147,15 +156,15 @@ public class SshCrypto {
       messageByte[i] = messageByteTemp[tempOffset++];
 
     //Second encrypted key : encrypted_session_key //mp-int
-    byte[] encrypted_session_key = new byte[host_key_public_modulus.length + 2];	//encrypted_session_key is a mp-int !!!
+
+    byte[] encrypted_session_key = new byte[key2mod.length + 2];
 
     //the lengh of the mp-int.
+    encrypted_session_key[1] = (byte) ((8 * key2mod.length) & 0xff);
+    encrypted_session_key[0] = (byte) (((8 * key2mod.length) >> 8) & 0xff);
 
-    encrypted_session_key[1] = (byte) ((8 * host_key_public_modulus.length) & 0xff);
-
-    encrypted_session_key[0] = (byte) (((8 * host_key_public_modulus.length) >> 8) & 0xff);
     //the mp-int
-    for (int i = 0; i < host_key_public_modulus.length; i++)
+    for (int i = 0; i < key2mod.length; i++)
       encrypted_session_key[i + 2] = messageByte[i];
     return encrypted_session_key;
   };
