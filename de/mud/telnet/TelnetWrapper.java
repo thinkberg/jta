@@ -163,8 +163,22 @@ public class TelnetWrapper extends TelnetProtocolHandler {
    * @return the amount of bytes read
    */
   public int read(byte[] b) throws IOException {
-    int n = in.read(b);
-    if(n > 0) n = negotiate(b, n);
+    int n = negotiate(b);
+
+    if (n>0)
+      return n;
+
+    while (n<=0) {
+      do {
+	n = negotiate(b);
+	if (n>0)
+	  return n;
+      } while (n==0);
+      n = in.read(b);
+      if (n<0)
+        return n;
+      inputfeed(b,n);
+    }
     return n;
   }
 
