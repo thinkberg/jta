@@ -227,9 +227,11 @@ public class Terminal extends Plugin
 	} else if(key.equals("Terminal.keyCodes")) 
 	  System.out.println("Terminal.keyCodes not implemented yet");
 	else if(key.equals("Terminal.VMS"))
-	  terminal.setVMS(Boolean.getBoolean(config.getProperty(key)));
+	  terminal.setVMS(
+	    (Boolean.valueOf(config.getProperty(key))).booleanValue());
 	else if(key.equals("Terminal.IBM"))
-	  terminal.setIBMCharset(Boolean.getBoolean(config.getProperty(key)));
+	  terminal.setIBMCharset(
+	    (Boolean.valueOf(config.getProperty(key))).booleanValue());
         else
 	  System.err.println("Error: '"+key+"' is not a Terminal property");
       }
