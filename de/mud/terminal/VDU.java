@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -19,40 +19,16 @@
 
 package de.mud.terminal;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Point;
-import java.awt.Insets;
-import java.awt.Event;
-import java.awt.Label;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Scrollbar;
-import java.awt.Image;
-
-/*
-import java.awt.Graphics;
-import java.awt.print.Printable;
-import java.awt.print.PrinterJob;
-import java.awt.print.PrinterException;
-import java.awt.print.PageFormat;
-*/
-
-import java.awt.AWTEvent;
-import java.awt.AWTEventMulticaster;
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.*;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
 
 /**
  * Video Display Unit emulation. This class implements all necessary
@@ -70,7 +46,7 @@ import java.awt.event.FocusEvent;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meiﬂner
  */
-public class VDU extends Component 
+public class VDU extends Component
   implements MouseListener, MouseMotionListener {
   /** The current version id tag */
   public final static String ID = "$Id$";
@@ -79,12 +55,12 @@ public class VDU extends Component
   public final static int debug = 0;
 
   /** lightweight component definitions */
-  private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK 
-                                       | AWTEvent.FOCUS_EVENT_MASK
-                                       | AWTEvent.ACTION_EVENT_MASK
-                                       | AWTEvent.MOUSE_MOTION_EVENT_MASK
-                                       | AWTEvent.MOUSE_EVENT_MASK;
-  
+  private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK
+    | AWTEvent.FOCUS_EVENT_MASK
+    | AWTEvent.ACTION_EVENT_MASK
+    | AWTEvent.MOUSE_MOTION_EVENT_MASK
+    | AWTEvent.MOUSE_EVENT_MASK;
+
   private Dimension size;                             /* rows and columns */
   private Insets insets;                            /* size of the border */
   private boolean raised;            /* indicator if the border is raised */
@@ -111,11 +87,11 @@ public class VDU extends Component
   private String selection;                 /* contains the selected text */
 
   private Scrollbar scrollBar;
-  private SoftFont  sf = new SoftFont();
+  private SoftFont sf = new SoftFont();
 
   private boolean update[];        /* contains the lines that need update */
   private boolean colorPrinting = false;	/* print display in color */
-  
+
   private Image backingStore = null;
 
   /**
@@ -125,35 +101,43 @@ public class VDU extends Component
    * @return the new brighter color
    */
 
-  private double max(double f1,double f2) { return (f1<f2)?f2:f1; }
-  private double min(double f1,double f2) { return (f1<f2)?f1:f2; }
+  private double max(double f1, double f2) {
+    return (f1 < f2)?f2:f1;
+  }
+
+  private double min(double f1, double f2) {
+    return (f1 < f2)?f1:f2;
+  }
+
   private Color brighten(Color clr) {
     int r,g,b;
 
-    r = (int)min(clr.getRed()  * 1.2 , 255.0);
-    g = (int)min(clr.getGreen()* 1.2 , 255.0);
-    b = (int)min(clr.getBlue() * 1.2 , 255.0);
-    return new Color(r,g,b);
+    r = (int) min(clr.getRed() * 1.2, 255.0);
+    g = (int) min(clr.getGreen() * 1.2, 255.0);
+    b = (int) min(clr.getBlue() * 1.2, 255.0);
+    return new Color(r, g, b);
   }
 
   private Color darken(Color clr) {
     int r,g,b;
 
-    r = (int)max(clr.getRed()   * 0.8 , 0.0);
-    g = (int)max(clr.getGreen() * 0.8 , 0.0);
-    b = (int)max(clr.getBlue()  * 0.8 , 0.0);
-    return new Color(r,g,b);
+    r = (int) max(clr.getRed() * 0.8, 0.0);
+    g = (int) max(clr.getGreen() * 0.8, 0.0);
+    b = (int) max(clr.getBlue() * 0.8, 0.0);
+    return new Color(r, g, b);
   }
 
   /** A list of colors used for representation of the display */
-  private Color color[] = { Color.black,
-                            Color.red,
-                            Color.green,
-                            Color.yellow,
-                            Color.blue,
-                            Color.magenta,
-                            Color.cyan,
-                            Color.white,
+  private Color color[] = {Color.black,
+                           Color.red,
+                           Color.green,
+                           Color.yellow,
+                           Color.blue,
+                           Color.magenta,
+                           Color.cyan,
+                           Color.white,
+                           null, // bold color
+                           null, // inverted color
   };
 
   public final static int COLOR_0 = 0;
@@ -164,42 +148,44 @@ public class VDU extends Component
   public final static int COLOR_5 = 5;
   public final static int COLOR_6 = 6;
   public final static int COLOR_7 = 7;
+  public final static int COLOR_BOLD = 8;
+  public final static int COLOR_INVERT = 9;
 
   /* definitions of standards for the display unit */
-  final static int COLOR_FG_STD  = 7;
-  final static int COLOR_BG_STD  = 0;
-  public final static int COLOR         = 0xff0;
-  public final static int COLOR_FG      = 0xf0;
-  public final static int COLOR_BG      = 0xf00;
+  final static int COLOR_FG_STD = 7;
+  final static int COLOR_BG_STD = 0;
+  public final static int COLOR = 0xff0;
+  public final static int COLOR_FG = 0xf0;
+  public final static int COLOR_BG = 0xf00;
 
   /** User defineable cursor colors */
   private Color cursorColorFG = null;
   private Color cursorColorBG = null;
 
   /** Scroll up when inserting a line. */
-  public final static boolean SCROLL_UP   = false;
+  public final static boolean SCROLL_UP = false;
   /** Scroll down when inserting a line. */
   public final static boolean SCROLL_DOWN = true;
 
   /** Do nothing when the component is resized. */
-  public final static int RESIZE_NONE  = 0;
+  public final static int RESIZE_NONE = 0;
   /** Resize the width and height of the character screen. */
-  public final static int RESIZE_SCREEN  = 1;
+  public final static int RESIZE_SCREEN = 1;
   /** Resize the font to the new screen size. */
-  public final static int RESIZE_FONT  = 2;
-  
-  /** Make character normal. */ 
-  public final static int NORMAL  = 0x00;
-  /** Make character bold. */ 
-  public final static int BOLD    = 0x01;
-  /** Underline character. */ 
-  public final static int UNDERLINE  = 0x02;
-  /** Invert character. */ 
-  public final static int INVERT  = 0x04;
-  /** Lower intensity character. */ 
-  public final static int LOW  = 0x08;
+  public final static int RESIZE_FONT = 2;
 
-  /** 
+  /** Make character normal. */
+  public final static int NORMAL = 0x00;
+  /** Make character bold. */
+  public final static int BOLD = 0x01;
+  /** Underline character. */
+  public final static int UNDERLINE = 0x02;
+  /** Invert character. */
+  public final static int INVERT = 0x04;
+  /** Lower intensity character. */
+  public final static int LOW = 0x08;
+
+  /**
    * Create a new video display unit with the passed width and height in
    * characters using a special font and font size. These features can
    * be set independently using the appropriate properties.
@@ -210,7 +196,7 @@ public class VDU extends Component
   public VDU(int width, int height, Font font) {
     // lightweight component handling
     enableEvents(VDU_EVENTS);
-    
+
     // set the normal font to use
     setFont(font);
     // set the standard resize strategy
@@ -231,7 +217,7 @@ public class VDU extends Component
 
     selection = null;
   }
-  
+
   /**
    * Create a display unit with specific size, Font is "Monospaced", size 12.
    * @param width the length of the character lines
@@ -257,7 +243,7 @@ public class VDU extends Component
   }
 
   public void setColorSet(Color[] colorset) {
-    System.arraycopy(colorset, 0, color, 0, 8);
+    System.arraycopy(colorset, 0, color, 0, 10);
     update[0] = true;
     redraw();
   }
@@ -296,7 +282,7 @@ public class VDU extends Component
    * @see #insertChar
    * @see #deleteChar
    * @see #redraw
-   */  
+   */
 
   public void putChar(int c, int l, char ch, int attributes) {
     c = checkBounds(c, 0, size.width - 1);
@@ -349,10 +335,10 @@ public class VDU extends Component
   public void insertChar(int c, int l, char ch, int attributes) {
     c = checkBounds(c, 0, size.width - 1);
     l = checkBounds(l, 0, size.height - 1);
-    System.arraycopy(charArray[screenBase + l], c, 
-         charArray[screenBase + l], c + 1, size.width - c - 1);
-    System.arraycopy(charAttributes[screenBase + l], c, 
-         charAttributes[screenBase + l], c + 1, size.width - c - 1);
+    System.arraycopy(charArray[screenBase + l], c,
+                     charArray[screenBase + l], c + 1, size.width - c - 1);
+    System.arraycopy(charAttributes[screenBase + l], c,
+                     charAttributes[screenBase + l], c + 1, size.width - c - 1);
     putChar(c, l, ch, attributes);
   }
 
@@ -371,15 +357,15 @@ public class VDU extends Component
     l = checkBounds(l, 0, size.height - 1);
     if(c < size.width - 1) {
       System.arraycopy(charArray[screenBase + l], c + 1,
-           charArray[screenBase + l], c, size.width - c - 1);
+                       charArray[screenBase + l], c, size.width - c - 1);
       System.arraycopy(charAttributes[screenBase + l], c + 1,
-           charAttributes[screenBase + l], c, size.width - c - 1);
+                       charAttributes[screenBase + l], c, size.width - c - 1);
     }
-    putChar(size.width - 1, l, (char)0);
+    putChar(size.width - 1, l, (char) 0);
   }
 
   /**
-   * Put a String at a specific position. Any characters previously on that 
+   * Put a String at a specific position. Any characters previously on that
    * position will be overwritten. You need to call redraw() for screen update.
    * @param c x-coordinate (column)
    * @param l y-coordinate (line)
@@ -392,14 +378,14 @@ public class VDU extends Component
    * @see #insertLine
    * @see #deleteLine
    * @see #redraw
-   */  
+   */
   public void putString(int c, int l, String s) {
     putString(c, l, s, NORMAL);
   }
-  
+
   /**
    * Put a String at a specific position giving all characters the same
-   * attributes. Any characters previously on that position will be 
+   * attributes. Any characters previously on that position will be
    * overwritten. You need to call redraw() to update the screen.
    * @param c x-coordinate (column)
    * @param l y-coordinate (line)
@@ -441,7 +427,7 @@ public class VDU extends Component
    */
   public void insertLine(int l, int n) {
     insertLine(l, n, SCROLL_UP);
-  }  
+  }
 
   /**
    * Insert a blank line at a specific position. Scroll text according to
@@ -456,7 +442,7 @@ public class VDU extends Component
    */
   public void insertLine(int l, boolean scrollDown) {
     insertLine(l, 1, scrollDown);
-  }  
+  }
 
   /**
    * Insert blank lines at a specific position.
@@ -478,128 +464,129 @@ public class VDU extends Component
     int offset = 0;
     int oldBase = screenBase;
 
-    if (l > bottomMargin) /* We do not scroll below bottom margin (below the scrolling region). */
-	return;
-    int top = (l < topMargin ? 
-               0 : (l > bottomMargin ?
-                    (bottomMargin + 1 < size.height ?
-                     bottomMargin + 1 : size.height - 1) : topMargin));
+    if(l > bottomMargin) /* We do not scroll below bottom margin (below the scrolling region). */
+      return;
+    int top = (l < topMargin ?
+      0 : (l > bottomMargin ?
+      (bottomMargin + 1 < size.height ?
+      bottomMargin + 1 : size.height - 1) : topMargin));
     int bottom = (l > bottomMargin ?
-                  size.height - 1 : (l < topMargin ? 
-                                     (topMargin > 0 ?
-                                      topMargin - 1 : 0) : bottomMargin));
+      size.height - 1 : (l < topMargin ?
+      (topMargin > 0 ?
+      topMargin - 1 : 0) : bottomMargin));
 
     // System.out.println("l is "+l+", top is "+top+", bottom is "+bottom+", bottomargin is "+bottomMargin+", topMargin is "+topMargin);
-    
+
     if(scrollDown) {
       if(n > (bottom - top)) n = (bottom - top);
       cbuf = new char[bottom - l - (n - 1)][size.width];
       abuf = new int[bottom - l - (n - 1)][size.width];
-      
+
       System.arraycopy(charArray, oldBase + l, cbuf, 0, bottom - l - (n - 1));
-      System.arraycopy(charAttributes, oldBase + l, 
-		       abuf, 0, bottom - l - (n - 1));
-      System.arraycopy(cbuf, 0, charArray, oldBase + l + n, 
-		       bottom - l - (n - 1));
-      System.arraycopy(abuf, 0, charAttributes, oldBase + l + n, 
-		       bottom - l - (n - 1));
+      System.arraycopy(charAttributes, oldBase + l,
+                       abuf, 0, bottom - l - (n - 1));
+      System.arraycopy(cbuf, 0, charArray, oldBase + l + n,
+                       bottom - l - (n - 1));
+      System.arraycopy(abuf, 0, charAttributes, oldBase + l + n,
+                       bottom - l - (n - 1));
       cbuf = charArray;
       abuf = charAttributes;
-    } else try {
-      if(n > (bottom - top) + 1) n = (bottom - top) + 1;
-      if(bufSize < maxBufSize) {
-        if(bufSize + n > maxBufSize) {
-          offset = n - (maxBufSize - bufSize);
-          bufSize = maxBufSize;
-          screenBase = maxBufSize - size.height - 1;
-          windowBase = screenBase;
+    } else
+      try {
+        if(n > (bottom - top) + 1) n = (bottom - top) + 1;
+        if(bufSize < maxBufSize) {
+          if(bufSize + n > maxBufSize) {
+            offset = n - (maxBufSize - bufSize);
+            bufSize = maxBufSize;
+            screenBase = maxBufSize - size.height - 1;
+            windowBase = screenBase;
+          } else {
+            screenBase += n;
+            windowBase += n;
+            bufSize += n;
+          }
+          cbuf = new char[bufSize][size.width];
+          abuf = new int[bufSize][size.width];
         } else {
-          screenBase += n;
-          windowBase += n;
-          bufSize += n;
+          offset = n;
+          cbuf = charArray;
+          abuf = charAttributes;
         }
-        cbuf = new char[bufSize][size.width];
-        abuf = new int[bufSize][size.width];
-      } else {
-        offset = n;
-        cbuf = charArray;
-        abuf = charAttributes;
+        // copy anything from the top of the buffer (+offset) to the new top
+        // up to the screenBase.
+        if(oldBase > 0) {
+          System.arraycopy(charArray, offset,
+                           cbuf, 0,
+                           oldBase - offset);
+          System.arraycopy(charAttributes, offset,
+                           abuf, 0,
+                           oldBase - offset);
+        }
+        // copy anything from the top of the screen (screenBase) up to the
+        // topMargin to the new screen
+        if(top > 0) {
+          System.arraycopy(charArray, oldBase,
+                           cbuf, screenBase,
+                           top);
+          System.arraycopy(charAttributes, oldBase,
+                           abuf, screenBase,
+                           top);
+        }
+        // copy anything from the topMargin up to the amount of lines inserted
+        // to the gap left over between scrollback buffer and screenBase
+        if(oldBase > 0) {
+          System.arraycopy(charArray, oldBase + top,
+                           cbuf, oldBase - offset,
+                           n);
+          System.arraycopy(charAttributes, oldBase + top,
+                           abuf, oldBase - offset,
+                           n);
+        }
+        // copy anything from topMargin + n up to the line linserted to the
+        // topMargin
+        System.arraycopy(charArray, oldBase + top + n,
+                         cbuf, screenBase + top,
+                         l - top - (n - 1));
+        System.arraycopy(charAttributes, oldBase + top + n,
+                         abuf, screenBase + top,
+                         l - top - (n - 1));
+        //
+        // copy the all lines next to the inserted to the new buffer
+        if(l < size.height - 1) {
+          System.arraycopy(charArray, oldBase + l + 1,
+                           cbuf, screenBase + l + 1,
+                           (size.height - 1) - l);
+          System.arraycopy(charAttributes, oldBase + l + 1,
+                           abuf, screenBase + l + 1,
+                           (size.height - 1) - l);
+        }
+      } catch(ArrayIndexOutOfBoundsException e) {
+        // this should not happen anymore, but I will leave the code
+        // here in case something happens anyway. That code above is
+        // so complex I always have a hard time understanding what
+        // I did, even though there are comments
+        System.err.println("*** Error while scrolling up:");
+        System.err.println("--- BEGIN STACK TRACE ---");
+        e.printStackTrace();
+        System.err.println("--- END STACK TRACE ---");
+        System.err.println("bufSize=" + bufSize + ", maxBufSize=" + maxBufSize);
+        System.err.println("top=" + top + ", bottom=" + bottom);
+        System.err.println("n=" + n + ", l=" + l);
+        System.err.println("screenBase=" + screenBase + ", windowBase=" + windowBase);
+        System.err.println("oldBase=" + oldBase);
+        System.err.println("size.width=" + size.width + ", size.height=" + size.height);
+        System.err.println("abuf.length=" + abuf.length + ", cbuf.length=" + cbuf.length);
+        System.err.println("*** done dumping debug information");
       }
-      // copy anything from the top of the buffer (+offset) to the new top
-      // up to the screenBase.
-      if(oldBase > 0) {
-        System.arraycopy(charArray, offset, 
-                         cbuf, 0, 
-                         oldBase - offset);
-        System.arraycopy(charAttributes, offset, 
-                         abuf, 0, 
-                         oldBase - offset);
-      }
-      // copy anything from the top of the screen (screenBase) up to the
-      // topMargin to the new screen
-      if(top > 0) {
-        System.arraycopy(charArray, oldBase, 
-                         cbuf, screenBase, 
-                         top);
-        System.arraycopy(charAttributes, oldBase, 
-                         abuf, screenBase, 
-                         top);
-      }
-      // copy anything from the topMargin up to the amount of lines inserted
-      // to the gap left over between scrollback buffer and screenBase
-      if(oldBase > 0) {
-	System.arraycopy(charArray, oldBase + top, 
-			 cbuf, oldBase - offset,
-			 n);
-	System.arraycopy(charAttributes, oldBase + top, 
-			 abuf, oldBase - offset,
-			 n);
-      }
-      // copy anything from topMargin + n up to the line linserted to the
-      // topMargin
-      System.arraycopy(charArray, oldBase + top + n,
-                       cbuf, screenBase + top,
-                       l - top - (n - 1));
-      System.arraycopy(charAttributes, oldBase + top + n,
-                       abuf, screenBase + top,
-                       l - top - (n - 1));
-      //
-      // copy the all lines next to the inserted to the new buffer
-      if(l < size.height - 1) {
-        System.arraycopy(charArray, oldBase + l + 1,
-                         cbuf, screenBase + l + 1,
-                         (size.height - 1) - l);
-        System.arraycopy(charAttributes, oldBase + l + 1,
-                         abuf, screenBase + l + 1,
-                         (size.height - 1) - l);
-      }
-    } catch(ArrayIndexOutOfBoundsException e) {
-      // this should not happen anymore, but I will leave the code
-      // here in case something happens anyway. That code above is
-      // so complex I always have a hard time understanding what
-      // I did, even though there are comments
-      System.err.println("*** Error while scrolling up:");
-      System.err.println("--- BEGIN STACK TRACE ---");
-      e.printStackTrace();
-      System.err.println("--- END STACK TRACE ---");
-      System.err.println("bufSize="+bufSize+", maxBufSize="+maxBufSize);
-      System.err.println("top="+top+", bottom="+bottom);
-      System.err.println("n="+n+", l="+l);
-      System.err.println("screenBase="+screenBase+", windowBase="+windowBase);
-      System.err.println("oldBase="+oldBase);
-      System.err.println("size.width="+size.width+", size.height="+size.height);
-      System.err.println("abuf.length="+abuf.length+", cbuf.length="+cbuf.length);
-      System.err.println("*** done dumping debug information");
-    }
-    
+
     for(int i = 0; i < n; i++) {
-      cbuf[(screenBase + l) + (scrollDown ? i : -i) ] = new char[size.width];
-      abuf[(screenBase + l) + (scrollDown ? i : -i) ] = new int[size.width];
+      cbuf[(screenBase + l) + (scrollDown ? i : -i)] = new char[size.width];
+      abuf[(screenBase + l) + (scrollDown ? i : -i)] = new int[size.width];
     }
 
     charArray = cbuf;
     charAttributes = abuf;
-    
+
     if(scrollDown)
       markLine(l, bottom - l + 1);
     else
@@ -608,10 +595,10 @@ public class VDU extends Component
     if(scrollBar != null)
       scrollBar.setValues(windowBase, size.height, 0, bufSize);
   }
-  
+
   /**
-   * Delete a line at a specific position. Subsequent lines will be scrolled 
-   * up to fill the space and a blank line is inserted at the end of the 
+   * Delete a line at a specific position. Subsequent lines will be scrolled
+   * up to fill the space and a blank line is inserted at the end of the
    * screen.
    * @param l the y-coordinate to insert the line
    * @see #deleteLine
@@ -619,12 +606,12 @@ public class VDU extends Component
   public void deleteLine(int l) {
     l = checkBounds(l, 0, size.height - 1);
 
-    int bottom = (l>bottomMargin?size.height-1:
-		  (l<topMargin?topMargin:bottomMargin+1));
+    int bottom = (l > bottomMargin?size.height - 1:
+      (l < topMargin?topMargin:bottomMargin + 1));
     System.arraycopy(charArray, screenBase + l + 1,
-                     charArray, screenBase + l, bottom - l -1 );
+                     charArray, screenBase + l, bottom - l - 1);
     System.arraycopy(charAttributes, screenBase + l + 1,
-                     charAttributes, screenBase + l, bottom - l -1);
+                     charAttributes, screenBase + l, bottom - l - 1);
     charArray[screenBase + bottom - 1] = new char[size.width];
     charAttributes[screenBase + bottom - 1] = new int[size.width];
     markLine(l, bottom - l);
@@ -650,9 +637,8 @@ public class VDU extends Component
     char cbuf[] = new char[w];
     int abuf[] = new int[w];
 
-    for(int i = 0; i < w ; i++) abuf[i] = curAttr;
-    for(int i = 0; i < h && l + i < size.height; i++)
-    {
+    for(int i = 0; i < w; i++) abuf[i] = curAttr;
+    for(int i = 0; i < h && l + i < size.height; i++) {
       System.arraycopy(cbuf, 0, charArray[screenBase + l + i], c, w);
       System.arraycopy(abuf, 0, charAttributes[screenBase + l + i], c, w);
     }
@@ -677,8 +663,7 @@ public class VDU extends Component
     char cbuf[] = new char[w];
     int abuf[] = new int[w];
 
-    for(int i = 0; i < h && l + i < size.height; i++)
-    {
+    for(int i = 0; i < h && l + i < size.height; i++) {
       System.arraycopy(cbuf, 0, charArray[screenBase + l + i], c, w);
       System.arraycopy(abuf, 0, charAttributes[screenBase + l + i], c, w);
     }
@@ -701,8 +686,8 @@ public class VDU extends Component
   }
 
   public void showCursor(boolean doshow) {
-    if (doshow != showcursor)
-	markLine(cursorY,1);
+    if(doshow != showcursor)
+      markLine(cursorY, 1);
     showcursor = doshow;
   }
 
@@ -724,8 +709,7 @@ public class VDU extends Component
     if(l > bottomMargin) {
       topMargin = bottomMargin;
       bottomMargin = l;
-    }
-    else
+    } else
       topMargin = l;
     if(topMargin < 0) topMargin = 0;
     if(bottomMargin > size.height - 1) bottomMargin = size.height - 1;
@@ -748,8 +732,7 @@ public class VDU extends Component
     if(l < topMargin) {
       bottomMargin = topMargin;
       topMargin = l;
-    }
-    else
+    } else
       bottomMargin = l;
     if(topMargin < 0) topMargin = 0;
     if(bottomMargin > size.height - 1) bottomMargin = size.height - 1;
@@ -761,7 +744,7 @@ public class VDU extends Component
   public int getBottomMargin() {
     return bottomMargin;
   }
-    
+
   /**
    * Set scrollback buffer size.
    * @param amount new size of the buffer
@@ -784,7 +767,7 @@ public class VDU extends Component
       windowBase = screenBase;
     }
     maxBufSize = amount;
- 
+
     update[0] = true;
     redraw();
   }
@@ -812,7 +795,8 @@ public class VDU extends Component
    * @see getBufferSize
    */
   public void setWindowBase(int line) {
-    if(line > screenBase) line = screenBase;
+    if(line > screenBase)
+      line = screenBase;
     else if(line < 0) line = 0;
     windowBase = line;
     update[0] = true;
@@ -842,9 +826,9 @@ public class VDU extends Component
     if(update != null) update[0] = true;
     redraw();
   }
-      
+
   /**
-   * Change the size of the screen. This will include adjustment of the 
+   * Change the size of the screen. This will include adjustment of the
    * scrollback buffer.
    * @param columns width of the screen
    * @param columns height of the screen
@@ -855,11 +839,11 @@ public class VDU extends Component
     int bsize = bufSize;
 
     if(width < 1 || height < 1) return;
-    
-    if(debug > 0)
-      System.err.println("VDU: screen size ["+width+","+height+"]");
 
-    if(height > maxBufSize) 
+    if(debug > 0)
+      System.err.println("VDU: screen size [" + width + "," + height + "]");
+
+    if(height > maxBufSize)
       maxBufSize = height;
 
     if(height > bufSize) {
@@ -868,22 +852,22 @@ public class VDU extends Component
       windowBase = 0;
     }
 
-    if(windowBase+height >= bufSize)
-      windowBase = bufSize-height;
+    if(windowBase + height >= bufSize)
+      windowBase = bufSize - height;
 
-    if(screenBase+height >= bufSize)
-      screenBase = bufSize-height;
+    if(screenBase + height >= bufSize)
+      screenBase = bufSize - height;
 
 
     cbuf = new char[bufSize][width];
     abuf = new int[bufSize][width];
-    
+
     if(charArray != null && charAttributes != null)
       for(int i = 0; i < bsize && i < bufSize; i++) {
-        System.arraycopy(charArray[i], 0, cbuf[i], 0, 
-             width < size.width ? width : size.width);
-        System.arraycopy(charAttributes[i], 0, abuf[i], 0, 
-             width < size.width ? width : size.width);
+        System.arraycopy(charArray[i], 0, cbuf[i], 0,
+                         width < size.width ? width : size.width);
+        System.arraycopy(charAttributes[i], 0, abuf[i], 0,
+                         width < size.width ? width : size.width);
       }
     charArray = cbuf;
     charAttributes = abuf;
@@ -914,16 +898,20 @@ public class VDU extends Component
   public void setResizeStrategy(int strategy) {
     resizeStrategy = strategy;
   }
-  
+
   /**
    * Get amount of rows on the screen.
    */
-  public int getRows() { return size.height; }
+  public int getRows() {
+    return size.height;
+  }
 
   /**
    * Get amount of columns on the screen.
    */
-  public int getColumns() { return size.width; }
+  public int getColumns() {
+    return size.width;
+  }
 
   /**
    * Set the border thickness and the border type.
@@ -931,9 +919,11 @@ public class VDU extends Component
    * @param raised a boolean indicating a raised or embossed border
    */
   public void setBorder(int thickness, boolean raised) {
-    if(thickness == 0) insets = null;
-    else insets = new Insets(thickness+1, thickness+1, 
-                             thickness+1, thickness+1);
+    if(thickness == 0)
+      insets = null;
+    else
+      insets = new Insets(thickness + 1, thickness + 1,
+                          thickness + 1, thickness + 1);
     this.raised = raised;
   }
 
@@ -964,7 +954,7 @@ public class VDU extends Component
     for(int i = 0; (i < n) && (l + i < size.height); i++)
       update[l + i + 1] = true;
   }
-  
+
   /**
    * Redraw marked lines.
    * @see #markLine
@@ -990,29 +980,29 @@ public class VDU extends Component
 
     g.setFont(normalFont);
 
-   
-   /* for debug only
-    if (update[0]) {
-        System.err.println("Redrawing all");
-    } else {
-	for (int l = 1; l < size.height+1; l++) {
-	    if (update[l]) {
-	    	for (int c = 0; c < size.height-l;c++) {
-		    if (!update[c+l]) {
-			System.err.println("Redrawing "+(l-1)+" - "+(l+c-2));
-			l=l+c;
-			break;
-		    }
-		}
-	    }
-	}
-    }
-    */
+
+    /* for debug only
+     if (update[0]) {
+         System.err.println("Redrawing all");
+     } else {
+     for (int l = 1; l < size.height+1; l++) {
+         if (update[l]) {
+             for (int c = 0; c < size.height-l;c++) {
+             if (!update[c+l]) {
+             System.err.println("Redrawing "+(l-1)+" - "+(l+c-2));
+             l=l+c;
+             break;
+             }
+         }
+         }
+     }
+     }
+     */
 
     for(int l = 0; l < size.height; l++) {
       if(!update[0] && !update[l + 1]) continue;
       update[l + 1] = false;
-      if(debug > 2) System.err.println("redraw(): line "+l);
+      if(debug > 2) System.err.println("redraw(): line " + l);
       for(int c = 0; c < size.width; c++) {
         int addr = 0;
         int currAttr = charAttributes[windowBase + l][c];
@@ -1021,90 +1011,114 @@ public class VDU extends Component
         bg = darken(getBackground());
 
         if((currAttr & COLOR_FG) != 0)
-          fg = darken(color[((currAttr & COLOR_FG) >> 4)-1]);
+          fg = darken(color[((currAttr & COLOR_FG) >> 4) - 1]);
         if((currAttr & COLOR_BG) != 0)
-          bg = darken(darken(color[((currAttr & COLOR_BG) >> 8)-1]));
+          bg = darken(darken(color[((currAttr & COLOR_BG) >> 8) - 1]));
 
-        if((currAttr & BOLD) != 0)
+        if((currAttr & BOLD) != 0) {
+          g.setFont(normalFont.deriveFont(Font.BOLD));
+          if(null != color[COLOR_BOLD]) {
+            fg = color[COLOR_BOLD];
+          }
+          /*
           if(fg.equals(Color.black)) {
             fg = Color.gray;
           } else {
-	    fg = brighten(fg);
-	    // bg = bg.brighter(); -- make some programs ugly
-	  }
+            fg = brighten(fg);
+            // bg = bg.brighter(); -- make some programs ugly
+          }
+          */
+        } else {
+          g.setFont(normalFont);
+        }
 
-        if((currAttr & LOW) != 0) { fg = darken(fg); }
-        if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }
+        if((currAttr & LOW) != 0) {
+          fg = darken(fg);
+        }
+        if((currAttr & INVERT) != 0) {
+          if(null == color[COLOR_INVERT]) {
+            Color swapc = bg;
+            bg = fg;
+            fg = swapc;
+          } else {
+            if(null == color[COLOR_BOLD]) {
+              fg = bg;
+            } else {
+              fg = color[COLOR_BOLD];
+            }
+            bg = color[COLOR_INVERT];
+          }
+        }
 
-        if (sf.inSoftFont(charArray[windowBase + l][c])) {
-          g.setColor(bg);	
-          g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset, 
+        if(sf.inSoftFont(charArray[windowBase + l][c])) {
+          g.setColor(bg);
+          g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
                      charWidth, charHeight);
-          g.setColor(fg);	
-          sf.drawChar(g,charArray[windowBase + l][c],xoffset+c*charWidth,
-                      l*charHeight+yoffset, charWidth, charHeight);
+          g.setColor(fg);
+          sf.drawChar(g, charArray[windowBase + l][c], xoffset + c * charWidth,
+                      l * charHeight + yoffset, charWidth, charHeight);
           if((currAttr & UNDERLINE) != 0)
             g.drawLine(c * charWidth + xoffset,
-                       (l+1) * charHeight - charDescent / 2 + yoffset,
-                       c * charWidth + charWidth + xoffset, 
-                       (l+1) * charHeight - charDescent / 2 + yoffset);
+                       (l + 1) * charHeight - charDescent / 2 + yoffset,
+                       c * charWidth + charWidth + xoffset,
+                       (l + 1) * charHeight - charDescent / 2 + yoffset);
           continue;
         }
-      
+
         // determine the maximum of characters we can print in one go
-        while((c + addr < size.width) && 
-              ( (charArray[windowBase + l][c + addr] < ' ')		||
-	      	(charAttributes[windowBase + l][c + addr] == currAttr)
-	      )	&&
-              !sf.inSoftFont(charArray[windowBase + l ][c+addr])
-        ) {
+        while((c + addr < size.width) &&
+          ((charArray[windowBase + l][c + addr] < ' ') ||
+          (charAttributes[windowBase + l][c + addr] == currAttr)
+          ) &&
+          !sf.inSoftFont(charArray[windowBase + l][c + addr])
+          ) {
           if(charArray[windowBase + l][c + addr] < ' ') {
             charArray[windowBase + l][c + addr] = ' ';
-	    charAttributes[windowBase + l][c + addr] = 0;
-	    continue;
-	  }
+            charAttributes[windowBase + l][c + addr] = 0;
+            continue;
+          }
           addr++;
         }
-      
+
         // clear the part of the screen we want to change (fill rectangle)
         g.setColor(bg);
         g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
                    addr * charWidth, charHeight);
 
         g.setColor(fg);
-      
+
         // draw the characters
-        g.drawChars(charArray[windowBase + l], c, addr, 
-                    c * charWidth + xoffset, 
-                    (l+1) * charHeight - charDescent + yoffset);
+        g.drawChars(charArray[windowBase + l], c, addr,
+                    c * charWidth + xoffset,
+                    (l + 1) * charHeight - charDescent + yoffset);
 
         if((currAttr & UNDERLINE) != 0)
           g.drawLine(c * charWidth + xoffset,
-                     (l+1) * charHeight - charDescent / 2 + yoffset,
-                     c * charWidth + addr * charWidth + xoffset, 
-                     (l+1) * charHeight - charDescent / 2 + yoffset);
-        
+                     (l + 1) * charHeight - charDescent / 2 + yoffset,
+                     c * charWidth + addr * charWidth + xoffset,
+                     (l + 1) * charHeight - charDescent / 2 + yoffset);
+
         c += addr - 1;
       }
 
       // selection code, highlites line or part of it when it was
       // selected previously
       if(l >= selectStartLine && l <= selectEndLine) {
-	int selectStartColumn = (l == selectStartLine ? selectBegin.x : 0);
-	int selectEndColumn = 
-	  (l == selectEndLine ? 
-	    (l == selectStartLine ? selectEnd.x - selectStartColumn : 
-	                            selectEnd.x) : size.width);
-	if(selectStartColumn != selectEndColumn) {
-	  if(debug > 0) 
-	    System.err.println("select("+selectStartColumn+"-"
-	                                +selectEndColumn+")");
+        int selectStartColumn = (l == selectStartLine ? selectBegin.x : 0);
+        int selectEndColumn =
+          (l == selectEndLine ?
+          (l == selectStartLine ? selectEnd.x - selectStartColumn :
+          selectEnd.x) : size.width);
+        if(selectStartColumn != selectEndColumn) {
+          if(debug > 0)
+            System.err.println("select(" + selectStartColumn + "-"
+                               + selectEndColumn + ")");
           g.setXORMode(bg);
-	  g.fillRect(selectStartColumn * charWidth + xoffset,
-	             l * charHeight + yoffset,
-		     selectEndColumn * charWidth,
-		     charHeight);
-	  g.setPaintMode();
+          g.fillRect(selectStartColumn * charWidth + xoffset,
+                     l * charHeight + yoffset,
+                     selectEndColumn * charWidth,
+                     charHeight);
+          g.setPaintMode();
         }
       }
 
@@ -1112,12 +1126,12 @@ public class VDU extends Component
 
     // draw cursor
     if(showcursor && (
-       screenBase + cursorY >= windowBase && 
-       screenBase + cursorY < windowBase + size.height)
+      screenBase + cursorY >= windowBase &&
+      screenBase + cursorY < windowBase + size.height)
     ) {
       g.setColor(cursorColorFG);
       g.setXORMode(cursorColorBG);
-      g.fillRect( cursorX * charWidth + xoffset, 
+      g.fillRect(cursorX * charWidth + xoffset,
                  (cursorY + screenBase - windowBase) * charHeight + yoffset,
                  charWidth, charHeight);
       g.setPaintMode();
@@ -1127,10 +1141,11 @@ public class VDU extends Component
     // draw border
     if(insets != null) {
       g.setColor(getBackground());
-      xoffset--; yoffset--;
+      xoffset--;
+      yoffset--;
       for(int i = insets.top - 1; i >= 0; i--)
         g.draw3DRect(xoffset - i, yoffset - i,
-                     charWidth * size.width + 1 + i * 2, 
+                     charWidth * size.width + 1 + i * 2,
                      charHeight * size.height + 1 + i * 2,
                      raised);
     }
@@ -1159,7 +1174,7 @@ public class VDU extends Component
     }
 
     if(debug > 1)
-      System.err.println("Clip region: "+g.getClipBounds());
+      System.err.println("Clip region: " + g.getClipBounds());
 
     g.drawImage(backingStore, 0, 0, this);
   }
@@ -1176,7 +1191,7 @@ public class VDU extends Component
 
   /**
    * Set default for printing black&amp;white or colorized as displayed on
-   * screen. 
+   * screen.
    * @param name colorPrint true = print in full color, default b&amp;w only
    */
   public void setColorPrinting(boolean colorPrint) {
@@ -1193,15 +1208,17 @@ public class VDU extends Component
       setForeground(Color.black);
       setBackground(Color.white);
       colorSave = color;
-      color = new Color[] { Color.black, 
-                            Color.black, 
-			    Color.black,
-			    Color.black,
-			    Color.black,
-			    Color.black,
-			    Color.black,
-			    Color.white
-			  };
+      color = new Color[]{Color.black,
+                          Color.black,
+                          Color.black,
+                          Color.black,
+                          Color.black,
+                          Color.black,
+                          Color.black,
+                          Color.white,
+                          null,
+                          null,
+      };
     }
 
     redraw(g);
@@ -1224,11 +1241,10 @@ public class VDU extends Component
    * @param the mouse point to be converted
    * @return Character cell coordinate of passed point
    */
-  public Point mouseGetPos(Point evtpt)
-  {
+  public Point mouseGetPos(Point evtpt) {
     Point mousepos;
 
-    mousepos = new Point(0,0);
+    mousepos = new Point(0, 0);
 
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
     int yoffset = (super.getSize().height - size.height * charHeight) / 2;
@@ -1249,34 +1265,37 @@ public class VDU extends Component
    * @param fg foreground color or null
    * @param bg background color or null
    */
-  public void setCursorColors(Color fg, Color bg)
-  {
-    if (fg == null) cursorColorFG = color[COLOR_FG_STD];
-    else cursorColorFG = fg;
-    if (bg == null) cursorColorBG = color[COLOR_BG_STD];
-    else cursorColorBG = bg;
+  public void setCursorColors(Color fg, Color bg) {
+    if(fg == null)
+      cursorColorFG = color[COLOR_FG_STD];
+    else
+      cursorColorFG = fg;
+    if(bg == null)
+      cursorColorBG = color[COLOR_BG_STD];
+    else
+      cursorColorBG = bg;
     repaint();
   }
-          
+
   /**
    * Reshape character display according to resize strategy.
    * @see #setResizeStrategy
    */
   public void setBounds(int x, int y, int w, int h) {
     if(debug > 0)
-      System.err.println("VDU: setBounds("+x+","+y+","+w+","+h+")");
+      System.err.println("VDU: setBounds(" + x + "," + y + "," + w + "," + h + ")");
 
     super.setBounds(x, y, w, h);
 
     int xborder = 0, yborder = 0;
-    
+
     if(insets != null) {
       w -= (xborder = insets.left + insets.right);
       h -= (yborder = insets.top + insets.bottom);
     }
 
     if(debug > 0)
-      System.err.println("VDU: looking for better match for "+normalFont);
+      System.err.println("VDU: looking for better match for " + normalFont);
 
     Font tmpFont = normalFont;
     String fontName = tmpFont.getName();
@@ -1286,55 +1305,55 @@ public class VDU extends Component
       charWidth = fm.charWidth('@');
       charHeight = fm.getHeight();
     }
-    
-    switch(resizeStrategy) {
-    case RESIZE_SCREEN:
-      setScreenSize(w / charWidth, size.height = h / charHeight);
-      break;
-    case RESIZE_FONT:
-      int height = h / size.height;
-      int width = w / size.width;
-      
-      fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
-                                                charHeight));
-      
-      // adapt current font size (from small up to best fit)
-      if(fm.getHeight() < height || fm.charWidth('@') < width)
-        do {
-          fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
-	                                            ++charHeight));
-        } while(fm.getHeight() < height || fm.charWidth('@') < width); 
-      
-      // now check if we got a font that is too large
-      if(fm.getHeight() > height || fm.charWidth('@') > width)
-        do {
-          fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
-	                                            --charHeight));
-        } while(charHeight > 1 && 
-                (fm.getHeight() > height || 
-                 fm.charWidth('@') > width));
-      
-      if(charHeight <= 1) {
-        System.err.println("VDU: error during resize, resetting");
-        normalFont = tmpFont;
-        System.err.println("VDU: disabling font/screen resize");
-        resizeStrategy = RESIZE_NONE;
-      }
 
-      setFont(normalFont);
-      fm = getFontMetrics(normalFont);
-      charWidth = fm.charWidth('@');
-      charHeight = fm.getHeight();
-      charDescent = fm.getDescent();
-      break;
-    case RESIZE_NONE:
-    default:
-      break;
+    switch(resizeStrategy) {
+      case RESIZE_SCREEN:
+        setScreenSize(w / charWidth, size.height = h / charHeight);
+        break;
+      case RESIZE_FONT:
+        int height = h / size.height;
+        int width = w / size.width;
+
+        fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
+                                                  charHeight));
+
+        // adapt current font size (from small up to best fit)
+        if(fm.getHeight() < height || fm.charWidth('@') < width)
+          do {
+            fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
+                                                      ++charHeight));
+          } while(fm.getHeight() < height || fm.charWidth('@') < width);
+
+        // now check if we got a font that is too large
+        if(fm.getHeight() > height || fm.charWidth('@') > width)
+          do {
+            fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
+                                                      --charHeight));
+          } while(charHeight > 1 &&
+            (fm.getHeight() > height ||
+            fm.charWidth('@') > width));
+
+        if(charHeight <= 1) {
+          System.err.println("VDU: error during resize, resetting");
+          normalFont = tmpFont;
+          System.err.println("VDU: disabling font/screen resize");
+          resizeStrategy = RESIZE_NONE;
+        }
+
+        setFont(normalFont);
+        fm = getFontMetrics(normalFont);
+        charWidth = fm.charWidth('@');
+        charHeight = fm.getHeight();
+        charDescent = fm.getDescent();
+        break;
+      case RESIZE_NONE:
+      default:
+        break;
     }
     if(debug > 0) {
-      System.err.println("VDU: charWidth="+charWidth+", "+
-                              "charHeight="+charHeight+", "+
-                              "charDescent="+charDescent);
+      System.err.println("VDU: charWidth=" + charWidth + ", " +
+                         "charHeight=" + charHeight + ", " +
+                         "charDescent=" + charDescent);
     }
 
     // delete the double buffer image and mark all lines
@@ -1353,7 +1372,7 @@ public class VDU extends Component
       xborder = insets.left + insets.right;
       yborder = insets.top + insets.bottom;
     }
-    return new Dimension(size.width * charWidth + xborder, 
+    return new Dimension(size.width * charWidth + xborder,
                          size.height * charHeight + yborder);
   }
 
@@ -1376,8 +1395,8 @@ public class VDU extends Component
   }
 
   public void clearSelection() {
-    selectBegin = new Point(0,0);
-    selectEnd = new Point(0,0); 
+    selectBegin = new Point(0, 0);
+    selectEnd = new Point(0, 0);
     selection = null;
   }
 
@@ -1395,8 +1414,8 @@ public class VDU extends Component
 
   public void mouseDragged(MouseEvent evt) {
     if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK) ||
-       // Windows NT/95 etc: returns 0, which is a bug
-       evt.getModifiers() == 0) {
+      // Windows NT/95 etc: returns 0, which is a bug
+      evt.getModifiers() == 0) {
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
       int yoffset = (super.getSize().height - size.height * charHeight) / 2;
       int x = (evt.getX() - xoffset) / charWidth;
@@ -1410,12 +1429,12 @@ public class VDU extends Component
         selectEnd.x = x;
         selectEnd.y = y;
       }
-      
+
       if(oldx != x || oldy != y) {
-	update[0] = true;
-	if(debug > 0)
-	  System.err.println("select(["+selectBegin.x+","+selectBegin.y+"],"+
-	                            "["+selectEnd.x+","+selectEnd.y+"])");
+        update[0] = true;
+        if(debug > 0)
+          System.err.println("select([" + selectBegin.x + "," + selectBegin.y + "]," +
+                             "[" + selectEnd.x + "," + selectEnd.y + "])");
         redraw();
       }
     }
@@ -1462,10 +1481,10 @@ public class VDU extends Component
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
       int yoffset = (super.getSize().height - size.height * charHeight) / 2;
       mouseDragged(evt);
-  
+
       if(selectBegin.x == selectEnd.x &&
-         selectBegin.y == selectEnd.y) {
-	update[0] = true;
+        selectBegin.y == selectEnd.y) {
+        update[0] = true;
         redraw();
         return;
       }
@@ -1474,21 +1493,21 @@ public class VDU extends Component
       if(selectEnd.x < 0) selectEnd.x = 0;
       if(selectEnd.y < 0) selectEnd.y = 0;
       if(selectEnd.y >= charArray.length)
-        selectEnd.y = charArray.length-1;
+        selectEnd.y = charArray.length - 1;
       if(selectEnd.x > charArray[0].length)
         selectEnd.x = charArray[0].length;
 
       for(int l = selectBegin.y; l <= selectEnd.y; l++) {
         int start, end;
-	start = (l == selectBegin.y ? start = selectBegin.x : 0);
-	end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length );
-	// Trim all spaces from end of line, like xterm does.
-	selection += ("-" + (new String(charArray[l])).substring(start,end)).trim().substring(1);
-	if(end == charArray[l].length)
-	  selection += "\n";
+        start = (l == selectBegin.y ? start = selectBegin.x : 0);
+        end = (l == selectEnd.y ? end = selectEnd.x : charArray[l].length);
+        // Trim all spaces from end of line, like xterm does.
+        selection += ("-" + (new String(charArray[l])).substring(start, end)).trim().substring(1);
+        if(end == charArray[l].length)
+          selection += "\n";
       }
     }
-  } 
+  }
 
   // lightweight component event handling
 
@@ -1514,14 +1533,14 @@ public class VDU extends Component
   }
 
   private MouseMotionListener mouseMotionListener;
- 
+
   /**
    * Add a mouse motion listener to the VDU. This is the implementation for
    * the lightweight event handling.
    * @param listener the mouse motion listener
    */
   public void addMouseMotionListener(MouseMotionListener listener) {
-    mouseMotionListener = AWTEventMulticaster.add(mouseMotionListener,listener);
+    mouseMotionListener = AWTEventMulticaster.add(mouseMotionListener, listener);
     enableEvents(AWTEvent.MOUSE_EVENT_MASK);
   }
 
@@ -1531,12 +1550,12 @@ public class VDU extends Component
    * @param listener the mouse motion listener to remove
    */
   public void removeMouseMotionListener(MouseMotionListener listener) {
-    mouseMotionListener = 
+    mouseMotionListener =
       AWTEventMulticaster.remove(mouseMotionListener, listener);
   }
 
   /**
-   * Process mouse events for this component. It will call the 
+   * Process mouse events for this component. It will call the
    * methods (mouseClicked() etc) in the added mouse listeners.
    * @param evt the dispatched mouse event
    */
@@ -1545,36 +1564,43 @@ public class VDU extends Component
     if(mouseListener != null)
       switch(evt.getID()) {
         case MouseEvent.MOUSE_CLICKED:
-          mouseListener.mouseClicked(evt); break;
+          mouseListener.mouseClicked(evt);
+          break;
         case MouseEvent.MOUSE_ENTERED:
-          mouseListener.mouseEntered(evt); break;
+          mouseListener.mouseEntered(evt);
+          break;
         case MouseEvent.MOUSE_EXITED:
-          mouseListener.mouseExited(evt); break;
+          mouseListener.mouseExited(evt);
+          break;
         case MouseEvent.MOUSE_PRESSED:
-          mouseListener.mousePressed(evt); break;
+          mouseListener.mousePressed(evt);
+          break;
         case MouseEvent.MOUSE_RELEASED:
-          mouseListener.mouseReleased(evt); break;
+          mouseListener.mouseReleased(evt);
+          break;
       }
-     super.processMouseEvent(evt);
-   }
+    super.processMouseEvent(evt);
+  }
 
   /**
-   * Process mouse motion events for this component. It will call the 
+   * Process mouse motion events for this component. It will call the
    * methods (mouseDragged() etc) in the added mouse motion listeners.
    * @param evt the dispatched mouse event
    */
-   public void processMouseMotionEvent(MouseEvent evt) {
+  public void processMouseMotionEvent(MouseEvent evt) {
     // handle mouse motion events
     if(mouseMotionListener != null)
       switch(evt.getID()) {
         case MouseEvent.MOUSE_DRAGGED:
-          mouseMotionListener.mouseDragged(evt); break;
+          mouseMotionListener.mouseDragged(evt);
+          break;
         case MouseEvent.MOUSE_MOVED:
-          mouseMotionListener.mouseMoved(evt); break;
+          mouseMotionListener.mouseMoved(evt);
+          break;
       }
     super.processMouseMotionEvent(evt);
   }
-    
+
   private KeyListener keyListener;
 
   /**
@@ -1602,14 +1628,17 @@ public class VDU extends Component
    * @param evt the dispatched key event
    */
   public void processKeyEvent(KeyEvent evt) {
-    if(keyListener != null) 
+    if(keyListener != null)
       switch(evt.getID()) {
         case KeyEvent.KEY_PRESSED:
-	  keyListener.keyPressed(evt); break;
+          keyListener.keyPressed(evt);
+          break;
         case KeyEvent.KEY_RELEASED:
-	  keyListener.keyReleased(evt); break;
+          keyListener.keyReleased(evt);
+          break;
         case KeyEvent.KEY_TYPED:
-	  keyListener.keyTyped(evt); break;
+          keyListener.keyTyped(evt);
+          break;
       }
     // consume TAB keys if they originate from our component
     if(evt.getKeyCode() == KeyEvent.VK_TAB && evt.getSource() == this)
@@ -1631,9 +1660,11 @@ public class VDU extends Component
     if(focusListener != null)
       switch(evt.getID()) {
         case FocusEvent.FOCUS_GAINED:
-	  focusListener.focusGained(evt); break;
-	case FocusEvent.FOCUS_LOST:
-	  focusListener.focusLost(evt); break;
+          focusListener.focusGained(evt);
+          break;
+        case FocusEvent.FOCUS_LOST:
+          focusListener.focusLost(evt);
+          break;
       }
     super.processFocusEvent(evt);
   }

@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -19,56 +19,39 @@
 
 package de.mud.jta.plugin;
 
-import de.mud.jta.Plugin;
-import de.mud.jta.PluginConfig;
 import de.mud.jta.FilterPlugin;
-import de.mud.jta.VisualTransferPlugin;
+import de.mud.jta.Plugin;
 import de.mud.jta.PluginBus;
-
-import de.mud.terminal.vt320;
-
+import de.mud.jta.PluginConfig;
+import de.mud.jta.VisualTransferPlugin;
 import de.mud.jta.event.ConfigurationListener;
-import de.mud.jta.event.OnlineStatusListener;
-import de.mud.jta.event.TerminalTypeListener;
-import de.mud.jta.event.WindowSizeListener;
-import de.mud.jta.event.LocalEchoListener;
 import de.mud.jta.event.FocusStatus;
+import de.mud.jta.event.LocalEchoListener;
+import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.ReturnFocusListener;
-import de.mud.jta.event.AppletListener;
 import de.mud.jta.event.SoundRequest;
 import de.mud.jta.event.TelnetCommandRequest;
+import de.mud.jta.event.TerminalTypeListener;
+import de.mud.jta.event.WindowSizeListener;
+import de.mud.terminal.vt320;
+import de.mud.terminal.VDU;
 
-import java.awt.Component;
-import java.awt.Panel;
-import java.awt.BorderLayout;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.Scrollbar;
-import java.awt.Cursor;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
-
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.IOException;
-import java.io.InputStream;
-
-import java.net.URL;
 import java.net.MalformedURLException;
-
-import java.util.Properties;
-import java.util.Hashtable;
+import java.net.URL;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
 
 /**
  * The terminal plugin represents the actual terminal where the
@@ -80,16 +63,16 @@ import java.util.Enumeration;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class Terminal extends Plugin 
+public class Terminal extends Plugin
   implements FilterPlugin, VisualTransferPlugin, ClipboardOwner, Runnable {
 
   private final static boolean personalJava = false;
 
   private final static int debug = 0;
-  
+
   /** holds the actual terminal emulation */
   protected vt320 terminal;
-  /** 
+  /**
    * The default encoding is ISO 8859-1 (western).
    * However, as you see the value is set to latin1 which is a value that
    * is not even documented and thus incorrect, but it forces the default
@@ -112,6 +95,20 @@ public class Terminal extends Plugin
 
   private boolean localecho_overridden = false;
 
+  private Color codeToColor(String code) {
+  if(colors.get(code) != null)
+    return (Color) colors.get(code);
+  else
+    try {
+      if(Color.getColor(code) != null)
+        return Color.getColor(code);
+      else
+        return Color.decode(code);
+    } catch(Exception e) {
+      error("ignoring unknown color code: " + code);
+    }
+    return null;
+  }
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
@@ -133,103 +130,103 @@ public class Terminal extends Plugin
 
     if(!personalJava) {
 
-    menu = new Menu("Terminal");
-    MenuItem item;
+      menu = new Menu("Terminal");
+      MenuItem item;
 
-    Menu fgm = new Menu("Foreground");
-    Menu bgm = new Menu("Background");
-    Enumeration cols = colors.keys();
-    ActionListener fgl = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        terminal.setForeground((Color)colors.get(e.getActionCommand()));
-	tPanel.repaint();
+      Menu fgm = new Menu("Foreground");
+      Menu bgm = new Menu("Background");
+      Enumeration cols = colors.keys();
+      ActionListener fgl = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          terminal.setForeground((Color) colors.get(e.getActionCommand()));
+          tPanel.repaint();
+        }
+      };
+      ActionListener bgl = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          terminal.setBackground((Color) colors.get(e.getActionCommand()));
+          tPanel.repaint();
+        }
+      };
+      while(cols.hasMoreElements()) {
+        String color = (String) cols.nextElement();
+        fgm.add(item = new MenuItem(color));
+        item.addActionListener(fgl);
+        bgm.add(item = new MenuItem(color));
+        item.addActionListener(bgl);
       }
-    };
-    ActionListener bgl = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        terminal.setBackground((Color)colors.get(e.getActionCommand()));
-	tPanel.repaint();
-      }
-    };
-    while(cols.hasMoreElements()) {
-      String color = (String)cols.nextElement();
-      fgm.add(item = new MenuItem(color));
-      item.addActionListener(fgl);
-      bgm.add(item = new MenuItem(color));
-      item.addActionListener(bgl);
-    }
-    menu.add(fgm);
-    menu.add(bgm);
+      menu.add(fgm);
+      menu.add(bgm);
 
-    menu.add(item = new MenuItem("Smaller Font"));
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        Font font = terminal.getFont();
-	terminal.setFont(new Font(font.getName(), 
-	                     font.getStyle(), font.getSize()-1));
-	if(tPanel.getParent() != null) {
-	  Component parent = tPanel.getParent();
-	  if(parent instanceof java.awt.Frame) 
-	    ((java.awt.Frame)parent).pack();
-	  tPanel.getParent().doLayout();
-	  tPanel.getParent().validate();
-	}
-      }
-    });
-    menu.add(item = new MenuItem("Larger Font"));
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        Font font = terminal.getFont();
-	terminal.setFont(new Font(font.getName(), 
-	                     font.getStyle(), font.getSize()+1));
-	if(tPanel.getParent() != null) {
-	  Component parent = tPanel.getParent();
-	  if(parent instanceof java.awt.Frame) 
-	    ((java.awt.Frame)parent).pack();
-	  tPanel.getParent().doLayout();
-	  tPanel.getParent().validate();
-	}
-      }
-    });
-    menu.add(item = new MenuItem("Buffer +50"));
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        terminal.setBufferSize(terminal.getBufferSize() + 50);
-      }
-    });
-    menu.add(item = new MenuItem("Buffer -50"));
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        terminal.setBufferSize(terminal.getBufferSize() - 50);
-      }
-    });
-    menu.addSeparator();
-    menu.add(item = new MenuItem("Reset Terminal"));
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        terminal.reset();
-      }
-    });
-    
+      menu.add(item = new MenuItem("Smaller Font"));
+      item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          Font font = terminal.getFont();
+          terminal.setFont(new Font(font.getName(),
+                                    font.getStyle(), font.getSize() - 1));
+          if(tPanel.getParent() != null) {
+            Component parent = tPanel.getParent();
+            if(parent instanceof java.awt.Frame)
+              ((java.awt.Frame) parent).pack();
+            tPanel.getParent().doLayout();
+            tPanel.getParent().validate();
+          }
+        }
+      });
+      menu.add(item = new MenuItem("Larger Font"));
+      item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          Font font = terminal.getFont();
+          terminal.setFont(new Font(font.getName(),
+                                    font.getStyle(), font.getSize() + 1));
+          if(tPanel.getParent() != null) {
+            Component parent = tPanel.getParent();
+            if(parent instanceof java.awt.Frame)
+              ((java.awt.Frame) parent).pack();
+            tPanel.getParent().doLayout();
+            tPanel.getParent().validate();
+          }
+        }
+      });
+      menu.add(item = new MenuItem("Buffer +50"));
+      item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          terminal.setBufferSize(terminal.getBufferSize() + 50);
+        }
+      });
+      menu.add(item = new MenuItem("Buffer -50"));
+      item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          terminal.setBufferSize(terminal.getBufferSize() - 50);
+        }
+      });
+      menu.addSeparator();
+      menu.add(item = new MenuItem("Reset Terminal"));
+      item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          terminal.reset();
+        }
+      });
+
     } // !personalJava
 
     // create the terminal emulation
     terminal = new vt320() {
       public void write(byte[] b) {
         try {
-	  Terminal.this.write(b);
-	} catch(IOException e) {
-	  reader = null;
-	}
+          Terminal.this.write(b);
+        } catch(IOException e) {
+          reader = null;
+        }
       }
 
       // provide audio feedback if that is configured
       public void beep() {
-	if(audioBeep != null) bus.broadcast(audioBeep);
+        if(audioBeep != null) bus.broadcast(audioBeep);
       }
 
       public void sendTelnetCommand(byte cmd) {
-	bus.broadcast(new TelnetCommandRequest(cmd));
+        bus.broadcast(new TelnetCommandRequest(cmd));
       }
     };
 
@@ -240,6 +237,7 @@ public class Terminal extends Plugin
       public void update(java.awt.Graphics g) {
         paint(g);
       }
+
       // we don't want to print the container, just the terminal contents
       public void print(java.awt.Graphics g) {
         terminal.print(g);
@@ -250,14 +248,15 @@ public class Terminal extends Plugin
     terminal.addFocusListener(new FocusListener() {
       public void focusGained(FocusEvent evt) {
         if(debug > 0)
-	  System.err.println("Terminal: focus gained");
-	terminal.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+          System.err.println("Terminal: focus gained");
+        terminal.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         bus.broadcast(new FocusStatus(Terminal.this, evt));
       }
+
       public void focusLost(FocusEvent evt) {
         if(debug > 0)
-	  System.err.println("Terminal: focus lost");
-	terminal.setCursor(Cursor.getDefaultCursor());
+          System.err.println("Terminal: focus lost");
+        terminal.setCursor(Cursor.getDefaultCursor());
         bus.broadcast(new FocusStatus(Terminal.this, evt));
       }
     });
@@ -265,7 +264,7 @@ public class Terminal extends Plugin
     // register an online status listener
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
-        if(debug > 0) System.err.println("Terminal: online "+reader);
+        if(debug > 0) System.err.println("Terminal: online " + reader);
         if(reader == null) {
           reader = new Thread(Terminal.this);
           reader.start();
@@ -293,8 +292,8 @@ public class Terminal extends Plugin
 
     bus.registerPluginListener(new LocalEchoListener() {
       public void setLocalEcho(boolean echo) {
-	if (!localecho_overridden)
-	    terminal.setLocalEcho(echo);
+        if(!localecho_overridden)
+          terminal.setLocalEcho(echo);
       }
     });
 
@@ -323,10 +322,12 @@ public class Terminal extends Plugin
       try {
         terminal.setColorPrinting(Boolean.valueOf(tmp).booleanValue());
       } catch(Exception e) {
-        error("Terminal.color.print: must be either true or false, not "+tmp);
+        error("Terminal.color.print: must be either true or false, not " + tmp);
       }
- 
+
+    System.err.print("colorSet: ");
     if((tmp = cfg.getProperty("Terminal", id, "colorSet")) != null) {
+      System.err.println(tmp);
       Properties colorSet = new Properties();
 
       try {
@@ -335,27 +336,32 @@ public class Terminal extends Plugin
         try {
           colorSet.load(new URL(tmp).openStream());
         } catch(Exception ue) {
-	  error("cannot find colorSet: "+tmp);
-	  error("resource access failed: "+e);
-          error("URL access failed: "+ue);
-	  colorSet = null;
+          error("cannot find colorSet: " + tmp);
+          error("resource access failed: " + e);
+          error("URL access failed: " + ue);
+          colorSet = null;
         }
       }
 
       if(colorSet != null) {
         Color set[] = terminal.getColorSet();
-        for(int i = 0; i < 8; i++)
-          if((tmp = colorSet.getProperty("color"+i)) != null)
-	    if(colors.get(tmp) != null)
-	      set[i] = (Color)colors.get(tmp);
-	    else try {
-	      if(Color.getColor(tmp) != null) 
-	        set[i] = Color.getColor(tmp);
-              else
-	        set[i] = Color.decode(tmp);
-	    } catch(Exception e) {
-	      error("ignoring unknown color code: "+tmp);
-	    }
+        Color color = null;
+        for(int i = 0; i < 8; i++) {
+          if((tmp = colorSet.getProperty("color" + i)) != null &&
+             (color = codeToColor(tmp)) != null) {
+            set[i] = color;
+          }
+        }
+        // special color for bold
+        if((tmp = colorSet.getProperty("bold")) != null &&
+          (color = codeToColor(tmp)) != null) {
+          set[vt320.COLOR_BOLD] = color;
+        }
+        // special color for invert
+        if((tmp = colorSet.getProperty("invert")) != null &&
+          (color = codeToColor(tmp)) != null) {
+          set[vt320.COLOR_INVERT] = color;
+        }
         terminal.setColorSet(set);
       }
     }
@@ -363,18 +369,18 @@ public class Terminal extends Plugin
     String cFG = cfg.getProperty("Terminal", id, "cursor.foreground");
     String cBG = cfg.getProperty("Terminal", id, "cursor.background");
     if(cFG != null || cBG != null)
-     try {
-       Color fg = (cFG == null ? 
-         terminal.getBackground() :
-         (Color.getColor(cFG) != null ? Color.getColor(cFG):Color.decode(cFG)));
-       Color bg = (cBG == null ?
-         terminal.getForeground() :
-         (Color.getColor(cBG) != null ? Color.getColor(cBG):Color.decode(cBG)));
-       terminal.setCursorColors(fg, bg);
-     } catch(Exception e) {
-       error("ignoring unknown cursor color code: "+tmp);
-     }
- 
+      try {
+        Color fg = (cFG == null ?
+          terminal.getBackground() :
+          (Color.getColor(cFG) != null ? Color.getColor(cFG):Color.decode(cFG)));
+        Color bg = (cBG == null ?
+          terminal.getForeground() :
+          (Color.getColor(cBG) != null ? Color.getColor(cBG):Color.decode(cBG)));
+        terminal.setCursorColors(fg, bg);
+      } catch(Exception e) {
+        error("ignoring unknown cursor color code: " + tmp);
+      }
+
     if((tmp = cfg.getProperty("Terminal", id, "border")) != null) {
       String size = tmp;
       boolean raised = false;
@@ -387,9 +393,9 @@ public class Terminal extends Plugin
       terminal.setLocalEcho(Boolean.valueOf(tmp).booleanValue());
       localecho_overridden = true;
     }
- 
-    if((tmp = cfg.getProperty("Terminal", id, "scrollBar")) != null && 
-       !personalJava) {
+
+    if((tmp = cfg.getProperty("Terminal", id, "scrollBar")) != null &&
+      !personalJava) {
       String direction = tmp;
       if(!direction.equals("none")) {
         if(!direction.equals("East") && !direction.equals("West"))
@@ -406,28 +412,29 @@ public class Terminal extends Plugin
     if((tmp = cfg.getProperty("Terminal", id, "answerback")) != null)
       terminal.setAnswerBack(tmp);
 
-    if((tmp = cfg.getProperty("Terminal", id, "buffer")) != null) 
+    if((tmp = cfg.getProperty("Terminal", id, "buffer")) != null)
       terminal.setBufferSize(Integer.parseInt(tmp));
 
-    if((tmp = cfg.getProperty("Terminal", id, "size")) != null) try {
-      int idx = tmp.indexOf(',');
-      int width = Integer.parseInt(tmp.substring(1, idx).trim());
-      int height = Integer.parseInt(tmp.substring(idx+1,tmp.length()-1).trim());
-      terminal.setScreenSize(width, height);
-    } catch(Exception e) {
-      error("screen size is wrong: "+tmp);
-      error("error: "+e);
-    }
+    if((tmp = cfg.getProperty("Terminal", id, "size")) != null)
+      try {
+        int idx = tmp.indexOf(',');
+        int width = Integer.parseInt(tmp.substring(1, idx).trim());
+        int height = Integer.parseInt(tmp.substring(idx + 1, tmp.length() - 1).trim());
+        terminal.setScreenSize(width, height);
+      } catch(Exception e) {
+        error("screen size is wrong: " + tmp);
+        error("error: " + e);
+      }
 
     if((tmp = cfg.getProperty("Terminal", id, "resize")) != null)
       if(tmp.equals("font"))
-	terminal.setResizeStrategy(terminal.RESIZE_FONT);
+        terminal.setResizeStrategy(terminal.RESIZE_FONT);
       else if(tmp.equals("screen"))
         terminal.setResizeStrategy(terminal.RESIZE_SCREEN);
-      else 
+      else
         terminal.setResizeStrategy(terminal.RESIZE_NONE);
-        
-	
+
+
     if((tmp = cfg.getProperty("Terminal", id, "font")) != null) {
       String font = tmp;
       int style = Font.PLAIN, fsize = 12;
@@ -452,17 +459,17 @@ public class Terminal extends Plugin
         keyCodes.load(getClass().getResourceAsStream(tmp));
       } catch(Exception e) {
         try {
-        keyCodes.load(new URL(tmp).openStream());
+          keyCodes.load(new URL(tmp).openStream());
         } catch(Exception ue) {
-          error("cannot find keyCodes: "+tmp);
-	  error("resource access failed: "+e);
-          error("URL access failed: "+ue);
-	  keyCodes = null;
+          error("cannot find keyCodes: " + tmp);
+          error("resource access failed: " + e);
+          error("URL access failed: " + ue);
+          keyCodes = null;
         }
       }
 
       // set the key codes if we got the properties
-      if(keyCodes != null) 
+      if(keyCodes != null)
         terminal.setKeyCodes(keyCodes);
     }
 
@@ -477,7 +484,7 @@ public class Terminal extends Plugin
       try {
         audioBeep = new SoundRequest(new URL(tmp));
       } catch(MalformedURLException e) {
-        error("incorrect URL for audio ping: "+e);
+        error("incorrect URL for audio ping: " + e);
       }
 
     tPanel.setBackground(terminal.getBackground());
@@ -489,22 +496,23 @@ public class Terminal extends Plugin
   public void run() {
     byte[] t, b = new byte[256];
     int n = 0;
-    while(n >= 0) try {
-      n = read(b);
-      if(debug > 0 && n > 0) 
-        System.err.println("Terminal: \""+(new String(b, 0, n, encoding))+"\"");
-      if(n > 0) terminal.putString(new String(b, 0, n, encoding));
-      tPanel.repaint();
-    } catch(IOException e) {
-      reader = null;
-      break;
-    }
+    while(n >= 0)
+      try {
+        n = read(b);
+        if(debug > 0 && n > 0)
+          System.err.println("Terminal: \"" + (new String(b, 0, n, encoding)) + "\"");
+        if(n > 0) terminal.putString(new String(b, 0, n, encoding));
+        tPanel.repaint();
+      } catch(IOException e) {
+        reader = null;
+        break;
+      }
   }
 
   protected FilterPlugin source;
 
   public void setFilterSource(FilterPlugin source) {
-    if(debug > 0) System.err.println("Terminal: connected to: "+source);
+    if(debug > 0) System.err.println("Terminal: connected to: " + source);
     this.source = source;
   }
 
@@ -539,14 +547,14 @@ public class Terminal extends Plugin
       /*
       InputStream is =
         (InputStream)t.getTransferData(DataFlavor.plainTextFlavor);
-      if(debug > 0) 
+      if(debug > 0)
         System.out.println("Clipboard: available: "+is.available());
       byte buffer[] = new byte[is.available()];
       is.read(buffer);
       is.close();
       */
-      byte buffer[] = 
-        ((String)t.getTransferData(DataFlavor.stringFlavor)).getBytes();
+      byte buffer[] =
+        ((String) t.getTransferData(DataFlavor.stringFlavor)).getBytes();
       try {
         write(buffer);
       } catch(IOException e) {
