@@ -124,7 +124,13 @@ public abstract class vt320 extends VDU implements KeyListener {
     KeyHome[0] = KeyHome[1] = KeyHome[2] = KeyHome[3] = "\u001b[H";
     KeyEnd[0]  = KeyEnd[1]  = KeyEnd[2]  = KeyEnd[3]  = "\u001b[F";
     Escape[0]  = Escape[1]  = Escape[2]  = Escape[3]  = "\u001b";
-    BackSpace[0]  = BackSpace[1]  = BackSpace[2]  = BackSpace[3]  = "\b";
+    if (vms) {
+        BackSpace[1] = ""+(char)10;	//  VMS shift deletes word back
+        BackSpace[2] = "\u0018";	//  VMS control deletes line back
+        BackSpace[0] = BackSpace[3] = "\u007f";	//  VMS other is delete
+    } else {
+        BackSpace[0]  = BackSpace[1]  = BackSpace[2]  = BackSpace[3]  = "\b";
+    }
 
     /* some more VT100 keys */
     Find   = "\u001b[1~";
@@ -192,7 +198,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     Numpad[7]  = "\u001bOw";
     Numpad[8]  = "\u001bOx";
     Numpad[9]  = "\u001bOy";
-    KPMinus  = "\u001bOm";
+    KPMinus  = PF4;
     KPComma  = "\u001bOl";
     KPPeriod  = "\u001bOn";
     KPEnter  = "\u001bOM";
@@ -416,10 +422,6 @@ public abstract class vt320 extends VDU implements KeyListener {
   // the actual terminal emulation code comes here:
   // ===================================================================
 
-  // due to a bug with Windows we need a keypress cache
-  private int pressedKey = ' ';
-  // private long pressedWhen = ' ';
-
   private String terminalID = "vt320";
   private String answerBack = "Use Terminal.answerback to set ...\n";
 
@@ -433,7 +435,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   int  insertmode  = 0;
   int  statusmode = 0;
-  int  vt52mode  = 0;
+  boolean  vt52mode  = false;
   int  normalcursor  = 0;
   boolean moveoutsidemargins = true;
   boolean wraparound = true;
@@ -472,6 +474,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   private final static int TSTATE_CSI_DOLLAR  = 11; /* ESC [ Pn $ */
   private final static int TSTATE_CSI_EX  = 12; /* ESC [ ! */
   private final static int TSTATE_ESCSPACE  = 13; /* ESC <space> */
+  private final static int TSTATE_VT52X  = 14;
+  private final static int TSTATE_VT52Y  = 15;
 
   /* The graphics charsets
    * B - default ASCII
@@ -538,7 +542,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String FunctionKeyAlt[];
   private String TabKey[];
   private String KeyUp[],KeyDown[],KeyLeft[],KeyRight[];
-  private String KPMinus, KPComma, KPPeriod,KPEnter;
+  private String KPMinus, KPComma, KPPeriod, KPEnter;
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
 
@@ -598,49 +602,24 @@ public abstract class vt320 extends VDU implements KeyListener {
   }
 
   /**
+   * A small conveniance method thar converts a 7bit string to the 8bit
+   * version if VT52 mode is not set.
+   * @param s the string to be sent
+   * @param doecho echo to terminal
+   */
+  private boolean writeNumpad(String s) {
+    if (((s.length() == 3) && (s.charAt(0) == 27) && (s.charAt(1)=='O'))) {
+      if (vt52mode) {
+      	s="\u001b?"+s.substring(2); /* ESC ? x */
+      } else {
+	s="\u008f"+s.substring(2);  /* SS3 ? x */
+      }
+    }
+    return write(s,false);
+  }
+
+  /**
    * main keytyping event handler...
-   */
-  public void keyTyped(KeyEvent evt) {
-    boolean control = evt.isControlDown();
-    boolean shift = evt.isShiftDown();
-    boolean alt = evt.isAltDown();
-
-    int keyCode = evt.getKeyCode();
-    char keyChar = evt.getKeyChar();
-
-    if (keyChar == '\u001b' || keyChar == '\b') return;
-
-    if (keyChar == '\t') {
-	if (shift) {
-	    write(TabKey[1],false);
-	} else { if (control) {
-	    write(TabKey[2],false);
-	} else { if (alt) {
-	    write(TabKey[3],false);
-	} else { 
-	    write(TabKey[0],false);
-	}}}
-      return;
-    }
-    if (alt) {
-      write(""+((char)(keyChar|0x80)));
-      return;
-    }
-    if(!(keyChar == '\r' || keyChar == '\n') || control)
-      write(""+keyChar);
-  }
-
-  /**
-   * Not used.
-   */
-  public void keyReleased(KeyEvent evt) {
-    // nothing to to, however maybe we should use it?
-  }
-
-  /**
-   * Handle events for the terminal. Only accept events for the scroll
-   * bar. Any other events have to be propagated to the parent.
-   * @param evt the event
    */
   public void keyPressed(KeyEvent evt) {
     boolean control = evt.isControlDown();
@@ -649,91 +628,15 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
+    //System.out.println("keyPressed "+evt);
 
-    /*
-    if(pressedKey == KeyEvent.VK_ENTER && 
-        (keyCode == KeyEvent.VK_ENTER || keyChar == 10)
-        && evt.getWhen() - pressedWhen < 50) 
-      return;
-
-    pressedWhen = evt.getWhen();
-    */
-
-    if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
-      write("\n",false);
-      if (localecho) putString("\r\n"); // bad hack
-    }
-    
-    // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
-    // so we can't just use it here... will probably break some other VMS
-    // codes.  -Marcus
-    // if(((!vms && keyChar == '2') || keyChar == '@' || keyChar == ' ') 
-    //    && control)
-    if (((!vms && keyChar == '2') || keyChar == ' ') && control)
-      write("" + (char)0);
-    
-    if(vms) {
-      if (keyChar == 8) {
-	if(shift && !control)
-	  write("" + (char)10);    //  VMS shift deletes word back
-	else if(control && !shift)
-	  write("" + (char)24);    //  VMS control deletes line back
-	else
-	  write("" + (char)127);   //  VMS other is delete
-      } else if(keyChar == 127 && !control) {
-	if (shift) 
-	  write(Insert[0]);        //  VMS shift delete = insert
-	else
-	  write(Remove[0]);        //  VMS delete = remove
-      } else if(control)
-	switch(keyChar) {
-	case '0': write(Numpad[0]); return;
-	case '1': write(Numpad[1]); return;
-	case '2': write(Numpad[2]); return;
-	case '3': write(Numpad[3]); return;
-	case '4': write(Numpad[4]); return;
-	case '5': write(Numpad[5]); return;
-	case '6': write(Numpad[6]); return;
-	case '7': write(Numpad[7]); return;
-	case '8': write(Numpad[8]); return;
-	case '9': write(Numpad[9]); return;
-	case '.': write(KPPeriod); return;
-	case '-':
-	case 31:  write(KPMinus); return;
-	case '+': write(KPComma); return;
-	case 10:  write(KPEnter); return;
-	case '/': write(PF2); return;
-	case '*': write(PF3); return;
-	}
-	if (shift && keyChar < 32)
-	  write(PF1+(char)(keyChar + 64));
-        return;
-    }
-
-    if (debug>2) System.out.println("vt320: keyPressed "+evt+"\""+keyChar+"\"");
-
-    String fmap[];
     int    xind;
+    String fmap[];
     xind = 0;
     fmap = FunctionKey;
     if(shift) { fmap = FunctionKeyShift; xind=1; }
     if(control) { fmap = FunctionKeyCtrl; xind=2; }
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
-
-    if(evt.isActionKey()) switch(keyCode) {
-      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); break;
-      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); break;
-      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); break;
-      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); break;
-      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); break;
-      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); break;
-      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); break;
-      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
-      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
-      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
-      case KeyEvent.VK_DECIMAL:	write(NUMDot[xind],false); break;
-      case KeyEvent.VK_ADD: 	write(NUMPlus[xind],false); break;
-    }
 
     switch (keyCode) {
       case KeyEvent.VK_PAUSE:
@@ -761,39 +664,146 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
       case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
       case KeyEvent.VK_ESCAPE: write(Escape[xind],false); break;
-      case KeyEvent.VK_BACK_SPACE:
-      	write(BackSpace[xind]); // do local echo in this case
-	break;
-      case KeyEvent.VK_HOME:
-        if(vms) 
-	  write("" + (char)8,false);
-        else
-	  write(KeyHome[xind],false);
-	break;
-      case KeyEvent.VK_END:
-        if(vms)
-	  write("" + (char)5,false);
-        else
-	  write(KeyEnd[xind],false);
-	break;
+      case KeyEvent.VK_BACK_SPACE: write(BackSpace[xind]); break;
+      case KeyEvent.VK_HOME: write(KeyHome[xind],false); break;
+      case KeyEvent.VK_END: write(KeyEnd[xind],false); break;
       case KeyEvent.VK_NUM_LOCK:
-        if(vms && control)
-	  if(pressedKey != keyCode) {
-	    pressedKey = keyCode;
-	    write(PF1,false);
-	  } else
-	    //  Here, we eat a second numlock since that returns numlock state
-	    pressedKey = ' ';
+        if(vms && control) {
+	  writeNumpad(PF1);
+	}
 	if(!control)
 	  numlock = !numlock;
 	break;
       case KeyEvent.VK_CAPS_LOCK:
       	capslock = !capslock;
-        break;
+	return;
+      case KeyEvent.VK_SHIFT:
+      case KeyEvent.VK_CONTROL:
+      case KeyEvent.VK_ALT:
+        return;
       default:
-	if(debug > 2)
-	  System.out.println("vt320: unknown event: "+evt);
 	break;
+    }
+  }
+
+  /**
+   * Not used.
+   */
+  public void keyReleased(KeyEvent evt) {
+    // nothing to to, however maybe we should use it?
+  }
+
+  /**
+   * Handle key Typed events for the terminal, this will get 
+   * all normal key types, but no shift/alt/control/numlock.
+   * @param evt the event
+   */
+  public void keyTyped(KeyEvent evt) {
+    boolean control = evt.isControlDown();
+    boolean shift = evt.isShiftDown();
+    boolean alt = evt.isAltDown();
+
+    int keyCode = evt.getKeyCode();
+    char keyChar = evt.getKeyChar();
+
+    //System.out.println("keyTyped "+evt+",keyChar "+(int)keyChar);
+
+    if (keyChar == '\t') {
+	if (shift) {
+	    write(TabKey[1],false);
+	} else { if (control) {
+	    write(TabKey[2],false);
+	} else { if (alt) {
+	    write(TabKey[3],false);
+	} else { 
+	    write(TabKey[0],false);
+	}}}
+      return;
+    }
+    if (alt) {
+      write(""+((char)(keyChar|0x80)));
+      return;
+    }
+
+    if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
+      write("\n",false);
+      if (localecho) putString("\r\n"); // bad hack
+    }
+    
+    // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
+    // so we can't just use it here... will probably break some other VMS
+    // codes.  -Marcus
+    // if(((!vms && keyChar == '2') || keyChar == '@' || keyChar == ' ') 
+    //    && control)
+    if (((!vms && keyChar == '2') || keyChar == ' ') && control)
+      write("" + (char)0);
+    
+    if(vms) {
+      if(keyChar == 127 && !control) {
+	if (shift) 
+	  writeNumpad(Insert[0]);        //  VMS shift delete = insert
+	else
+	  writeNumpad(Remove[0]);        //  VMS delete = remove
+	return;
+      } else if(control)
+	switch(keyChar) {
+	case '0': writeNumpad(Numpad[0]); return;
+	case '1': writeNumpad(Numpad[1]); return;
+	case '2': writeNumpad(Numpad[2]); return;
+	case '3': writeNumpad(Numpad[3]); return;
+	case '4': writeNumpad(Numpad[4]); return;
+	case '5': writeNumpad(Numpad[5]); return;
+	case '6': writeNumpad(Numpad[6]); return;
+	case '7': writeNumpad(Numpad[7]); return;
+	case '8': writeNumpad(Numpad[8]); return;
+	case '9': writeNumpad(Numpad[9]); return;
+	case '.': writeNumpad(KPPeriod); return;
+	case '-':
+	case 31:  writeNumpad(KPMinus); return;
+	case '+': writeNumpad(KPComma); return;
+	case 10:  writeNumpad(KPEnter); return;
+	case '/': writeNumpad(PF2); return;
+	case '*': writeNumpad(PF3); return;
+	/* NUMLOCK handled in keyPressed */
+	default:
+		break;
+	}
+	/* Now what does this do and how did it get here. -Marcus 
+	if (shift && keyChar < 32) { 
+	  write(PF1+(char)(keyChar + 64));
+          return;
+	}
+	*/
+    }
+
+    if (debug>2) System.out.println("vt320: keyPressed "+evt+"\""+keyChar+"\"");
+
+    String fmap[];
+    int    xind;
+    xind = 0;
+    fmap = FunctionKey;
+    if(shift) { fmap = FunctionKeyShift; xind=1; }
+    if(control) { fmap = FunctionKeyCtrl; xind=2; }
+    if(alt) { fmap = FunctionKeyAlt; xind=3; }
+
+    if(evt.isActionKey()) switch(keyCode) {
+      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); return;
+      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); return;
+      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); return;
+      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); return;
+      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); return;
+      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); return;
+      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); return;
+      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); return;
+      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); return;
+      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); return;
+      case KeyEvent.VK_DECIMAL:	write(NUMDot[xind],false); return;
+      case KeyEvent.VK_ADD: 	write(NUMPlus[xind],false); return;
+    }
+
+    if (!((keyChar == 8) || (keyChar == 127) || (keyChar =='\r') || (keyChar == '\n'))) {
+      write(""+keyChar);
+      return;
     }
   }
 
@@ -1403,6 +1413,21 @@ public abstract class vt320 extends VDU implements KeyListener {
         dcs="";
         term_state = TSTATE_DCS;
         break;
+      case 'A': /* CUU */
+        R--;
+	if (R<0) R=0;
+        break;
+      case 'B': /* CUD */
+        R++;
+	if (R>rows-1) R=rows-1;
+        break;
+      case 'C':
+        C++;
+	if (C>=columns) C=columns-1;
+        break;
+      case 'I': // RI
+        insertLine(R,1,SCROLL_DOWN);
+        break;
       case 'E': /* NEL */
         if (R == bm || R == rows - 1)
           insertLine(R,1,SCROLL_UP);
@@ -1420,6 +1445,16 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>1)
           System.out.println("ESC D (at "+R+" )");
         break;
+      case 'J': /* erase to end of screen */
+        if (R<rows-1)
+          deleteArea(0,R + 1,columns,rows-R-1,attributes);
+        if (C<columns-1)
+          deleteArea(C,R,columns-C,1,attributes);
+        break;
+      case 'K':
+          if (C<columns-1)
+            deleteArea(C,R,columns-C,1,attributes);
+          break;
       case 'M': // RI
         if (R>bm) // outside scrolling region
 	  break;
@@ -1510,10 +1545,21 @@ public abstract class vt320 extends VDU implements KeyListener {
         gr = 3;
 	usedcharsets = true;
         break;
+      case 'Y': /* vt52 cursor address mode , next chars are x,y */
+        term_state = TSTATE_VT52Y;
+        break;
       default:
         System.out.println("ESC unknown letter: ("+((int)c)+")");
         break;
       }
+      break;
+    case TSTATE_VT52X:
+      C = c-37;
+      term_state = TSTATE_VT52Y;
+      break;
+    case TSTATE_VT52Y:
+      R = c-37;
+      term_state = TSTATE_DATA;
       break;
     case TSTATE_SETG0:
       if(c!='0' && c!='A' && c!='B' && c!='<')
@@ -1644,6 +1690,10 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    KeyRight[0]= "\u001bOC";
 	    KeyLeft[0]  = "\u001bOD";
 	    break;
+	  case 2: /* DECANM */
+	    vt52mode = true;
+            System.out.println("vt52 mode enabled");
+	    break;
 	  case 3: /* 132 columns*/
 	    size = getSize();
 	    setScreenSize(132,rows);
@@ -1709,6 +1759,10 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    KeyDown[0]  = "\u001b[B";
 	    KeyRight[0]= "\u001b[C";
 	    KeyLeft[0]  = "\u001b[D";
+	    break;
+	  case 2: /* DECANM */
+	    vt52mode = false;
+            System.out.println("vt52 mode disabled");
 	    break;
 	  case 3: /* 80 columns*/
 	    size = getSize();
