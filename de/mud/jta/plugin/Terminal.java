@@ -402,6 +402,9 @@ public class Terminal extends Plugin
     if((tmp = cfg.getProperty("Terminal", id, "id")) != null)
       terminal.setTerminalID(tmp);
 
+    if((tmp = cfg.getProperty("Terminal", id, "answerback")) != null)
+      terminal.setAnswerBack(tmp);
+
     if((tmp = cfg.getProperty("Terminal", id, "buffer")) != null) 
       terminal.setBufferSize(Integer.parseInt(tmp));
 
