@@ -1272,7 +1272,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	      case '0':
 	        // Remap SCOANSI line drawing to VT100 line drawing chars
 		// for our SCO using customers.
-	        if ( terminalID.equals("scoansi") ) {
+	        if (terminalID.equals("scoansi") || terminalID.equals("ansi")) {
 		   for (int i=0;i<scoansi_acs.length();i+=2) {
 		      if (c==scoansi_acs.charAt(i)) {
 			c=scoansi_acs.charAt(i+1);
