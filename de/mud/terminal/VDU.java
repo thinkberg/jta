@@ -124,21 +124,36 @@ public class VDU extends Component
    * @param clr the standard color
    * @return the new brighter color
    */
+
+  private double max(double f1,double f2) { return (f1<f2)?f2:f1; }
+  private double min(double f1,double f2) { return (f1<f2)?f1:f2; }
   private Color brighten(Color clr) {
-    return new Color(Math.max((int) (clr.getRed() *.85), 0),
-		     Math.max((int) (clr.getGreen() *.85), 0),
-		     Math.max((int) (clr.getBlue() *.85), 0));
+    int r,g,b;
+
+    r = (int)min(clr.getRed()  * 1.2 , 255.0);
+    b = (int)min(clr.getGreen()* 1.2 , 255.0);
+    g = (int)min(clr.getBlue() * 1.2 , 255.0);
+    return new Color(r,g,b);
+  }
+
+  private Color darken(Color clr) {
+    int r,g,b;
+
+    r = (int)max(clr.getRed()   * 0.8 , 0.0);
+    g = (int)max(clr.getGreen() * 0.8 , 0.0);
+    b = (int)max(clr.getBlue()  * 0.8 , 0.0);
+    return new Color(r,g,b);
   }
 
   /** A list of colors used for representation of the display */
-  private Color color[] = { brighten(Color.black),
-                            brighten(Color.red),
-                            brighten(Color.green),
-                            brighten(Color.yellow),
-                            brighten(Color.blue),
-                            brighten(Color.magenta),
-                            brighten(Color.cyan),
-                            brighten(Color.white),
+  private Color color[] = { Color.black,
+                            Color.red,
+                            Color.green,
+                            Color.yellow,
+                            Color.blue,
+                            Color.magenta,
+                            Color.cyan,
+                            Color.white,
   };
 
   public final static int COLOR_0 = 0;
@@ -970,8 +985,8 @@ public class VDU extends Component
     int selectStartLine = selectBegin.y - windowBase;
     int selectEndLine = selectEnd.y - windowBase;
 
-    Color fg = color[COLOR_FG_STD];
-    Color bg = color[COLOR_BG_STD];
+    Color fg = darken(color[COLOR_FG_STD]);
+    Color bg = darken(color[COLOR_BG_STD]);
 
     g.setFont(normalFont);
 
@@ -1002,23 +1017,23 @@ public class VDU extends Component
         int addr = 0;
         int currAttr = charAttributes[windowBase + l][c];
 
-        fg = getForeground();
-        bg = getBackground();
+        fg = darken(getForeground());
+        bg = darken(getBackground());
 
         if((currAttr & COLOR_FG) != 0)
-          fg = color[((currAttr & COLOR_FG) >> 3)-1];
+          fg = darken(color[((currAttr & COLOR_FG) >> 3)-1]);
         if((currAttr & COLOR_BG) != 0)
-          bg = color[((currAttr & COLOR_BG) >> 7)-1].darker();
+          bg = darken(darken(color[((currAttr & COLOR_BG) >> 7)-1]));
 
         if((currAttr & BOLD) != 0)
           if(fg.equals(Color.black)) {
             fg = Color.gray;
           } else {
-	    fg = fg.brighter();
+	    fg = brighten(fg);
 	    // bg = bg.brighter(); -- make some programs ugly
 	  }
 
-        if((currAttr & LOW) != 0) { fg=fg.darker(); }
+        if((currAttr & LOW) != 0) { fg = darken(fg); }
         if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }
 
         if (sf.inSoftFont(charArray[windowBase + l][c])) {
