@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -74,6 +74,10 @@ public class FlashTerminal implements VDUDisplay, Runnable {
     } catch (IOException e) {
       System.err.println("FlashTerminal: unable to accept connection: " + e);
     }
+  }
+
+  public void updateScrollBar() {
+    // dont do anything... or? 
   }
 
   protected void disconnect() {
