@@ -917,6 +917,9 @@ public class VDU extends Component
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
     int yoffset = (super.getSize().height - size.height * charHeight) / 2;
 
+    int selectStartLine = selectBegin.y - windowBase;
+    int selectEndLine = selectEnd.y - windowBase;
+
     Color fg = color[COLOR_FG_STD];
     Color bg = color[COLOR_BG_STD];
 
@@ -997,8 +1000,28 @@ public class VDU extends Component
         
         c += addr - 1;
       }
+
+      // selection code, highlites line or part of it when it was
+      // selected previously
+      if(l >= selectStartLine && l <= selectEndLine) {
+	int selectStartColumn = (l == selectStartLine ? selectBegin.x : 0);
+	int selectEndColumn = (l == selectEndLine ? selectEnd.x : size.width);
+	if(selectStartColumn != selectEndColumn) {
+	  if(debug > 0) 
+	    System.err.println("select("+selectStartColumn+"-"
+	                                +selectEndColumn+")");
+          g.setXORMode(color[COLOR_BG_STD]);
+	  g.fillRect(selectStartColumn * charWidth + xoffset,
+	             l * charHeight + yoffset,
+		     selectEndColumn * charWidth,
+		     charHeight);
+	  g.setPaintMode();
+        }
+      }
+
     }
 
+    // draw cursor
     if(showcursor && (
        screenBase + cursorY >= windowBase && 
        screenBase + cursorY < windowBase + size.height)
@@ -1011,35 +1034,7 @@ public class VDU extends Component
       g.setPaintMode();
     }
 
-    if(windowBase <= selectBegin.y || windowBase <= selectEnd.y) {
-      int beginLine = selectBegin.y - windowBase;
-      int endLine = selectEnd.y - selectBegin.y;
-      if(beginLine < 0) {
-        endLine += beginLine;
-        beginLine = 0;
-      }
-      if(endLine > size.height) endLine = size.height - beginLine;
-     
-      g.setXORMode(color[COLOR_BG_STD]);
-      g.fillRect(selectBegin.x * charWidth + xoffset,
-                 beginLine * charHeight + yoffset,
-                 (endLine == 0 ? (selectEnd.x - selectBegin.x) : 
-                  (size.width - selectBegin.x)) 
-                 * charWidth,
-                 charHeight);
-      if(endLine > 1)
-        g.fillRect(0 + xoffset, 
-                   (beginLine + 1) * charHeight + yoffset, 
-                   size.width * charWidth, 
-                   (endLine - 1) * charHeight);
-      if(endLine > 0)
-        g.fillRect(0 + xoffset, 
-                   (beginLine + endLine) * charHeight + yoffset,
-                   selectEnd.x * charWidth, 
-                   charHeight);
-      g.setPaintMode();
-    }
-   
+    // draw border
     if(insets != null) {
       g.setColor(getBackground());
       xoffset--; yoffset--;
@@ -1099,7 +1094,7 @@ public class VDU extends Component
   }
 
   public void print(Graphics g) {
-    System.err.println("DEBUG: print()");
+    if(debug > 0) System.err.println("DEBUG: print()");
     for(int i = 0; i <= size.height; i++) update[i] = true;
     Color fg = null, bg = null, colorSave[] = null;
     int boldSave = 0;
@@ -1292,6 +1287,9 @@ public class VDU extends Component
       }
       if(oldx != x || oldy != y) {
 	update[0] = true;
+	if(debug > 0)
+	  System.err.println("select(["+selectBegin.x+","+selectBegin.y+"],"+
+	                            "["+selectEnd.x+","+selectEnd.y+"])");
         redraw();
       }
     }
