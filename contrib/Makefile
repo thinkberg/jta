@@ -12,17 +12,25 @@ JFLAGS	=	-classpath $(CLASSPATH):../jar/gnu-regexp-1.0.8.jar:.:../
 .java.class:
 	$(JAVAC) $(DEBUG) $(JFLAGS) $<
 
-all: hc/net/TelnetClient.class bsx mud
+all: hc/net/TelnetClient.class bsx mud examples
 
-bsx:
-	@echo "Creating BSX.jar ..."
+compile:
 	@find de -name \*.java -print | sed 's/java$$/class/' | xargs make
+
+bsx: compile
+	@echo -n "Creating BSX.jar ... "
 	@$(JAR) cvf ../jar/BSX.jar `find de/mud/bsx -name \*.class` \
-	  de/mud/jta/plugin/BSX.class > /dev/null
+	  de/mud/jta/plugin/BSX*.class > /dev/null
 	@echo "Done."
 
-mud:
-	@echo "Creating MUD.jar ..."
-	@find de -name \*.java -print | sed 's/java$$/class/' | xargs make
-	@$(JAR) cvf ../jar/MUD.jar de/mud/jta/plugin/MUDColorizer.class > /dev/null
+mud: compile
+	@echo -n "Creating MUD.jar ... "
+	@$(JAR) cvf ../jar/MUD.jar de/mud/jta/plugin/MUDColorizer*.class \
+	  > /dev/null
+	@echo "Done."
+
+examples: compile
+	@echo -n "Creating examples.jar ... "
+	@$(JAR) cvf ../jar/examples.jar \
+	  de/mud/jta/plugin/EInput01*.class > /dev/null
 	@echo "Done."
