@@ -1,0 +1,164 @@
+/*
+ * This file is part of "The Java Telnet Application".
+ *
+ * This is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * "The Java Telnet Application" is distributed in the hope that it will be 
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this software; see the file COPYING.  If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+package de.mud.jta;
+
+import de.mud.telnet.TelnetProtocolHandler;
+import de.mud.terminal.vt320;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
+
+import java.net.Socket;
+
+/**
+ * <B>Small Telnet Applet implementation</B><P>
+ * <P>
+ * <B>Maintainer:</B> Matthias L. Jugel
+ *
+ * @version $Id$
+ * @author Matthias L. Jugel, Marcus Meißner
+ */
+public class SmallApplet extends java.applet.Applet {
+
+  private final static int debug = 0;
+
+  /** hold the host and port for our connection */
+  private String host, port;
+
+  /** hold the socket */
+  private Socket socket;
+  private InputStream is;
+  private OutputStream os;
+
+  /** the terminal */
+  private vt320 terminal;
+
+  /** the telnet protocol handler */
+  private TelnetProtocolHandler telnet;
+
+  private boolean localecho = false;
+
+  /**
+   * Read all parameters from the applet configuration and
+   * do initializations for the plugins and the applet.
+   */
+  public void init() {
+    if(debug > 0) System.err.println("Applet: init()");
+
+    host = getParameter("host");
+    port = getParameter("port");
+
+
+    // we now create a new terminal that is used for the system
+    // if you want to configure it please refer to the api docs
+    terminal = new vt320() {
+      /** before sending data transform it using telnet (which is sending it) */
+      public void write(byte[] b) {
+        try {
+	  telnet.transpose(b);
+	} catch(IOException e) {
+	  System.err.println("jta: error sending data: "+e);
+	}
+      }
+    };
+
+    // put terminal into the applet
+    setLayout(new BorderLayout());
+    add("Center", terminal);
+
+    // then we create the actual telnet protocol handler that will negotiate
+    // incoming data and transpose outgoing (see above)
+    telnet = new TelnetProtocolHandler() {
+      /** get the current terminal type */
+      public String getTerminalType() {
+        return terminal.getTerminalID();
+      }
+      /** get the current window size */
+      public Dimension getWindowSize() {
+        return terminal.getScreenSize();
+      }
+      /** notify about local echo */
+      public void setLocalEcho(boolean echo) {
+        localecho = true;
+      }
+      /** notify about EOR end of record */
+      public void notifyEndOfRecord() {
+        // only used when EOR needed, like for line mode
+      }
+      /** write data to our back end */
+      public void write(byte[] b) throws IOException {
+        os.write(b);
+      }
+    };
+  }
+
+  /**
+   * Start the applet. Connect to the remote host.
+   */
+  public void start() {
+    // disconnect if we are already connected
+    if(socket != null) stop();
+
+    try {
+      // open new socket and get streams
+      socket = new Socket(host, Integer.parseInt(port));
+      is = socket.getInputStream();
+      os = socket.getOutputStream();
+    } catch(Exception e) {
+      System.err.println("jta: error connecting: "+e);
+      stop();
+    }
+  }
+
+  /**
+   * Stop the applet and disconnect.
+   */
+  public void stop() {
+    // when applet stops, disconnect
+    if(socket != null) {
+      try {
+        socket.close();
+      } catch(IOException e) {
+        System.err.println("jta: could not cleanly disconnect: "+e);
+      }
+      socket = null;
+    }
+  }
+
+  /**
+   * Continuously read from remote host and display the data on screen.
+   */
+  public void run() {
+    byte[] t, b = new byte[256];
+    int n = 0;
+    while(n >= 0) try {
+      n = is.read(b);
+      if(debug > 0 && n > 0) 
+        System.err.println("jta: \""+(new String(b, 0, n))+"\"");
+      if(n > 0) terminal.putString(new String(b, 0, n));
+    } catch(IOException e) {
+      stop();
+      break;
+    }
+  }
+}
