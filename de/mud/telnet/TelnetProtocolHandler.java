@@ -40,6 +40,8 @@ public abstract class TelnetProtocolHandler {
   /** debug level */
   private final static int debug = 0;
 
+  private byte[] tempbuf = new byte[0];
+
   /**
    * Create a new telnet protocol handler.
    */
@@ -171,6 +173,19 @@ public abstract class TelnetProtocolHandler {
   private byte[] sentWX;
 
   /**
+   * Send a Telnet Escape character (IAC <code>)
+   */
+  private void sendTelnetControl(byte code)
+    throws IOException {
+    byte[] b = new byte[2];
+
+    b[0] = IAC;
+    b[1] = code;
+    write(b);
+  }
+
+
+  /**
    * Handle an incoming IAC SB &lt;type&gt; &lt;bytes&gt; IAC SE
    * @param type type of SB
    * @param sbata byte array as &lt;bytes&gt;
@@ -260,19 +275,22 @@ public abstract class TelnetProtocolHandler {
    * @param count the amount of bytes in the buffer
    * @return a new buffer after negotiation
    */
-  public int negotiate(byte buf[], int count) throws IOException {
-    // wo faengt buf an bei buf[0] oder bei buf[1]
-    // Leo: bei buf[0]
-    if(debug > 1) 
-      System.err.println("TelnetIO.negotiate("+buf+","+count+")");
-    byte nbuf[] = new byte[count];
-    byte sbbuf[] = new byte[count];
+  public int negotiate(byte nbuf[])
+  throws IOException
+  {
+    byte sbbuf[] = new byte[tempbuf.length];
+    int count = tempbuf.length;
+    byte[] buf = tempbuf;
     byte sendbuf[] = new byte[3];
     byte b,reply;
     int  sbcount = 0;
     int boffset = 0, noffset = 0;
+    boolean dobreak = false;
 
-    while(boffset < count) {
+    if (count == 0) 	// buffer is empty.
+      return -1;
+
+    while(!dobreak && (boffset < count)) {
       b=buf[boffset++];
       // of course, byte is a signed entity (-128 -> 127)
       // but apparently the SGI Netscape 3.0 doesn't seem
@@ -285,9 +303,10 @@ public abstract class TelnetProtocolHandler {
       }
       switch (neg_state) {
       case STATE_DATA:
-        if (b==IAC)
+        if (b==IAC) {
           neg_state = STATE_IAC;
-        else 
+	  dobreak = true; // leave the loop so we can sync.
+        } else 
           nbuf[noffset++]=b;
         break;
       case STATE_IAC:
@@ -314,7 +333,8 @@ public abstract class TelnetProtocolHandler {
           neg_state = STATE_IACDO;
           break;
         case EOR:
-          if(debug > 2) System.err.print("EOR ");
+          if(debug > 1) System.err.print("EOR ");
+	  System.err.println("EOR received");
   	  notifyEndOfRecord();
           neg_state = STATE_DATA;
           break;
@@ -530,13 +550,24 @@ public abstract class TelnetProtocolHandler {
         }
         break;
       default:
-        if (debug > 2) 
+        if (debug > 1) 
           System.err.println("This should not happen: "+neg_state+" ");
         neg_state = STATE_DATA;
         break;
       }
     }
-    System.arraycopy(nbuf, 0, buf, 0, noffset);
+    // shrink tempbuf to new processed size.
+    byte[] xb = new byte[count-boffset];
+    System.arraycopy(tempbuf,boffset,xb,0,count-boffset);
+    tempbuf = xb;
     return noffset;
+  }
+
+  public void inputfeed(byte[] b, int len) {
+    byte[] xb = new byte[tempbuf.length+len];
+
+    System.arraycopy(tempbuf,0,xb,0,tempbuf.length);
+    System.arraycopy(b,0,xb,tempbuf.length,len);
+    tempbuf = xb;
   }
 }
