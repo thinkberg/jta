@@ -105,9 +105,29 @@ public class Telnet extends Plugin implements FilterPlugin {
   }
 
   public int read(byte[] b) throws IOException {
-    int n = source.read(b);
-    if(n > 0) n = handler.negotiate(b, n); // handle telnet negotiation
-    return n;
+    // We just don't pass read() down, since negotiate() might call other
+    // functions and we need transaction points.
+    int n;
+
+    n = handler.negotiate(b);	// we still have stuff buffered ...
+    if (n>0)
+      return n;
+
+    while (true) {
+      n = source.read(b);
+      if (n <= 0 )
+	return n;
+
+      handler.inputfeed(b,n);
+      n = 0;
+      while (true) {
+	n = handler.negotiate(b);
+	if (n>0)
+	  return n;
+	if (n==-1) // buffer empty.
+	  break;
+      }
+    }
   }
 
   public void write(byte[] b) throws IOException {
