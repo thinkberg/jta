@@ -1,11 +1,4 @@
 #! /bin/sh
 plugins="Status,Socket,SSH,Terminal"
-cdir=`dirname $0`/..
-if [ -r $cdir/jar/cryptix.jar ]; then
-  echo "You need to download the cryptix.jar file and place it into"
-  echo "the jar directory of the Distribution to use this script!"
-  echo "Did not find: $cdir/jar/cryptix.jar"
-  exit
-fi
-java -classpath $CLASSPATH:$cdir:$cdir/jar/cryptix.jar \
-  de.mud.jta.Main -plugins $plugins $* 22
+cdir=`pwd`
+java -classpath $CLASSPATH:$cdir de.mud.jta.Main -plugins $plugins $* 22
