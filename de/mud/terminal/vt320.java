@@ -1908,6 +1908,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>2)
           System.out.println("ESC [ "+DCEvars[0]+";"+DCEvars[1]+" f");
         break;
+      case 'S': /* used by 97801 */
       case 'L':
         /* insert n lines */
         if (DCEvars[0]==0)
@@ -1915,11 +1916,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         else
           insertLine(R,DCEvars[0],SCROLL_DOWN);
         if (debug>1)
-          System.out.println("ESC [ "+DCEvars[0]+" L (at R "+R+")");
+          System.out.println("ESC [ "+DCEvars[0]+""+(c)+" (at R "+R+")");
         break;
+      case 'T':
       case 'M':
         if (debug>1)
-          System.out.println("ESC [ "+DCEvars[0]+"M at R="+R);
+          System.out.println("ESC [ "+DCEvars[0]+""+(c)+" at R="+R);
         if (DCEvars[0]==0)
           deleteLine(R);
         else
@@ -1931,6 +1933,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.println("ESC [ "+DCEvars[0]+" K");
         /* clear in line */
         switch (DCEvars[0]) {
+	case 6: /* 97801 uses ESC[6K for delete to end of line */
         case 0:/*clear to right*/
           if (C<columns-1)
             deleteArea(C,R,columns-C,1);
