@@ -507,8 +507,6 @@ public abstract class vt320 extends VDU implements KeyListener {
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
 
-    if (debug>2) System.out.println("vt320: keyTyped "+evt);
-
     if (keyChar == '\u001b' || keyChar == '\b') return;
 
     /* DISABLED: this is non-portable :(
@@ -548,6 +546,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
+
 
     /*
     if(pressedKey == KeyEvent.VK_ENTER && 
@@ -609,6 +608,8 @@ public abstract class vt320 extends VDU implements KeyListener {
         return;
     }
 
+    if (debug>2) System.out.println("vt320: keyPressed "+evt+"\""+keyChar+"\"");
+
     String fmap[];
     int    xind;
     xind = 0;
@@ -616,6 +617,19 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(shift) { fmap = FunctionKeyShift; xind=1; }
     if(control) { fmap = FunctionKeyCtrl; xind=2; }
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
+
+    if(evt.isActionKey()) switch(keyCode) {
+      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); break;
+      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); break;
+      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); break;
+      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); break;
+      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); break;
+      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); break;
+      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); break;
+      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
+      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
+      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
+    }
 
     switch (keyCode) {
       case KeyEvent.VK_F1: write(fmap[1],false); break;
@@ -638,16 +652,6 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_UP: write(PrevScn[xind],false); break;
       case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
       case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
-      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); break;
-      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); break;
-      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); break;
-      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); break;
-      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); break;
-      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); break;
-      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); break;
-      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); break;
-      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); break;
-      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); break;
       case KeyEvent.VK_ESCAPE: write(Escape[xind],false); break;
       case KeyEvent.VK_BACK_SPACE: write(BackSpace[xind],false); break;
       case KeyEvent.VK_HOME:

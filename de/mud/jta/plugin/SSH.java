@@ -208,6 +208,8 @@ public class SSH extends Plugin implements FilterPlugin {
       byte[] tmp = new byte[n];
       System.arraycopy(b, 0, tmp, 0, n);
       buffer = handler.handleSSH(tmp);
+      if(debug > 0 && buffer != null && buffer.length > 0)
+        System.err.println("ssh: "+new String(buffer));
       if(buffer != null && buffer.length > 0) {
         if(debug > 0) 
 	  System.err.println("ssh: incoming="+n+" now="+buffer.length);

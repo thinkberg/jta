@@ -1288,14 +1288,15 @@ public class VDU extends Component
    * @see java.awt.event.MouseEvent
    */
   public void mousePressed(MouseEvent evt) {
-    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
+    // looks like we get no modifiers here ...
+    //if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
       int yoffset = (super.getSize().height - size.height * charHeight) / 2;
       selectBegin.x = (evt.getX() - xoffset) / charWidth;
       selectBegin.y = (evt.getY() - yoffset) / charHeight + windowBase;
       selectEnd.x = selectBegin.x;
       selectEnd.y = selectBegin.y;
-    }
+    //}
   }
 
   /**
@@ -1428,7 +1429,6 @@ public class VDU extends Component
    * @param listener the key listener
    */
   public void addKeyListener(KeyListener listener) {
-    System.err.println(listener);
     keyListener = AWTEventMulticaster.add(keyListener, listener);
     enableEvents(AWTEvent.KEY_EVENT_MASK);
   }

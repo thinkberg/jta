@@ -71,6 +71,8 @@ import java.awt.event.KeyEvent;
  */
 public class Applet extends java.applet.Applet {
 
+  private final static int debug = 0;
+
   private java.awt.Container appletFrame;
 
   /** holds the defaults */
@@ -89,14 +91,14 @@ public class Applet extends java.applet.Applet {
 
   private Plugin focussedPlugin;
   private Clipboard clipboard;
-	private boolean Online=false;
+  private boolean online = false;
 
   /**
    * Read all parameters from the applet configuration and
    * do initializations for the plugins and the applet.
    */
   public void init() {
-		System.err.println("In init");
+    if(debug > 0) System.err.println("Applet: init()");
     if(pluginLoader == null) {
       try {
         options.load(getClass()
@@ -187,6 +189,7 @@ public class Applet extends java.applet.Applet {
 	}
       }
 
+      pluginLoader.broadcast(new AppletRequest(this));
       if(appletFrame != this) {
 	final String startText = options.getProperty("Applet.detach.startText");
 	final String stopText = options.getProperty("Applet.detach.stopText");
@@ -196,7 +199,6 @@ public class Applet extends java.applet.Applet {
 	     .booleanValue())) {
           ((Frame)appletFrame).pack();
 	  ((Frame)appletFrame).show();
-          pluginLoader.broadcast(new AppletRequest(this));
 	  close.setLabel(startText != null ? stopText : "Disconnect");
 	} else
 	  close.setLabel(startText != null ? startText : "Connect");
@@ -308,20 +310,35 @@ public class Applet extends java.applet.Applet {
 	  System.err.println("Applet: you will not be able to close it");
 	}
 
-	pluginLoader.registerPluginListener(new OnlineStatusListener() {
-	  public void online() {
-            Online=true;
+        pluginLoader.registerPluginListener(new OnlineStatusListener() {
+          public void online() {
+	    if(debug > 0) System.err.println("Terminal: online");
+            online = true;
             if(((Frame)appletFrame).isVisible() == false)
       	      ((Frame)appletFrame).setVisible(true);
-	  }
+	  } 
 	  public void offline() {
-	    if(disconnectCloseWindow)
+	    if(debug > 0) System.err.println("Terminal: offline");
+            online=false;
+	    if(disconnectCloseWindow) {
 	      ((Frame)appletFrame).setVisible(false);
-            Online=false;
-	    close.setLabel(startText != null ? startText : "Connect");
+	      close.setLabel(startText != null ? startText : "Connect");
+	    }
 	  }
-	});
-      }
+        });
+      } else
+        // if we have no external frame use this online status listener
+        pluginLoader.registerPluginListener(new OnlineStatusListener() {
+          public void online() {
+            if(debug > 0) System.err.println("Terminal: online");
+            online = true;
+          }
+          public void offline() {
+            if(debug > 0) System.err.println("Terminal: offline");
+            online=false;
+          }
+        });
+ 
 
     }
   }
@@ -330,7 +347,8 @@ public class Applet extends java.applet.Applet {
    * Start the applet. Connect to the remote host.
    */
   public void start() {
-    if(Online == false && appletFrame == this) {
+    if(!online && appletFrame == this) {
+      if(debug > 0) System.err.println("start("+host+", "+port+")");
       getAppletContext().showStatus("Trying "+host+" "+port+" ...");
       pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
     } 
@@ -340,8 +358,10 @@ public class Applet extends java.applet.Applet {
    * Stop the applet and disconnect.
    */
   public void stop() {
-    if(disconnect)
+    if(online && disconnect) {
+      if(debug > 0) System.err.println("stop()");
       pluginLoader.broadcast(new SocketRequest());
+    }
   }
 
   /**

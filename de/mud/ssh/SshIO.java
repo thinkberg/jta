@@ -174,14 +174,19 @@ public abstract class SshIO
 	if(rest != null) {
 	  if(result != null) {
 	    byte[] tmp = new byte[rest.length + result.length];
-	    			System.arraycopy(result, 0, tmp, 0, result.length);
-	    			System.arraycopy(rest, 0, tmp, result.length , rest.length);
-	    			result = tmp;
+            System.arraycopy(result, 0, tmp, 0, result.length);
+	    System.arraycopy(rest, 0, tmp, result.length , rest.length);
+	    result = tmp;
 	} else
-							result=rest;
+	  result=rest;
       }
     }
     } // while
+    /*
+    for(int i = 0; result != null && i < result.length; i++) 
+      System.err.print(result[i]+":"+(char)result[i]+" ");
+    */
+
     return result;
   }
 
@@ -204,7 +209,7 @@ public abstract class SshIO
   }
 
   public void disconnect() {
-		System.err.println("In Disconnect");
+		// System.err.println("In Disconnect");
 		login = "";
 		password = ""; 
 		phase=0;
@@ -600,7 +605,7 @@ public abstract class SshIO
    * string   user login name on server
    */
   private byte[] Send_SSH_CMSG_USER() throws IOException {
-    System.err.println("Send_SSH_CMSG_USER("+login+")");
+    if(debug > 0) System.err.println("Send_SSH_CMSG_USER("+login+")");
     byte[] data = SshMisc.createString(login);
     byte packet_type = SSH_CMSG_USER;
     SshPacket packet = createPacket(packet_type, data);
