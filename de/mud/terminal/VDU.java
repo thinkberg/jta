@@ -152,7 +152,6 @@ public class VDU extends Component
 
   /* definitions of standards for the display unit */
   private static int COLOR_FG_STD  = 7;
-  private static int COLOR_FG_BOLD = 3;
   private static int COLOR_BG_STD  = 0;
   private final static int COLOR         = 0x7f8;
   private final static int COLOR_FG      = 0x78;
@@ -943,21 +942,13 @@ public class VDU extends Component
         fg = getForeground();
         bg = getBackground();
 
-        // Special handling of BOLD for terminals used on 5ESS 
-	/* I do not get this part.
-        if(((currAttr & BOLD) != 0)   &&
-           ((currAttr & COLOR_FG) == 0) &&
-	   ((currAttr & COLOR_BG) == 0))
-	  fg = color[COLOR_FG_BOLD];
-	*/
-
         if((currAttr & COLOR_FG) != 0)
           fg = color[((currAttr & COLOR_FG) >> 3)-1];
         if((currAttr & COLOR_BG) != 0)
           bg = color[((currAttr & COLOR_BG) >> 7)-1];
 
         if((currAttr & BOLD) != 0)
-          if(fg.equals(Color.black) /*&& COLOR_FG_BOLD != 0*/)
+          if(fg.equals(Color.black))
             fg = Color.gray;
           else {
 	    fg = fg.brighter();
@@ -1111,15 +1102,11 @@ public class VDU extends Component
     if(debug > 0) System.err.println("DEBUG: print()");
     for(int i = 0; i <= size.height; i++) update[i] = true;
     Color fg = null, bg = null, colorSave[] = null;
-    int boldSave = 0;
-
     if(!colorPrinting) {
       fg = getForeground();
       bg = getBackground();
       setForeground(Color.black);
       setBackground(Color.white);
-      boldSave = COLOR_FG_BOLD;
-      COLOR_FG_BOLD = 0;
       colorSave = color;
       color = new Color[] { Color.black, 
                             Color.black, 
@@ -1136,7 +1123,6 @@ public class VDU extends Component
 
     if(!colorPrinting) {
       color = colorSave;
-      COLOR_FG_BOLD = boldSave;
       setForeground(fg);
       setBackground(bg);
     }
