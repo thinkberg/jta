@@ -3,12 +3,23 @@
  *
  * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
  *
- * The software is licensed under the terms and conditions in the
- * license agreement included in the software distribution package.
+ * Please visit http://javatelnet.org/ for updates and contact.
  *
- * You should have received a copy of the license along with this
- * software; see the file license.txt. If not, navigate to the 
- * URL http://javatelnet.org/ and view the "License Agreement".
+ * --LICENSE NOTICE--
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * --LICENSE NOTICE--
  *
  */
 package de.mud.jta;
@@ -43,7 +54,7 @@ public class Common extends PluginLoader {
     super(getPluginPath(config.getProperty("pluginPath")));
 
     System.out.println("** The Java(tm) Telnet Application");
-    System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
+    System.out.println("** Version 2.5 for Java 2");
     System.out.println("** Copyright (c) 1996-2002 Matthias L. Jugel, "
                        + "Marcus Meiﬂner");
 
