@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 
 import java.io.IOException;
 
+import java.net.URL;
+
 import java.util.Properties;
 import java.util.Enumeration;
 
@@ -200,9 +202,19 @@ public class Terminal extends Plugin
 	  terminal.setTerminalID(config.getProperty(key));
 	else if(key.equals("Terminal.buffer"))
 	  terminal.setBufferSize(Integer.parseInt(config.getProperty(key)));
-	else if(key.equals("Terminal.size"))
-	  System.out.println("Terminal.size not implemented yet");
-	else if(key.equals("Terminal.resize")) {
+	else if(key.equals("Terminal.size")) {
+	  String size = config.getProperty(key);
+	  try {
+	    int idx = size.indexOf(',');
+	    int width = Integer.parseInt(size.substring(1, idx).trim());
+	    int height = Integer.parseInt(
+	      size.substring(idx+1, size.length()-1).trim());
+	    terminal.setScreenSize(width, height);
+	  } catch(Exception e) {
+	    System.err.println("Terminal: screen size is wrong: "+size);
+	    System.err.println("Terminal: "+e);
+	  }
+	} else if(key.equals("Terminal.resize")) {
 	  String resize = config.getProperty("Terminal.resize");
 	  if(resize.equals("font"))
 	    terminal.setResizeStrategy(terminal.RESIZE_FONT);
@@ -227,9 +239,27 @@ public class Terminal extends Plugin
 	  else if(fontStyle.equals("bold+italic"))
 	    style = Font.BOLD | Font.ITALIC;
 	  terminal.setFont(new Font(config.getProperty(key), style, fsize));
-	} else if(key.equals("Terminal.keyCodes")) 
-	  System.out.println("Terminal.keyCodes not implemented yet");
-	else if(key.equals("Terminal.VMS"))
+	} else if(key.equals("Terminal.keyCodes")) {
+	  Properties keyCodes = new Properties();
+	  String file = config.getProperty(key);
+	  URL keyCodeURL = getClass().getResource(file);
+	    
+	  // if loading the file as resource does not work, try as URL
+	  if(keyCodeURL == null) try {
+	    keyCodeURL = new URL(config.getProperty(key));
+	  } catch(Exception e) {
+	    System.err.println("Terminal: "+e);
+	  }
+
+          // load the key codes if we got a URL
+          if(keyCodeURL != null) try {
+	    keyCodes.load(keyCodeURL.openStream());
+	    terminal.setKeyCodes(keyCodes);
+	  } catch(IOException e) {
+	    System.err.println("Terminal: cannot load keyCodes: "+e);
+	  } else
+	    System.err.println("Terminal: could not load "+file);
+	} else if(key.equals("Terminal.VMS"))
 	  terminal.setVMS(
 	    (Boolean.valueOf(config.getProperty(key))).booleanValue());
 	else if(key.equals("Terminal.IBM"))

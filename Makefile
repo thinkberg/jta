@@ -108,3 +108,6 @@ app:
 clean:
 	-find . -name *.class -print | xargs rm > /dev/null 2>&1
 	-find . -name *~ -print | xargs rm > /dev/null 2>&1
+
+realclean: clean
+	-rm -f jar/$(PKGNAME).jar jar/$(PKGNAME)-src.jar

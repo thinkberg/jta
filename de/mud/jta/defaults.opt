@@ -36,17 +36,17 @@ Terminal.foreground	=	#101040
 Terminal.background	=	#ffffc0
 Terminal.border		=	0
 Terminal.borderRaised	=	false
-# Terminal.colorSet	=	@/de/mud/terminal/default.colorset
+Terminal.colorSet	=	/de/mud/terminal/default.colorset
 Terminal.scrollBar	=	West
 # now the real configuration
 Terminal.id		=	vt320
 Terminal.buffer		=	100
-# Terminal.size		=	[80,24]
+Terminal.size		=	[80, 24]
 Terminal.resize		=	none
 Terminal.font		=	Monospaced
 Terminal.fontStyle	=	plain
 Terminal.fontSize	=	11
-# Terminal.keyCodes	=	@/de/mud/terminal/default.keycodes
+Terminal.keyCodes	=	/de/mud/terminal/keyCodes.prop
 Terminal.VMS		=	false
 Terminal.IBM		=	false
 

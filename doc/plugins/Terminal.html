@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -95,8 +95,9 @@ This is just like the encoding you use in HTML.</td>
 <td><tt>Terminal.colorSet</tt></td>
 
 <td>Use this property to define a complete color set for the terminal.
-A color set contains eight colors as defined by the ANSI&nbsp;standard.
-<i><font color="#CC0000">(not yet implemented)</font></i></td>
+A color set contains eight colors as defined by the ANSI standard.
+<i><font color="#CC0000">(not
+yet implemented)</font></i></td>
 </tr>
 
 <tr>
@@ -109,7 +110,7 @@ A color set contains eight colors as defined by the ANSI&nbsp;standard.
 <td><tt>Terminal.borderRaised</tt></td>
 
 <td>This property has no effect if <tt>Terminal.border</tt> is not set
-or zero. It may be set to "<b><tt>true</tt></b>"&nbsp;or "<b><tt>false</tt></b>".</td>
+or zero. It may be set to "<b><tt>true</tt></b>" or "<b><tt>false</tt></b>".</td>
 </tr>
 
 <tr>
@@ -121,7 +122,8 @@ Possible directions are "<b><tt>East</tt></b>" and "<b><tt>West</tt></b>".</td>
 
 <tr NOSAVE>
 <td COLSPAN="2" BGCOLOR="#999999" NOSAVE>
-<center><b><font face="Arial,Helvetica"><font color="#FFFFFF">Terminal&nbsp;Emulation&nbsp;Properties</font></font></b></center>
+<center><b><font face="Arial,Helvetica"><font color="#FFFFFF">Terminal
+Emulation Properties</font></font></b></center>
 </td>
 </tr>
 
@@ -146,8 +148,11 @@ the screen.</td>
 <tr>
 <td><tt>Terminal.size</tt></td>
 
-<td>Set the size of the terminal in terms of rows and lines. <i><font color="#CC0000">(not
-yet implemented)</font></i></td>
+<td>Set the size of the terminal in terms of rows and lines. The value
+has to be given in the following format:
+<blockquote><b><tt>[</tt></b>width<b><tt>,</tt></b><i>height</i><b><tt>]</tt></b></blockquote>
+Whitespaces are allowed within the brackets and just before and after the
+comma. The standard is "<b><tt>[80,24]</tt></b>"</td>
 </tr>
 
 <tr>
@@ -186,15 +191,18 @@ will be used as the initial font size.</td>
 <tr>
 <td><tt>Terminal.keyCodes</tt></td>
 
-<td>This should be set to the url of a property file that contains the
-key codes&nbsp; you'd like to use. <i><font color="#CC0000">(not yet implemented)</font></i></td>
+<td>This should be set to the URL of a property file that contains the
+key codes&nbsp; you would like to use. The file is first tried using the
+resource loading mechanism, which looks in the CLASSPATH and then as a
+URL. Have a look at the file format for the <a href="#KEYCODES">key codes
+definition</a>.</td>
 </tr>
 
 <tr>
 <td><tt>Terminal.VMS</tt></td>
 
 <td>Set this property to "<b><tt>true</tt></b>" if you are connecting to
-a VMS&nbsp;system.</td>
+a VMS system.</td>
 </tr>
 
 <tr>
@@ -202,6 +210,216 @@ a VMS&nbsp;system.</td>
 
 <td>Set this to "<b><tt>true</tt></b>" if you would like to use PC ANSI
 graphics characters as used by some BBS's.</td>
+</tr>
+</table></center>
+
+<h3>
+<a NAME="KEYCODES"></a><font color="#CC0000">Definition of Key Codes</font></h3>
+<font color="#000000">The definition of key codes should only be done if
+your application uses a very different keyboard layout than the standard
+vt320. The definition of almost all special keys is possible and follows
+rules described below:</font>
+<blockquote><tt><font color="#000000"># here is the rule</font></tt>
+<br><tt><font color="#000000">[<b>SCA</b>]</font></tt><font color="#000000"><i>KEY</i><b><tt>=</tt></b><i>STRING</i></font></blockquote>
+<font color="#000000">The characters enclosed in <tt>[</tt> and <tt>]</tt>
+are optional and only one of the characters '<b><tt>S</tt></b>' (Shift),
+'<b><tt>C</tt></b>' (Control) or '<b><tt>A</tt></b>' (Alt) may appear before
+the <i>KEY</i>, which is a textual representation (F1, PGUP etc) of the
+key you would like to redefine.</font>
+<p><font color="#000000">The new <i>STRING</i> you define to be sent when
+pressing the key should come after the equal sign (<b><tt>=</tt></b>).
+Hash marks (<tt>#</tt>) in the file declare a line as comment and will
+be ignored. Some examples explain the syntax:</font>
+<br>&nbsp;
+<dt>
+<font color="#000000">Send the string "test" when pressing the <tt>F1</tt>
+key:</font></dt>
+
+<dd>
+<tt><font color="#000000">F1 = test</font></tt></dd>
+
+<dt>
+<font color="#000000">On pressing <tt>Control + PGUP</tt> send the string
+"pgup pressed":</font></dt>
+
+<dd>
+<tt><font color="#000000">CPGUP = pgup pressed</font></tt></dd>
+
+<dt>
+<font color="#000000">Redefine the key <tt>Alt + F12</tt> to send an escape
+character:</font></dt>
+
+<dd>
+<tt><font color="#000000">AF12 = \e</font></tt></dd>
+
+<br>&nbsp;
+<p>&nbsp;
+<p><font color="#000000">As you can see the string you can define may contain
+special characters which may be escaped using the backslash (\). Allowed
+special characters follow in the table below:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Special Character</font></font></b></td>
+
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Explanation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\b</tt></td>
+
+<td><i>Backspace</i>, this character is usually sent by the <tt>&lt;-</tt>
+key (not the cursor left key!).</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\e</tt></td>
+
+<td><i>Escape</i>, this character is usually sent by the <tt>Esc</tt> key.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\n</tt></td>
+
+<td><i>Newline</i>, this character will move the cursor to a new line.
+On UNIX systems it is equivalent to carriage return + newline. Usually
+the <tt>Enter</tt> key send this character.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\r</tt></td>
+
+<td NOSAVE><i>Carriage Return</i>, this key moves the cursor to the beginning
+of the line. In conjunction with <i>Newline</i> it moves the cursor to
+the beginning of a new line.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\t</tt></td>
+
+<td><i>Tabulator</i>, the tab character is sent by the <tt>->|</tt> key
+and moves the cursor to the next tab stop defined by the terminal.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\v</tt></td>
+
+<td><i>Vertical Tabulator</i>, sends a vertical tabulator character.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\a</tt></td>
+
+<td><i>Bell</i>, sends a terminal bell character which should make the
+terminal sound its bell, but the implementation is a silent one ;-)</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\</tt><i>number</i></td>
+
+<td>Inserts the character that is defined by this <i>number</i> in the
+ISO Latin1 character set. The <i>number</i> should be a decimal value.</td>
+</tr>
+</table></center>
+
+<p><font color="#000000">The following table explains which key may be
+redefined. As explained above each of the keys may be prefixed by a character
+defining the redefinition that occures if it is pressed in conjunction
+with the shift, control or alt keys.</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Key Representation</font></font></b></td>
+
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Remarks</font></font></b></td>
+</tr>
+
+<tr>
+<td>
+<center><tt>F1 - F20</tt></center>
+</td>
+
+<td>The function key, F1, F2 ... up to F20.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>PGUP</tt></center>
+</td>
+
+<td>The Page Up key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>PGDOWN</tt></center>
+</td>
+
+<td>The Page Down key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>END</tt></center>
+</td>
+
+<td>The End key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>HOME</tt></center>
+</td>
+
+<td>The Home (Pos 1) key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>INSERT</tt></center>
+</td>
+
+<td>The Insert key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>REMOVE</tt></center>
+</td>
+
+<td>The Remove key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>UP</tt></center>
+</td>
+
+<td>The Cursor Up key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>DOWN</tt></center>
+</td>
+
+<td>The Cursor Down key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>LEFT</tt></center>
+</td>
+
+<td>The Cursor Left key.</td>
+</tr>
+
+<tr>
+<td>
+<center><tt>RIGHT</tt></center>
+</td>
+
+<td>The Cursor right key.</td>
 </tr>
 </table></center>
 </td>
@@ -226,8 +444,19 @@ if you want to write your own back end plugins.</td>
 <tr>
 <td>This plugins uses some of the events and listeners described here.</td>
 </tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../source/de/mud/terminal/package-summary.html">de.mud.terminal</a></font></b></td>
+</tr>
+
+<tr>
+<td>Have a look here for the underlying terminal emulation package.</td>
+</tr>
 </table></center>
-</td>
+
+<p><font color="#CC0000">If you produced <a href="#KEYCODES">keyCode definition</a>
+files you'd like to share with others <a href="mailto:jta@mud.de">send
+them to us</a> and we will publish them here.</font></td>
 </tr>
 </table>
 

@@ -245,8 +245,9 @@ public abstract class vt320 extends VDU implements KeyListener {
     String res, prefixes[] = {"","S","C","A"};
     for (int i=1;i<20;i++) {
       for (int j=0;j<4;j++) {
-	res= codes.getProperty(prefixes[j]+"F"+i);
-	if (res!=null) FunctionKey[i] = unEscape(res);
+	res = codes.getProperty(prefixes[j]+"F"+i);
+	if(res!=null) 
+	  FunctionKey[i] = unEscape(res);
       }
     }
     for (int i=0;i<4;i++) {
