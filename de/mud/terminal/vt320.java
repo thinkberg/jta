@@ -512,7 +512,6 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String FunctionKeyAlt[];
   private String TabKey[];
   private String KeyUp[],KeyDown[],KeyLeft[],KeyRight[];
-  private String KeyTab,KeyBacktab;
   private String KPMinus, KPComma, KPPeriod,KPEnter;
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
@@ -589,8 +588,16 @@ public abstract class vt320 extends VDU implements KeyListener {
       return;
     }
     */
-    if(shift && (keyChar == '\t')) {
-      write(KeyBacktab,false);
+    if (keyChar == '\t') {
+    	if (shift) {
+	    write(TabKey[1],false);
+	} else { if (control) {
+	    write(TabKey[2],false);
+	} else { if (alt) {
+	    write(TabKey[3],false);
+	} else { 
+	    write(TabKey[0],false);
+	}}}
       return;
     }
     if (alt) {
