@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import java.awt.datatransfer.Clipboard;
 
@@ -165,6 +167,15 @@ public class Main {
     }
 
     if(!personalJava) {
+
+    frame.addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent evt) {
+	setup.broadcast(new SocketRequest());
+	frame.setVisible(false);
+        frame.dispose();
+	System.exit(0);
+      }
+    });
 
     // add a menu bar
     MenuBar mb = new MenuBar();
