@@ -128,7 +128,7 @@ public class Terminal extends Plugin
     colors.put("pink", Color.pink);
     colors.put("cyan", Color.cyan);
     colors.put("white", Color.white);
-    colors.put("gray", Color.white);
+    colors.put("gray", Color.gray);
 
     if(!personalJava) {
 
