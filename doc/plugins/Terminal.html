@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.73C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.0 i686) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.77C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.12-ac2 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -93,21 +93,21 @@ This is just like the encoding you use in HTML.</td>
 </tr>
 
 <tr NOSAVE>
-<td>Terminal.cursor.foreground</td>
+<td><tt>Terminal.cursor.foreground</tt></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE>Set the cursor foreground color. If unset
 this is the inverted current foreground.</td>
 </tr>
 
 <tr>
-<td>Terminal.cursor.background</td>
+<td><tt>Terminal.cursor.background</tt></td>
 
 <td>Set the cursor background color. If unset this is the inverted current
 background.</td>
 </tr>
 
 <tr>
-<td>Terminal.localecho</td>
+<td><tt>Terminal.localecho</tt></td>
 
 <td>While both SSH and Telnet client part detect localechostate automatically,
 it can be overridden using this option. This is only recommended if you
@@ -162,11 +162,14 @@ Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
 </tr>
 
 <tr NOSAVE>
-<td>Terminal.beep</td>
+<td><tt>Terminal.beep</tt></td>
 
 <td ALIGN=LEFT VALIGN=TOP NOSAVE>If this property points to a fully qualified
 URL of a sound file this will be played in case of a terminal <b>bell</b>
-signal. This works for applets only.</td>
+signal. This works for applets only.
+<br>Note:&nbsp;Some browsers (Netscape 4, IE&nbsp;5.5 or earlier)&nbsp;sometimes
+can only play .au files here. In IE the sound needs to be on the same server
+as the applet or you get a security exception.</td>
 </tr>
 
 <tr NOSAVE>
@@ -188,9 +191,9 @@ it suits you.</td>
 <tr>
 <td><tt>Terminal.answerback</tt></td>
 
-<td>The string the terminal sents back when it gets an 'ENQ' code.
-You can set it to anything you want or what your local environment
-requires. (The default is just a pointer to this config option.)
+<td>The string the terminal sents back when it gets an 'ENQ' code. You
+can set it to anything you want or what your local environment requires.
+(The default is just a pointer to this config option.)</td>
 </tr>
 
 <tr>
@@ -276,7 +279,8 @@ graphics characters as used by some BBS's.</td>
 system or at least fonts that include the characters you would like to
 display. The default setting it <b>ISO8859_1</b> but it may be used to
 make the terminal aware of special characters like in the japanese (i.e.
-<b>SJIS</b>) or chinese region.</td>
+<b>SJIS</b>)
+or chinese region.</td>
 </tr>
 </table></center>
 
@@ -321,6 +325,8 @@ character:</font></dt>
 
 <br>&nbsp;
 <p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
 <p><font color="#000000">As you can see the string you can define may contain
 special characters which may be escaped using the backslash (\). Allowed
 special characters follow in the table below:</font>
@@ -338,8 +344,8 @@ and not known by the Java Property mechanism)</font></font>
 <tr NOSAVE>
 <td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\b</tt></td>
 
-<td><i>Backspace</i>, this character is usually sent by the <tt>&lt;-</tt>
-key (not the cursor left key!).</td>
+<td><i>Backspace</i>, this character is usually sent by the <tt>&lt;-</tt>key
+(not the cursor left key!).</td>
 </tr>
 
 <tr NOSAVE>
@@ -579,7 +585,7 @@ work with ANSI and most version of UNIX. More info is in the file.</td>
 </tr>
 </table>
 
-<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
 <tr NOSAVE>
 <td NOSAVE>
 <table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
@@ -602,7 +608,7 @@ $</div>
 </table>
 </td>
 </tr>
-</table>
+</table></center>
 
 </body>
 </html>
