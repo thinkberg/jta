@@ -90,6 +90,12 @@ public class Common extends PluginLoader {
                         +(id != null && id.length() > 0 ? 
 			    ", ID: '"+id+"'" : ""));
       Plugin plugin = addPlugin(name, id);
+      if(plugin == null) {
+        System.err.println("jta: ignoring plugin '"+name+"'"
+                          +(id != null && id.length() > 0 ? 
+			      ", ID: '"+id+"'" : ""));
+	continue;
+      }
       plugins.put(name, plugin);
       if(plugin instanceof VisualPlugin) {
         Component c = ((VisualPlugin)plugin).getPluginVisual();
@@ -127,11 +133,11 @@ public class Common extends PluginLoader {
     // I am not sure that this is desirable, as the applet administrator
     // might use UNIX and thus ':' but the applet user might have a Windows
     // system and thus uses ';' and thus the whole thing will collapse.
-    String separator = System.getProperty("path.separator");
-    if(separator == null)
-      separator = ":";
+    // String separator = System.getProperty("path.separator");
+    // if(separator == null)
+    //  separator = ":";
 
-    return split(path, separator.charAt(0));
+    return split(path, ':');
   }
 
   /**
