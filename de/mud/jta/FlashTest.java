@@ -78,6 +78,8 @@ public class FlashTest implements Runnable {
     this.host = host;
     this.port = port;
 
+    final boolean test = true;
+
     // we now create a new terminal that is used for the system
     // if you want to configure it please refer to the api docs
     emulation = new vt320() {
@@ -129,26 +131,28 @@ public class FlashTest implements Runnable {
       }
     };
 
-    try {
-      System.err.println("FlashTest: trying to connect " + host + " " + port);
-      // open new socket and get streams
-      socket = new Socket(host, Integer.parseInt(port));
-      is = socket.getInputStream();
-      os = socket.getOutputStream();
-
-      reader = new Thread(this);
-      running = true;
-      reader.start();
-
-    } catch (Exception e) {
-      System.err.println("FlashTest: error connecting: " + e);
-      e.printStackTrace();
-      stop();
-    }
-
     while (true) {
+      try {
+        if(!"-t".equals(host)) {
+	    System.err.println("FlashTest: trying to connect " + host + " " + port);
+	    // open new socket and get streams
+	    socket = new Socket(host, Integer.parseInt(port));
+	    is = socket.getInputStream();
+	    os = socket.getOutputStream();
+
+	    reader = new Thread(this);
+	    running = true;
+	    reader.start();
+	  }
+	} catch (Exception e) {
+	  System.err.println("FlashTest: error connecting: " + e);
+	  e.printStackTrace();
+	  stop();
+	}
+
       System.err.println("FlashTest: Terminal restarted ...");
       terminal.start();
+      stop();
     }
   }
 

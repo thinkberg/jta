@@ -166,11 +166,11 @@ public class FlashTerminal implements VDUDisplay, Runnable {
       System.err.println("FlashTerminal: redraw()");
 
     if (terminalReady && writer != null) {
-      xmlOutputter.setNewlines(true);
       try {
         // remove children from terminal
         terminal.removeChildren();
         if (simpleMode) {
+          xmlOutputter.setNewlines(false);
           xmlOutputter.output(redrawSimpleTerminal(terminal), writer);
           xmlOutputter.output(redrawSimpleTerminal(terminal), System.err);
         } else {
@@ -189,11 +189,14 @@ public class FlashTerminal implements VDUDisplay, Runnable {
 
   private int checkPoint = 0;
 
+  /**
+   * The simple terminal only draws new lines and ignores
+   * changes on lines aready written.
+   */
   private Element redrawSimpleTerminal(Element terminal) {
     terminal.setAttribute("simple", "true");
 
-    System.err.println("checkPoint: "+checkPoint);
-    if(checkPoint > 0) checkPoint -= 1;
+    System.err.println("checkPoint: "+checkPoint+" < "+buffer.bufSize);
     // start where we last time stopped ...
     while (checkPoint < buffer.bufSize) {
       terminal.addContent(redrawLine(0, checkPoint));
@@ -236,7 +239,9 @@ public class FlashTerminal implements VDUDisplay, Runnable {
       }
 
       if (addr > 0) {
-        Text text = new Text(new String(buffer.charArray[base + l], c, addr));
+	String tmp = new String(buffer.charArray[base + l], c, addr);
+	// create new text node and make sure we insert &nbsp; (160)
+        Text text = new Text(tmp.replace(' ', (char)160));
         Element chunk = null;
         if ((currAttr & 0xfff) != 0) {
           if ((currAttr & VDUBuffer.BOLD) != 0)
