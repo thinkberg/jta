@@ -537,7 +537,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   /** Tabulators */
   private byte[]  Tabs;
   /** The list of integers as used by CSI */
-  private int[]  DCEvars = new int [10];
+  private int[]  DCEvars = new int [30];
   private int  DCEvar;
 
   /**
