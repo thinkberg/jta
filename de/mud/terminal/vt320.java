@@ -439,7 +439,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   static String unEscape(String tmp) {
     int idx = 0, oldidx = 0;
     String cmd;
-
+    // System.err.println("unescape("+tmp+")");
     cmd = "";
     while((idx = tmp.indexOf('\\', oldidx)) >= 0 &&
 	  ++idx <= tmp.length()) {

@@ -59,7 +59,7 @@ public abstract class SshIO
    * Debug level. This results in additional diagnostic messages on the
    * java console.
    */
-  private static int debug = 9;
+  private static int debug = 0;
 
   /**
    * State variable for Ssh negotiation reader

@@ -911,7 +911,7 @@ public class VDU extends Component
    * Redraw marked lines.
    * @see #markLine
    */
-  public synchronized void redraw() {
+  public void redraw() {
     if(debug > 0) System.err.println("redraw()");
     update[0] = true;
     repaint();
@@ -929,7 +929,7 @@ public class VDU extends Component
    * Paint the current screen. All painting is done here. Only lines that have
    * changed will be redrawn!
    */
-  public synchronized void paint(Graphics g) {
+  public void paint(Graphics g) {
     if(screenLocked) return;
 
     if(debug > 0) {

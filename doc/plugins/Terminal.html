@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -117,8 +117,8 @@ or zero. It may be set to "<b><tt>true</tt></b>" or "<b><tt>false</tt></b>".</td
 <td><tt>Terminal.scrollBar</tt></td>
 
 <td>Adds a scroll bar to the terminal using the direction set in the property.
-Possible directions are "<b><tt>East</tt></b>" and "<b><tt>West</tt></b>". Using
-a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
+Possible directions are "<b><tt>East</tt></b>" and "<b><tt>West</tt></b>".
+Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
 </tr>
 
 <tr NOSAVE>
@@ -251,13 +251,18 @@ key:</font></dt>
 character:</font></dt>
 
 <dd>
-<tt><font color="#000000">AF12 = \e</font></tt></dd>
+<tt><font color="#000000">AF12 = \\e</font></tt></dd>
 
 <br>&nbsp;
 <p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
 <p><font color="#000000">As you can see the string you can define may contain
 special characters which may be escaped using the backslash (\). Allowed
-special characters follow in the table below:</font>
+special characters follow in the table below:</font><font color="#000000"></font>
+<p><font color="#CC0000"><font size=-1>(<b>Important</b>: for some of the
+escape codes you need two backslashes as these are our own definitions
+and not known by the Java Property mechanism)</font></font>
 <br>&nbsp;
 <center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 BGCOLOR="#CCCCCC" NOSAVE >
 <tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
@@ -267,20 +272,21 @@ special characters follow in the table below:</font>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\b</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\b</tt></td>
 
 <td><i>Backspace</i>, this character is usually sent by the <tt>&lt;-</tt>
 key (not the cursor left key!).</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\e</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\e</tt></td>
 
 <td><i>Escape</i>, this character is usually sent by the <tt>Esc</tt> key.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\n</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\n</tt>
+<br><tt><font color="#CC0000"><font size=-1>(only one backslash)</font></font></tt></td>
 
 <td><i>Newline</i>, this character will move the cursor to a new line.
 On UNIX systems it is equivalent to carriage return + newline. Usually
@@ -288,7 +294,8 @@ the <tt>Enter</tt> key send this character.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\r</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\r</tt>
+<br><tt><font color="#CC0000"><font size=-1>(only one backslash)</font></font></tt></td>
 
 <td NOSAVE><i>Carriage Return</i>, this key moves the cursor to the beginning
 of the line. In conjunction with <i>Newline</i> it moves the cursor to
@@ -296,27 +303,28 @@ the beginning of a new line.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\t</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\t</tt>
+<br><tt><font color="#CC0000"><font size=-1>(only one backslash)</font></font></tt></td>
 
 <td><i>Tabulator</i>, the tab character is sent by the <tt>->|</tt> key
 and moves the cursor to the next tab stop defined by the terminal.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\v</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\v</tt></td>
 
 <td><i>Vertical Tabulator</i>, sends a vertical tabulator character.</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\a</tt></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\a</tt></td>
 
 <td><i>Bell</i>, sends a terminal bell character which should make the
 terminal sound its bell, but the implementation is a silent one ;-)</td>
 </tr>
 
 <tr NOSAVE>
-<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\</tt><i>number</i></td>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><tt>\\</tt><i>number</i></td>
 
 <td>Inserts the character that is defined by this <i>number</i> in the
 ISO Latin1 character set. The <i>number</i> should be a decimal value.</td>
