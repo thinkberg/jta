@@ -86,12 +86,14 @@ public class Applet extends java.applet.Applet {
 
   private Plugin focussedPlugin;
   private Clipboard clipboard;
+	private boolean Online=false;
 
   /**
    * Read all parameters from the applet configuration and
    * do initializations for the plugins and the applet.
    */
   public void init() {
+		System.err.println("In init");
     if(pluginLoader == null) {
       try {
         options.load(getClass()
@@ -152,7 +154,6 @@ public class Applet extends java.applet.Applet {
       if(port == null)
         port = "23";
 
-      final java.awt.Container appletFrame;
 
       if(!(new Boolean(options.getProperty("Applet.disconnect"))
             .booleanValue()))
@@ -162,9 +163,11 @@ public class Applet extends java.applet.Applet {
             .booleanValue()))
         disconnectCloseWindow = false;
 
-      if((new Boolean(options.getProperty("Applet.detach"))).booleanValue())
+  		final java.awt.Container appletFrame ;
+
+      if((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
         appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
-      else
+     } else
         appletFrame = this;
 
       appletFrame.setLayout(new BorderLayout());
@@ -211,8 +214,8 @@ public class Applet extends java.applet.Applet {
           }
 	});
 
-	setLayout(new BorderLayout());
-	add("Center", close);
+	 setLayout(new BorderLayout());
+	 add("Center", close);
 
 	// add a menu bar
         MenuBar mb = new MenuBar();
@@ -289,9 +292,13 @@ public class Applet extends java.applet.Applet {
 
 	pluginLoader.registerPluginListener(new OnlineStatusListener() {
 	  public void online() {
-	    // we don't want to know
+	 		Online=true;
+			if(((Frame)appletFrame).isVisible() == false) {
+      	((Frame)appletFrame).setVisible(true);
+			}
 	  }
 	  public void offline() {
+	 		Online=false;
 	    ((Frame)appletFrame).setVisible(false);
 	    close.setLabel(startText != null ? startText : "Connect");
 	  }
@@ -305,8 +312,10 @@ public class Applet extends java.applet.Applet {
    * Start the applet. Connect to the remote host.
    */
   public void start() {
-    getAppletContext().showStatus("Trying "+host+" "+port+" ...");
-    pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+		if(Online == false) {
+    	getAppletContext().showStatus("Trying "+host+" "+port+" ...");
+    	pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+		} 
   }
 
   /**
