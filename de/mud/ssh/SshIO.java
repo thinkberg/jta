@@ -213,7 +213,11 @@ public abstract class SshIO
 	    throw (new IOException());
 	  }
 	  remotemajor = Integer.parseInt(idstr.substring(4,5));
-	  remoteminor = Integer.parseInt(idstr.substring(6,8));
+	  String minorverstr = idstr.substring(6,8);
+          if (!Character.isDigit(minorverstr.charAt(1)))
+            minorverstr = minorverstr.substring(0,1);
+          remoteminor = Integer.parseInt(minorverstr);
+
 	  System.out.println("remotemajor "+remotemajor);
 	  System.out.println("remoteminor "+remoteminor);
 
@@ -676,9 +680,14 @@ public abstract class SshIO
 	  cipher_types = (byte)SSH_CIPHER_3DES;
 	  cipher_type = "DES3";
 	} else {
-	  System.err.println("SshIO: remote server does not supported IDEA, BlowFish or 3DES, support cypher mask is "+supported_ciphers_mask[3]+".\n");
-	  disconnect();
-	  return "\rRemote server does not support IDEA/Blowfish/3DES blockcipher, closing connection.\r\n";
+          if ((supported_ciphers_mask[3] & (1<<SSH_CIPHER_DES)) != 0) {
+	    cipher_types = (byte)SSH_CIPHER_DES;
+	    cipher_type = "DES";
+          } else {
+	    System.err.println("SshIO: remote server does not supported IDEA, BlowFish or 3DES, support cypher mask is "+supported_ciphers_mask[3]+".\n");
+	    disconnect();
+	    return "\rRemote server does not support IDEA/Blowfish/3DES blockcipher, closing connection.\r\n";
+          }
 	}
       }
     }
