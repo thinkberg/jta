@@ -293,7 +293,7 @@ public class VDU extends Component
   public char getChar(int c, int l) {
     c = checkBounds(c, 0, size.width - 1);
     l = checkBounds(l, 0, size.height - 1);
-    return charArray[l][c];
+    return charArray[screenBase + l][c];
   }
 
   /**
@@ -305,7 +305,7 @@ public class VDU extends Component
   public int getAttributes(int c, int l) {
     c = checkBounds(c, 0, size.width - 1);
     l = checkBounds(l, 0, size.height - 1);
-    return charAttributes[l][c];
+    return charAttributes[screenBase + l][c];
   }
 
   /**
