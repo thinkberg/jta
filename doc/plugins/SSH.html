@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; I; Linux 2.2.11 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.73C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.0 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: SSH Plugin</title>
@@ -23,8 +23,9 @@ Telnet Application/Applet: SSH Plugin</font></font></h1></div>
 <i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
 <a href="mailto:marcus@mud.de">Marcus
 Mei&szlig;ner</a></i>
-<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
-<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="../../license/COPYING">GNU General Public
+License</a></td>
 </tr>
 
 <tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
@@ -57,19 +58,29 @@ an easy to use, but secure way to log into a remote host. To use this plugin
 make sure your remote host has a secure shell server running. It may be
 used as a replacement for the <a href="Telnet.html">Telnet</a> plugin,
 which does no encryption!
-<p>This implementation of SSH provides IDEA, Blowfish and RSA/PKCS#1
-encryption and was originally written in 1998 by
-<a href="mailto:javassh@france-mail.com">Cedric Gourio</a>.
-He used a part of the old Java Telnet Applet to write his <a href="http://www.cl.cam.ac.uk/~fapp2/software/java-ssh/">Java SSH</a>
-client and so the code was similar to our old applet.
+<p>This implementation of SSH provides IDEA, Blowfish and RSA/PKCS#1 encryption
+and was originally written in 1998 by
+<a href="mailto:javassh@france-mail.com">Cedric
+Gourio</a>. He used a part of the old Java Telnet Applet to write his <a href="http://www.cl.cam.ac.uk/~fapp2/software/java-ssh/">Java
+SSH</a> client and so the code was similar to our old applet.
 <p>There are other implementations of ssh for Java available, but those
 packages implement the whole ssh protocol and all features which makes
-the packages very big. We tried to keep our implementation to a minimum for
-easier download.
+the packages very big. We tried to keep our implementation to a minimum
+for easier download.
 <p>You can configure the plugin using the following properties:
 <br><i><font color="#CC0000">(there will be configurable parts, but these
 are not yet implemented!)</font></i>
-<br>&nbsp;
+<p><b>Security Note</b>:&nbsp;
+<p>The applet is suspectible to the man-in-the-middle attacks published
+by <a href="http://www.securityportal.com/cover/coverstory20001218.html">Security
+Portal</a>. We cannot avoid this. We can't even use the RSA&nbsp;based
+host authorization, since the applet itself is downloaded from the remote
+host, may not keep local state and might be modified by the man-in-the-middle.
+<p>The only way to guard against applet modification would be having it
+signed with a trust certificate. This is too expensive both money- and
+timewise for us.
+<p>So there is encryption, but it only guards against <i>normal</i> packetsniffing
+attacks.
 <center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
 <tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
 <td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Property</font></font></b></td>
