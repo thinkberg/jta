@@ -191,10 +191,60 @@ public abstract class vt320 extends VDU implements KeyListener {
     /* ... */
 
     addKeyListener(this);
+
     /* I don't think we want that here ... */
     addMouseListener(new MouseAdapter() {
       public void mouseEntered(MouseEvent evt) {
         requestFocus();
+      }
+      public void mousePressed(MouseEvent evt) {
+        if (mouserpt==0)
+          return;
+	int mods = evt.getModifiers();
+	mousebut = 3;
+	if ((mods & 16)==16) mousebut=0;
+	if ((mods &  8)==8 ) mousebut=1;
+	if ((mods &  4)==4 ) mousebut=2;
+
+
+	int mousecode;
+	if (mouserpt == 9)	/* X10 Mouse */
+	    mousecode = 0x20|mousebut;
+	else			/* normal xterm mouse reporting */
+	    mousecode = mousebut|0x20|((mods & 7)<<2);
+
+	java.awt.Point pos = mouseGetPos(evt.getPoint());
+	byte b[] = new byte[6];
+
+	b[0] = 27; b[1] = '['; b[2] = 'M';
+	b[3] = (byte)mousecode;
+	b[4] = (byte) (0x20 + pos.x + 1);
+	b[5] = (byte) (0x20 + pos.y + 1);
+
+	write(b);
+      }
+      public void mouseReleased(MouseEvent evt) {
+        if (mouserpt==0)
+          return;
+	java.awt.Point pos = mouseGetPos(evt.getPoint());
+	int mods = evt.getModifiers();
+	mousebut = 3;
+	if ((mods & 16)==16) mousebut=0;
+	if ((mods &  8)==8 ) mousebut=1;
+	if ((mods &  4)==4 ) mousebut=2;
+	int mousecode;
+	if (mouserpt == 9)
+	    mousecode = 0x20+mousebut;	/* same as press? appears so. */
+        else
+	    mousecode = mousebut|0x20|((mods & 7)<<2);
+
+	byte b[] = new byte[6];
+	b[0] = 27; b[1] = '['; b[2] = 'M';
+	b[3] = (byte)mousecode;
+	b[4] = (byte) (0x20 + pos.x + 1);
+	b[5] = (byte) (0x20 + pos.y + 1);
+	write(b);
+	mousebut = 0;
       }
     });
       
@@ -355,6 +405,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   boolean sendcrlf = true;
   boolean capslock = false;
   boolean numlock = false;
+  int mouserpt = 0;
+  byte mousebut = 0;
 
   private boolean  useibmcharset = false;
 
@@ -1409,62 +1461,84 @@ public abstract class vt320 extends VDU implements KeyListener {
         DCEvars[DCEvar] = 0;
         term_state = TSTATE_DCEQ;
         break;
+      case 's': // XTERM_SAVE missing!
+        if (true || debug>1)
+          System.out.println("ESC [ ? "+DCEvars[0]+" s unimplemented!");
+        break;
       case 'r': // XTERM_RESTORE
         if (true || debug>1)
           System.out.println("ESC [ ? "+DCEvars[0]+" r");
         /* DEC Mode reset */
-        switch (DCEvars[0]){
-        case 3: /* 80 columns*/
-          size = getSize();
-          setScreenSize(80,rows);
-          break;
-        case 4: /* scrolling mode, smooth */
-          break;
-        case 5: /* light background */
-          break;
-        case 6: /* move inside margins ? */
-          moveoutsidemargins = true;
-          break;
-        case 12:/* local echo off */
-          break;
-	default:
-          System.out.println("ESC [ ? "+DCEvars[0]+" r, unimplemented!");
-        }
+	for (i=0;i<=DCEvar;i++) {
+	  switch (DCEvars[i]){
+	  case 3: /* 80 columns*/
+	    size = getSize();
+	    setScreenSize(80,rows);
+	    break;
+	  case 4: /* scrolling mode, smooth */
+	    break;
+	  case 5: /* light background */
+	    break;
+	  case 6: /* move inside margins ? */
+	    moveoutsidemargins = true;
+	    break;
+	  case 12:/* local echo off */
+	    break;
+	  case    9: 	/* X10 mouse */
+	  case 1000:	/* xterm style mouse report on */
+	  case 1001:
+	  case 1002:
+	  case 1003:
+	    mouserpt = DCEvars[i];
+	    break;
+	  default:
+	    System.out.println("ESC [ ? "+DCEvars[0]+" r, unimplemented!");
+	  }
+	}
         break;
       case 'h': // DECSET
         if (debug>0)
           System.out.println("ESC [ ? "+DCEvars[0]+" h");
         /* DEC Mode set */
-        switch (DCEvars[0]){
-        case 1:  /* Application cursor keys */
-          KeyUp[0]  = "\u001bOA";
-          KeyDown[0]  = "\u001bOB";
-          KeyRight[0]= "\u001bOC";
-          KeyLeft[0]  = "\u001bOD";
-          break;
-        case 3: /* 132 columns*/
-          size = getSize();
-          setScreenSize(132,rows);
-          break;
-        case 6: /* move inside margins ? */
-          moveoutsidemargins = false;
-          break;
-        case 25: /* turn cursor on */
-	  showCursor(true);
-          redraw();
-          break;
+	for (i=0;i<=DCEvar;i++) {
+	  switch (DCEvars[i]){
+	  case 1:  /* Application cursor keys */
+	    KeyUp[0]  = "\u001bOA";
+	    KeyDown[0]  = "\u001bOB";
+	    KeyRight[0]= "\u001bOC";
+	    KeyLeft[0]  = "\u001bOD";
+	    break;
+	  case 3: /* 132 columns*/
+	    size = getSize();
+	    setScreenSize(132,rows);
+	    break;
+	  case 6: /* move inside margins ? */
+	    moveoutsidemargins = false;
+	    break;
+	  case 25: /* turn cursor on */
+	    showCursor(true);
+	    redraw();
+	    break;
+	  case    9: 	/* X10 mouse */
+	  case 1000:	/* xterm style mouse report on */
+	  case 1001:
+	  case 1002:
+	  case 1003:
+	    mouserpt = DCEvars[i];
+	    break;
 
-	/* unimplemented stuff, fall through */
-        /* 4  - scrolling mode, smooth */
-        /* 5  - light background */
-        /* 7  - DECAWM - wrap around mode */
-        /* 12 - local echo off */
-        /* 18 - DECPFF - Printer Form Feed Mode -> On */
-        /* 19 - DECPEX - Printer Extent Mode -> Screen */
-	default:
-          System.out.println("ESC [ ? "+DCEvars[0]+" h, unsupported.");
-	  break;
-        }
+	  /* unimplemented stuff, fall through */
+	  /* 4  - scrolling mode, smooth */
+	  /* 5  - light background */
+	  /* 7  - DECAWM - wrap around mode */
+	  /* 12 - local echo off */
+	  /* 18 - DECPFF - Printer Form Feed Mode -> On */
+	  /* 19 - DECPEX - Printer Extent Mode -> Screen */
+	  default:
+	    System.out.println("ESC [ ? "+DCEvars[0]+" h, unsupported.");
+	    break;
+	  }
+	}
         break;
       case 'i': // DEC Printer Control, autoprint, echo screenchars to printer
 		// This is different to CSI i!
@@ -1490,49 +1564,58 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* DEC Mode reset */
         if (debug>0)
           System.out.println("ESC [ ? "+DCEvars[0]+" l");
-        switch (DCEvars[0]){
-        case 1:  /* Application cursor keys */
-          KeyUp[0]  = "\u001b[A";
-          KeyDown[0]  = "\u001b[B";
-          KeyRight[0]= "\u001b[C";
-          KeyLeft[0]  = "\u001b[D";
-          break;
-        case 3: /* 80 columns*/
-          size = getSize();
-          setScreenSize(80,rows);
-          break;
-        case 6: /* move outside margins ? */
-          moveoutsidemargins = true;
-          break;
-        case 25: /* turn cursor off */
-	  showCursor(false);
-          redraw();
-          break;
-	/* Unimplemented stuff: */
-        /* 4  - scrolling mode, jump */
-        /* 5  - dark background */
-        /* 7  - DECAWM - no wrap around mode */
-        /* 12 - local echo on */
-        /* 18 - DECPFF - Printer Form Feed Mode -> Off*/
-        /* 19 - DECPEX - Printer Extent Mode -> Scrolling Region */
-	default:
-          System.out.println("ESC [ ? "+DCEvars[0]+" l, unsupported.");
-	  break;
-        }
+	for (i=0;i<=DCEvar;i++) {
+	  switch (DCEvars[i]){
+	  case 1:  /* Application cursor keys */
+	    KeyUp[0]  = "\u001b[A";
+	    KeyDown[0]  = "\u001b[B";
+	    KeyRight[0]= "\u001b[C";
+	    KeyLeft[0]  = "\u001b[D";
+	    break;
+	  case 3: /* 80 columns*/
+	    size = getSize();
+	    setScreenSize(80,rows);
+	    break;
+	  case 6: /* move outside margins ? */
+	    moveoutsidemargins = true;
+	    break;
+	  case 25: /* turn cursor off */
+	    showCursor(false);
+	    redraw();
+	    break;
+	  /* Unimplemented stuff: */
+	  /* 4  - scrolling mode, jump */
+	  /* 5  - dark background */
+	  /* 7  - DECAWM - no wrap around mode */
+	  /* 12 - local echo on */
+	  /* 18 - DECPFF - Printer Form Feed Mode -> Off*/
+	  /* 19 - DECPEX - Printer Extent Mode -> Scrolling Region */
+	  case    9: 	/* X10 mouse */
+	  case 1000:	/* xterm style mouse report OFF */
+	  case 1001:
+	  case 1002:
+	  case 1003:
+	    mouserpt = 0;
+	    break;
+	  default:
+	    System.out.println("ESC [ ? "+DCEvars[0]+" l, unsupported.");
+	    break;
+	  }
+	}
         break;
       case 'n':
-        if (debug>0)
-          System.out.println("ESC [ ? "+DCEvars[0]+" n");
-        switch (DCEvars[0]) {
-        case 15:
-          /* printer? no printer. */
-          write(((char)ESC)+"[?13n",false);
-          System.out.println("ESC[5n");
-          break;
+	if (debug>0)
+	  System.out.println("ESC [ ? "+DCEvars[0]+" n");
+	switch (DCEvars[0]) {
+	case 15:
+	  /* printer? no printer. */
+	  write(((char)ESC)+"[?13n",false);
+	  System.out.println("ESC[5n");
+	  break;
 	default:
-          System.out.println("ESC [ ? "+DCEvars[0]+" n, unsupported.");
-          break;
-        }
+	  System.out.println("ESC [ ? "+DCEvars[0]+" n, unsupported.");
+	  break;
+	}
         break;
       default:
         System.out.println("ESC [ ? "+DCEvars[0]+" "+c + ", unsupported.");

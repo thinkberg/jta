@@ -158,6 +158,10 @@ public class VDU extends Component
   private final static int COLOR_FG      = 0x78;
   private final static int COLOR_BG      = 0x780;
 
+  /** User defineable cursor colors */
+  private Color cursorColorFG = null;
+  private Color cursorColorBG = null;
+
   /** Scroll up when inserting a line. */
   public final static boolean SCROLL_UP   = false;
   /** Scroll down when inserting a line. */
@@ -200,6 +204,9 @@ public class VDU extends Component
 
     setForeground(Color.white);
     setBackground(Color.black);
+
+    cursorColorFG = color[COLOR_FG_STD];
+    cursorColorBG = color[COLOR_BG_STD];
 
     clearSelection();
 
@@ -1030,12 +1037,13 @@ public class VDU extends Component
        screenBase + cursorY >= windowBase && 
        screenBase + cursorY < windowBase + size.height)
     ) {
-      g.setColor(color[COLOR_FG_STD]);
-      g.setXORMode(color[COLOR_BG_STD]);
+      g.setColor(cursorColorFG);
+      g.setXORMode(cursorColorBG);
       g.fillRect( cursorX * charWidth + xoffset, 
                  (cursorY + screenBase - windowBase) * charHeight + yoffset,
                  charWidth, charHeight);
       g.setPaintMode();
+      g.setColor(color[COLOR_FG_STD]);
     }
 
     // draw border
@@ -1138,6 +1146,45 @@ public class VDU extends Component
     return value;
   }
 
+  /**
+   * Convert Mouse Event coordinates into character cell coordinates
+   * @param the mouse point to be converted
+   * @return Character cell coordinate of passed point
+   */
+  public Point mouseGetPos(Point evtpt)
+  {
+    Point mousepos;
+
+    mousepos = new Point(0,0);
+
+    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+
+    mousepos.x = (evtpt.x - xoffset) / charWidth;
+    if(mousepos.x < 0) mousepos.x = 0;
+    if(mousepos.x >= size.width) mousepos.x = size.width - 1;
+
+    mousepos.y = (evtpt.y - yoffset) / charHeight;
+    if(mousepos.y < 0) mousepos.y = 0;
+    if(mousepos.y >= size.height) mousepos.y = size.height - 1;
+
+    return mousepos;
+  }
+
+  /**
+   * Set cursor FG and BG colors
+   * @param fg foreground color or null
+   * @param bg background color or null
+   */
+  public void setCursorColors(Color fg, Color bg)
+  {
+    if (fg == null) cursorColorFG = color[COLOR_FG_STD];
+    else cursorColorFG = fg;
+    if (bg == null) cursorColorBG = color[COLOR_BG_STD];
+    else cursorColorBG = bg;
+    repaint();
+  }
+          
   /**
    * Reshape character display according to resize strategy.
    * @see #setResizeStrategy
@@ -1318,15 +1365,17 @@ public class VDU extends Component
    */
   public void mousePressed(MouseEvent evt) {
     requestFocus();
-    // looks like we get no modifiers here ...
-    //if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
-      int xoffset = (super.getSize().width - size.width * charWidth) / 2;
-      int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+
+    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+
+    // looks like we get no modifiers here ... ... We do? -Marcus
+    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
       selectBegin.x = (evt.getX() - xoffset) / charWidth;
       selectBegin.y = (evt.getY() - yoffset) / charHeight + windowBase;
       selectEnd.x = selectBegin.x;
       selectEnd.y = selectBegin.y;
-    //}
+    }
   }
 
   /**
