@@ -78,7 +78,6 @@ int shutdown(int,int);
 int close(int);
 int bind(int,struct sockaddr*,int);
 int listen(int,int);
-void bzero(char*,int);
 int select(int,fd_set *,fd_set*,fd_set*,struct timeval*);
 int accept(int,struct sockaddr*,int*);
 int connect(int,struct sockaddr*,int);
@@ -90,10 +89,6 @@ int recvfrom(int,char*,int,int,struct sockaddr*,int*);
 #ifdef hpux
 /* redefinition... to avoid prototype in <time.h> */
 #define FD_CAST int
-#endif
-
-#ifdef sgi
-void bzero(void*,int);
 #endif
 
 #ifndef FD_CAST
