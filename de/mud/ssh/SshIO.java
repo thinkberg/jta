@@ -204,6 +204,8 @@ public abstract class SshIO
 	
   protected abstract void write(byte[] buf) throws IOException;
 
+  public abstract String getTerminalType();
+
   byte[] one = new byte[1];
   private void write(byte b) throws IOException {
     one[0] = b;
@@ -678,7 +680,7 @@ public abstract class SshIO
    *   32-bit int   terminal width, pixels (0 if no graphics) (e.g., 480)
    */
   private byte[] Send_SSH_CMSG_REQUEST_PTY() throws IOException {
-    byte[] termType = SshMisc.createString("vt320"); // terminal type
+    byte[] termType = SshMisc.createString(getTerminalType()); // terminal type
     byte[] row = new byte[4];
     row[3] = (byte) 24;			// terminal height
     byte[] col = new byte[4];
