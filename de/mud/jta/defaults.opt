@@ -18,7 +18,7 @@
 # =======================================================================
 # common program defaults
 # =======================================================================
-plugins			=	Status,Socket,SSH,Terminal
+plugins			=	Status,Socket,Telnet,Terminal
 layout			=	BorderLayout
 layout.Terminal		=	Center
 
@@ -26,7 +26,7 @@ layout.Terminal		=	Center
 # Socket defaults
 # =======================================================================
 Socket.host		=	localhost
-Socket.port		=	22
+Socket.port		=	23
 
 # =======================================================================
 # Terminal defaults

@@ -85,6 +85,12 @@ public class Applet extends java.applet.Applet {
         System.err.println("jta: cannot load defaults");
       }
 
+      String value;
+      if((value = getParameter("plugins")) != null)
+        options.put("plugins", value);
+      if((value = getParameter("port")) != null)
+        options.put("Socket.port", value);
+
       // let the terminal resize to the max possible
       options.put("Terminal.resize", "font");
 

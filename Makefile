@@ -43,8 +43,9 @@ run:	app
 doc:	app
 	@echo Creating source documentation ...
 	@if [ ! -d doc ]; then mkdir doc; fi
-	@-rm -r doc/*.html doc/de
-	@javadoc -d doc -version -author -use -sourcepath $(CLASSPATH):. \
+	@-rm -r doc/source/*.html doc/source/de
+	@javadoc -d doc/source -version -author \
+	  -sourcepath $(CLASSPATH):. \
 	  `find de/mud -type d -print | \
 	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
 	@echo Source documentation done.
@@ -69,8 +70,11 @@ dist:	jar doc revision changes
 	  cp -r doc $(PKGNAME)/ && \
 	  touch "$(PKGNAME)/Created-$(DATE)" && \
 	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/index.html \
-	                                  > $(PKGNAME)/index.new.html && \
-	  mv $(PKGNAME)/index.new.html $(PKGNAME)/index.html && \
+	                                  > $(PKGNAME)/index.new && \
+	  mv $(PKGNAME)/index.new $(PKGNAME)/index.html && \
+	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/html/download.html \
+	                                  > $(PKGNAME)/html/download.new && \
+	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
 	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
 	 @rm -rf $(PKGNAME) 
 	 @echo Created jar/$(PKGNAME)-src.jar

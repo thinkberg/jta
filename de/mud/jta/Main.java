@@ -75,7 +75,8 @@ public class Main extends Frame {
     String error = parseOptions(options, args);
     if(error != null) {
       System.err.println(error);
-      System.err.println("usage: de.mud.jta.Main [-addplugin plugin] "
+      System.err.println("usage: de.mud.jta.Main [-plugins pluginlist] "
+                        +"[-addplugin plugin] "
                         +"[-term id] [host [port]]");
       System.exit(0);
     }
@@ -179,7 +180,12 @@ public class Main extends Frame {
   private static String parseOptions(Properties options, String args[]) {
     boolean host = false, port = false;
     for(int n = 0; n < args.length; n++) {
-      if(args[n].equals("-addplugin"))
+      if(args[n].equals("-plugins"))
+        if(!args[n+1].startsWith("-"))
+	  options.put("plugins", args[++n]);
+        else
+	  return "missing parameter for -plugins";
+      else if(args[n].equals("-addplugin"))
         if(!args[n+1].startsWith("-"))
 	  options.put("plugins", args[++n]+","+options.get("plugins"));
         else
