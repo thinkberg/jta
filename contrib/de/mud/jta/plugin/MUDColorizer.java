@@ -6,8 +6,15 @@ import de.mud.jta.PluginConfig;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.event.EndOfRecordRequest;
 import de.mud.jta.event.EndOfRecordListener;
+import de.mud.jta.event.ConfigurationListener;
 
 import java.io.IOException;
+
+import java.net.URL;
+
+import java.util.Properties;
+import java.util.Hashtable;
+import java.util.Enumeration;
 
 import gnu.regexp.RE;
 import gnu.regexp.REException;
@@ -23,7 +30,7 @@ import gnu.regexp.REException;
  * @author Thomas Kriegelstein
  */
 public class MUDColorizer extends Plugin
-    implements FilterPlugin, EndOfRecordListener {
+    implements FilterPlugin, EndOfRecordListener, ConfigurationListener {
 
     public static String BLACK   = "[30m";
     public static String RED     = "[31m";
@@ -49,34 +56,77 @@ public class MUDColorizer extends Plugin
      *  rewrite the prompt after the last \n
      */
 
-    private java.util.Hashtable exps = new java.util.Hashtable();
+    private Object[] exps = null;
 
     public MUDColorizer(PluginBus bus, final String id) {
-	super(bus, id);
-	bus.registerPluginListener(this);
-	try {
-	    exps.put(new RE("\\[Allgemein:.*\\].*"),BYELLOW);
-	    if (true) {
-		exps.put(new RE("\\[Abenteuer:.*\\].*"),YELLOW);
-		exps.put(new RE("\\[Magier:.*\\].*"),BGREEN);
-		exps.put(new RE("\\[D-chat:.*\\].*"),GREEN);
-		exps.put(new RE("\\[D-code:.*\\].*"),BCYAN);
-		exps.put(new RE(".* sagt: .*$"),BYELLOW);
-		exps.put(new RE(".* teilt Dir mit: .*"),CYAN);
-		exps.put(new RE("Du sagst: .*"),BOLD);
-		exps.put(new RE("Es gibt .* Ausga[e]?ng[e]?: .*\\..*"),CYAN);
-		exps.put(new RE("Ein.* .*\\. \\[/.*/.*\\]*.*"),RED);
-	    }
-	} catch (Exception e) {
-	    System.err.println("Something wrong with regexp: "+exps.size());
-	    System.err.println(e);
-	}
+		super(bus, id);
+		bus.registerPluginListener(this);
     }
+	public void setConfiguration(PluginConfig cfg) {
+		String tmp;
+		if((tmp = cfg.getProperty("MUDColorizer", id, "regexpSet")) != null) {
+			Properties regexpSet = new Properties();
+			
+			try {
+				regexpSet.load(getClass().getResourceAsStream(tmp));
+			} catch(Exception e) {
+				try {
+					regexpSet.load(new URL(tmp).openStream());
+				} catch(Exception ue) {
+					error("cannot find regexpSet: "+tmp);
+					error("resource access failed: "+e);
+					error("URL access failed: "+ue);
+					regexpSet = null;
+				}
+			}
+			
+			if (regexpSet!=null && !regexpSet.isEmpty()) {
+				exps = new Object[regexpSet.size()*2];
+				Hashtable colors = new Hashtable();
+				colors.put("BLACK", BLACK);
+				colors.put("RED", RED);
+				colors.put("BRED", BRED);
+				colors.put("GREEN", GREEN);
+				colors.put("BGREEN", BGREEN);
+				colors.put("YELLOW", YELLOW);
+				colors.put("BYELLOW", BYELLOW);
+				colors.put("BLUE", BLUE);
+				colors.put("BBLUE", BBLUE);
+				colors.put("PINK", PINK);
+				colors.put("BPINK", BPINK);
+				colors.put("CYAN", CYAN);
+				colors.put("BCYAN", BCYAN);
+				colors.put("WHITE", WHITE);
+				colors.put("BWHITE", BWHITE);
+				colors.put("NORMAL", NORMAL);
+				colors.put("BOLD", BOLD);
+				
+				Enumeration names = regexpSet.propertyNames();
+				int ex=0;
+				while(names.hasMoreElements()) {
+					String exp = (String)names.nextElement();
+					exp=(String)regexpSet.get(exp);
+					RE re = null;
+					try {
+						re = new RE(exp.substring(0,exp.indexOf("=")));
+					}
+					catch (Exception e) {
+						System.err.println("Something wrong with regexp: "+
+										   ex+"\t"+exp);
+						System.err.println(e);
+					}
+					exps[ex++]=re;
+					exps[ex++]=colors.get(exp.substring(exp.indexOf("=")+1,
+														exp.length()));
+				}		
+			}
+		}
+	}
     
     FilterPlugin source;
     
     public void setFilterSource(FilterPlugin source) {
-	this.source = source;
+		this.source = source;
     }
 
     public void EndOfRecord() {
@@ -122,11 +172,11 @@ public class MUDColorizer extends Plugin
 	    if (line[lp]=='\n') {
 		String l=new String(line,0,lp+1);
 		boolean colored=false;
-		java.util.Enumeration keys = exps.keys();
-		while(!colored && keys.hasMoreElements()) {
-		    RE exp = (RE)keys.nextElement();
+		boolean useexp=(exps!=null);
+		for (int ex=0;!colored && useexp && ex<exps.length; ex+=2) {
+		    RE exp = (RE)exps[ex];
 		    if (null!=exp.getMatch(l)) {
-			byte[] color=(byte[])((String)exps.get(exp)).getBytes();
+			byte[] color=(byte[])((String)exps[ex+1]).getBytes();
 			System.arraycopy(color,0,nbuf,nbufptr,color.length);
 			nbufptr+=color.length;
 			System.arraycopy(line,0,nbuf,nbufptr,lp+1);
