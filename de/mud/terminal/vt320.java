@@ -1168,8 +1168,8 @@ public abstract class vt320 extends VDU implements KeyListener {
         write(answerBack,false);
         break;
       case 12:
-        /* FF ? */ 
-	System.out.println("FormFeed ... should we clear the page?");
+        /* FormFeed, Home for the BBS world */ 
+        deleteArea(0,0,columns,rows);
 	C=R=0;
         break;
       case '\b': /* 8 */
