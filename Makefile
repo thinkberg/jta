@@ -85,12 +85,12 @@ dist:	jar doc revision changes
 	  (cd jar; for i in *.jar; do \
 	    echo 's/<!-- SIZE-'$$i' -->/'`\ls -l $$i | \
 	          awk '{printf("%dk", $$5/1024);}' `'/g'; \
-	  done; rm -f /tmp/jta.sed) >> /tmp/jta.sed && \
+	  done) >> /tmp/jta.sed && \
 	  sed -f /tmp/jta.sed < $(PKGNAME)/html/download.html \
 	                      > $(PKGNAME)/html/download.new && \
+	  rm -f /tmp/jta.sed && \
 	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
-	  sed -e 's/<!-- USER-LIST -->/'`bin/users.pl < html/users.db`'/g' \
-	    < $(PKGNAME)/html/users.html > $(PKGNAME)/html/users.html.new && \
+	  bin/users.pl > $(PKGNAME)/html/users.html.new && \
 	  mv $(PKGNAME)/html/users.html.new $(PKGNAME)/html/users.html && \
 	  rm -f $(PKGNAME)/tools/* $(PKGNAME)/html/user.db \
 	        $(PKGNAME)/bin/users.pl && \
