@@ -7,7 +7,7 @@ while(<USERDB>) {
   ($service, $name, $url, $telnet, $description) = split /[|]/;
   if(length $url) {
     print STDERR "Checking $url ... ";
-    if(length $url && !system("wget --timeout=10 --quiet --spider $url")) {
+    if(length $url && !system("wget --timeout=5 --quiet --spider $url")) {
       print STDERR "OK\n";
       $OUT{$service} .= "<LI><A HREF=\"$url\">$name</A>";
     } else {
