@@ -622,6 +622,8 @@ public abstract class vt320 extends VDU implements KeyListener {
    * @param s the string to be sent
    */
   private boolean writeSpecial(String s) {
+    if (s == null)
+      return true;
     if (((s.length() >= 3) && (s.charAt(0) == 27) && (s.charAt(1)=='O'))) {
       if (vt52mode) {
         if ((s.charAt(2) >= 'P') && (s.charAt(2) <= 'S')) {
@@ -754,7 +756,10 @@ public abstract class vt320 extends VDU implements KeyListener {
       write("\n",false);
       if (localecho) putString("\r\n"); // bad hack
     }
-    
+
+    if (keyCode == KeyEvent.VK_ESCAPE) // handled in keyPressed
+      return;
+
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
     // so we can't just use it here... will probably break some other VMS
     // codes.  -Marcus
@@ -1586,7 +1591,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         term_state = TSTATE_VT52Y;
         break;
       default:
-        System.out.println("ESC unknown letter: ("+((int)c)+")");
+        System.out.println("ESC unknown letter: "+c+" ("+((int)c)+")");
         break;
       }
       break;
