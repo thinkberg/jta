@@ -300,23 +300,27 @@ public class Terminal extends Plugin
 
     if((tmp = cfg.getProperty("Terminal", id, "keyCodes")) != null) {
       Properties keyCodes = new Properties();
-      URL keyCodeURL = getClass().getResource(tmp);
-	    
-      // if loading the file as resource does not work, try as URL
-      if(keyCodeURL == null) try {
-        keyCodeURL = new URL(tmp);
+      InputStream is = null;
+
+      try {
+        is = getClass().getResourceAsStream(tmp);
       } catch(Exception e) {
-        error(""+e);
+	// ignore error
       }
 
-     // load the key codes if we got a URL
-     if(keyCodeURL != null) try {
-       keyCodes.load(keyCodeURL.openStream());
-       terminal.setKeyCodes(keyCodes);
-     } catch(IOException e) {
-       error("cannot load keyCodes: "+e);
-     } else
-       error("could not load "+tmp);
+      if(is == null) try {
+        is = new URL(tmp).openStream();
+      } catch(Exception ue) {
+        error("cannot find: "+tmp);
+      }
+	    
+      // load the key codes if we got a URL
+      if(is != null) try {
+        keyCodes.load(is);
+        terminal.setKeyCodes(keyCodes);
+      } catch(IOException e) {
+        error("cannot load keyCodes: "+e);
+      }
     }
 
     if((tmp = cfg.getProperty("Terminal", id, "VMS")) != null)

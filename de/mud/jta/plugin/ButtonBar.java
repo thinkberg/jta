@@ -144,12 +144,15 @@ public class ButtonBar extends Plugin
 	try {
 	  is = getClass().getResourceAsStream(file);
 	} catch(Exception e) {
-          try {
-	    is = new URL(file).openStream();
-	  } catch(Exception ue) {
-            ButtonBar.this.error("cannot find "+file+": "+ue);
-	    return;
-	  }
+	  // ignore any errors here
+	}
+	
+	// if the resource access fails, try URL
+	if(is == null) try {
+	  is = new URL(file).openStream();
+	} catch(Exception ue) {
+	  ButtonBar.this.error("could not find: "+file);
+	  return;
 	}
 
 	// create a new stream tokenizer to read the file

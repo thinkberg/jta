@@ -69,7 +69,7 @@ jar:	app
 	  license/COPYING license/COPYING.LIB \
 	  de/mud/ssh/license.txt \
 	  `find $(SRCDIR) -name *.class` \
-	  `find $(SRCDIR) -name default.\*` > /dev/null
+	  `find $(SRCDIR) -name \*.conf` > /dev/null
 	@rm -f Created-*
 	@echo Created jar/$(PKGNAME).jar
 
