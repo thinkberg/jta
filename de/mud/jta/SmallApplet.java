@@ -171,11 +171,14 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
     byte[] t, b = new byte[256];
     int n = 0;
     while(n >= 0) try {
+      do {
+	  n=telnet.negotiate(b);
+	  if(debug > 0 && n > 0) 
+	    System.err.println("jta: \""+(new String(b, 0, n))+"\"");
+          if(n > 0) terminal.putString(new String(b, 0, n));
+      } while (n>0);
       n = is.read(b);
-      n = telnet.negotiate(b, n);
-      if(debug > 0 && n > 0) 
-        System.err.println("jta: \""+(new String(b, 0, n))+"\"");
-      if(n > 0) terminal.putString(new String(b, 0, n));
+      telnet.inputfeed(b,n);
     } catch(IOException e) {
       stop();
       break;
