@@ -4,6 +4,7 @@ JAVAC	=	javac
 DEBUG	=	-g -deprecation
 JFLAGS	=	-classpath $(CLASSPATH):.
 SRCDIR	=	de
+PKGNAME	=	telnet-v20
 
 .SUFFIXES:	.java .class
 
@@ -30,10 +31,30 @@ jar:	app
 	$(JAR) cvf jar/jta.jar `find $(SRCDIR) -name *.class` \
 	  `find $(SRCDIR) -name defaults.\*`
 
-dist:	clean doc
+dist:	clean doc revision changes
 	-mkdir jar
-	(cvs -Q -d $(CVSROOT) export -D now -d telnet-v20 telnet && \
-	  $(JAR) cvMf jar/jta-20-source.jar telnet-v20; rm -rf telnet-v20)
+	(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) telnet && \
+	 /bin/cp REVISION CHANGES $(PKGNAME)/ && \
+	 /bin/cp -r doc $(PKGNAME)/ && \
+	 $(JAR) cvMf jar/jta-20-source.jar $(PKGNAME) && \
+	 rm -rf $(PKGNAME))
+
+changes:
+	rcs2log > CHANGES
+
+revision:
+	@find de -name \*.java | xargs cat | grep @version | \
+	  awk 'BEGIN{ \
+	         printf("%-26.26s %2.2s.%-2.2s (%10s) %s\n", \
+		        "File","R","M", "Date", "Last Accessed by:"); \
+	       } \
+	       { \
+	         split($$5,rev,"."); \
+	         printf("%-26.26s %2.2s.%-2.2s (%10s) %s\n", \
+		   $$4,rev[1],rev[2],$$6,$$8); \
+	       }' \
+	  > REVISION
+
 # 
 # application dependencies
 #
