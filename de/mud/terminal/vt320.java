@@ -211,8 +211,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     this(80, 24, new Font("Monospaced", Font.PLAIN, 10));
   }
 
-  /** we should do localecho (passed from other modules). true is default */
-  private boolean localecho = true;
+  /** we should do localecho (passed from other modules). false is default */
+  private boolean localecho = false;
 
   /**
    * Enable or disable the local echo property of the terminal.

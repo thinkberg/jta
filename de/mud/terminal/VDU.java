@@ -893,7 +893,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * @see #markLine
    */
   public void redraw() {
-    update[0]+=2;
+    update[0]=2;
     repaint();
   }
 
@@ -908,7 +908,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
    * Paint the current screen. All painting is done here. Only lines that have
    * changed will be redrawn!
    */
-  public /*synchronized*/ void paint(Graphics g) {
+  public synchronized void paint(Graphics g) {
     if(screenLocked) return;
 
     // System.err.println("Clip region: "+g.getClipBounds());
