@@ -133,6 +133,15 @@ revision:
 	  > REVISION
 	  @echo Created REVISION.
 
+small:
+	jar cvf jar/jta20-small.jar \
+		license/COPYING* \
+		de/mud/jta/SmallApplet*class \
+		de/mud/telnet/TelnetProtocolHandler.class \
+		de/mud/terminal/VDU*class \
+		de/mud/terminal/vt320*class \
+		de/mud/terminal/SoftFont.class
+
 # 
 # application dependencies
 #
