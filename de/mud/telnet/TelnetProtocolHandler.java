@@ -40,13 +40,22 @@ public abstract class TelnetProtocolHandler {
   /** debug level */
   private final static int debug = 0;
 
+  /** temporary buffer for data-telnetstuff-data transformation */
   private byte[] tempbuf = new byte[0];
+
+  /** the data sent on pressing <RETURN>  \n */
+  private byte[] crlf = new byte[2];
+  /** the data sent on pressing <LineFeed>  \r */
+  private byte[] cr = new byte[2];
 
   /**
    * Create a new telnet protocol handler.
    */
   public TelnetProtocolHandler() {
     reset();
+
+    crlf[0] = 13; crlf[1] = 10;
+    cr[0] = 13; cr[1] = 0;
   }
 
   /**
@@ -236,7 +245,8 @@ public abstract class TelnetProtocolHandler {
     
     byte[] nbuf,xbuf;
     int nbufptr=0;
-    nbuf = new byte[buf.length*2];
+    nbuf = new byte[buf.length*2]; // FIXME: buffer overflows possible
+
     for (i = 0; i < buf.length ; i++) {
       switch (buf[i]) {
       // Escape IAC twice in stream ... to be telnet protocol compliant
@@ -248,13 +258,23 @@ public abstract class TelnetProtocolHandler {
       // we assume that the Terminal sends \n for lf+cr and \r for just cr
       // linefeed+carriage return is CR LF */ 
       case 10:	// \n
-	nbuf[nbufptr++]=13;
-	nbuf[nbufptr++]=10;
+	while (nbuf.length - nbufptr < crlf.length) {
+		xbuf = new byte[nbuf.length*2];
+    		System.arraycopy(nbuf,0,xbuf,0,nbufptr);
+		nbuf = xbuf;
+	}
+        for (int j=0;j<crlf.length;j++)
+	    nbuf[nbufptr++]=crlf[j];
 	break;
       // carriage return is CR NUL */ 
       case 13:	// \r
-	nbuf[nbufptr++]=13;
-	nbuf[nbufptr++]=0;
+	while (nbuf.length - nbufptr < cr.length) {
+		xbuf = new byte[nbuf.length*2];
+    		System.arraycopy(nbuf,0,xbuf,0,nbufptr);
+		nbuf = xbuf;
+	}
+        for (int j=0;j<cr.length;j++)
+	    nbuf[nbufptr++]=cr[j];
 	break;
       // all other characters are just copied
       default:
@@ -266,6 +286,9 @@ public abstract class TelnetProtocolHandler {
     System.arraycopy(nbuf,0,xbuf,0,nbufptr);
     write(xbuf);
   }
+
+  public void setCRLF(String xcrlf) { crlf = xcrlf.getBytes(); }
+  public void setCR(String xcr) { cr = xcr.getBytes(); }
 
   /**
    * Handle telnet protocol negotiation. The buffer will be parsed
