@@ -105,7 +105,7 @@ public class SSH extends Plugin implements FilterPlugin {
     // reset the protocol handler just in case :-)
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
-	if(pass == null || pass.length() == 0) {
+	if(pass == null) {
           final Frame frame = new Frame("SSH User Authentication");
           Panel panel = new Panel(new GridLayout(3,1));
 	  panel.add(new Label("SSH Authorization required"));
