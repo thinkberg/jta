@@ -12,44 +12,14 @@
 
 package de.mud.ssh;
 
-
-
-/**		EVOLUTION
- * 18/07/98 all of the bugs seem removed :-)
- * 09/07/98 last bug : OutOfMemoryError : 
- *			Thrown when the Java Virtual Machine cannot allocate an object because it is out 
- *			of memory, and no more memory could be made available by the garbage collector. 
- * 09/07/98 MD5 hash of the Server key provided for authentification
- * 15/06/98 problem of CRC solved (in fact some times a packet was discarded)
- * 12/06/98 I really have a problem with crc errors. I get check sum errors too often??
- * 11/06/98	Problem solved by using the cryptix in the pgp applet (they modified the package !!!)
- *			can't use the applet in the "sandbox" 
- * 06/06/98 I am back after some delighting exams !!!
- * 25/03/98 begining of the work on the display part.
- * 23/03/98 crc error !!: the first packet received after the SSH_CMSG_EXEC_SHELL message has a bad crc value !!! error from the server ??? after, everything is ok !
- * 20/03/98 pty
- * 17/03/98 Login & password accepted (we have solved every problem concerning encryption :-) )
- * 17/03/98 Problem in decrypting with IDEA 
- * 15/03/98 RSA problem solved with Fab (what a great supervisor ... )
- * 12/03/98 Mail to the Computer maintenance of SSH on thor : /var/adm/messages (log file)
- * 6/03/98  Design of the RSA/PKCS#1
- *			When we send SSH_CMSG_SESSION_KEY, the socket is closed by the server ( Fin-Wait-2 )
- * 1/01/98  CRC problem solved with the SSH sources (C++)
- * 27/02/98 Progress report (Problem with the CRC computation)
- *	
- */
-
-
 import java.io.IOException;
-
 //import java.security.SecureRandom; //not supported by netscape
-
-import cryptix.crypt.MD5; 
-
-
+import de.mud.ssh.MD5; 
 
 public abstract class SshIO 
 {
+
+  private MD5 md5 = new MD5();
 
   /**
    * variables for the connection
@@ -69,6 +39,8 @@ public abstract class SshIO
   private boolean encryption = false;
   private SshCrypto crypto;
   SshPacket lastPacketReceived;
+
+  String cipher_type = "IDEA";
 	
 					
   private String login = "", password = ""; 
@@ -119,12 +91,15 @@ public abstract class SshIO
   //
   // encryption types
   //
-  private int SSH_CIPHER_NONE = 0;	 // No encryption						//not supported on thor
-  private int SSH_CIPHER_IDEA = 1;  // IDEA in CFB mode				//Supported on thor, iplemented !
-  private int SSH_CIPHER_DES  = 2;  // DES in CBC mode						//not supported on thor
-  private int SSH_CIPHER_3DES = 3;  // Triple-DES in CBC mode			//Supported on thor, not implemented !
-  private int SSH_CIPHER_TSS  = 4;  // An experimental stream cipher		//not supported on thor
-  private int SSH_CIPHER_RC4  = 5;  // RC4
+  private int SSH_CIPHER_NONE = 0;	 // No encryption
+  private int SSH_CIPHER_IDEA = 1;  // IDEA in CFB mode		(patented)
+  private int SSH_CIPHER_DES  = 2;  // DES in CBC mode
+  private int SSH_CIPHER_3DES = 3;  // Triple-DES in CBC mode
+  private int SSH_CIPHER_TSS  = 4;  // An experimental stream cipher
+
+  private int SSH_CIPHER_RC4  = 5;  // RC4			(patented)
+
+  private int SSH_CIPHER_BLOWFISH  = 6;	// Bruce Scheiers blowfish (public d)
 
 
 		
@@ -165,8 +140,6 @@ public abstract class SshIO
    */
   synchronized public byte[] handleSSH(byte[] b) throws IOException {
     byte[] result = packetDone(handleBytes(b, 0, b.length));
-
-    System.err.println("handleSSH " + b.length + " bytes, "+b.toString()+"");
 
     while(lastPacketReceived != null && lastPacketReceived.toBeFinished) {
       byte[] buff = lastPacketReceived.unfinishedBuffer;
@@ -351,7 +324,7 @@ public abstract class SshIO
       if (hashHostKey!=null && hashHostKey.compareTo("")!=0) {
 	// we compute hashHostKeyBis the hash value in hexa of 
 	// host_key_public_modulus
-	byte[] Md5_hostKey = MD5.hash(host_key_public_modulus);
+	byte[] Md5_hostKey = md5.hash(host_key_public_modulus);
 	String hashHostKeyBis = "";
 	for(int i=0; i < Md5_hostKey.length; i++) {
 	  String hex = "";
@@ -517,12 +490,12 @@ public abstract class SshIO
     String str;
     int boffset;
 		
-    byte cipher_type;		//encryption types
+    byte cipher_types;		//encryption types
     byte[] session_key;		//mp-int
 
     // create the session id
-    //	session_id = MD5(hostkey->n || servkey->n || cookie) //protocol V 1.5. (we use this one)
-    //	session_id = MD5(servkey->n || hostkey->n || cookie) //protocol V 1.1.(Why is it different ??)
+    //	session_id = md5(hostkey->n || servkey->n || cookie) //protocol V 1.5. (we use this one)
+    //	session_id = md5(servkey->n || hostkey->n || cookie) //protocol V 1.1.(Why is it different ??)
     //
 		
     byte[] session_id_byte = new byte[host_key_public_modulus.length+server_key_public_modulus.length+anti_spoofing_cookie.length];
@@ -533,7 +506,7 @@ public abstract class SshIO
 
 		System.arraycopy(anti_spoofing_cookie,0,session_id_byte,host_key_public_modulus.length+server_key_public_modulus.length,anti_spoofing_cookie.length);
 
-    byte[] hash_md5 = MD5.hash(session_id_byte); 
+    byte[] hash_md5 = md5.hash(session_id_byte); 
 
 
     //	SSH_CMSG_SESSION_KEY : Sent by the client
@@ -542,12 +515,26 @@ public abstract class SshIO
     //	    mp-int       double-encrypted session key (uses the session-id)
     //	    32-bit int   protocol_flags
     //
-    cipher_type = (byte) SSH_CIPHER_IDEA; // SSH_CIPHER_NONE SSH_CIPHER_IDEA;
-    if (  (((1 << cipher_type) & 0xff) & supported_ciphers_mask[3])==0) { 
-      System.err.println("SshIO: remote server does not supported IDEA only encryption, support cypher mask is "+supported_ciphers_mask[3]+".\n");
-      disconnect();
-      return "\rRemote server does not support IDEA Key exchange, closing connection.\r\n".getBytes();
+    if ((supported_ciphers_mask[3] & (byte)(1<<SSH_CIPHER_BLOWFISH))!=0) {
+      cipher_types = (byte)SSH_CIPHER_BLOWFISH;
+      cipher_type = "Blowfish";
+    } else {
+      if ((supported_ciphers_mask[3] & (1<<SSH_CIPHER_IDEA)) != 0) {
+	cipher_types = (byte)SSH_CIPHER_IDEA;
+	cipher_type = "IDEA";
+      } else {
+	if ((supported_ciphers_mask[3] & (1<<SSH_CIPHER_3DES)) != 0) {
+	  cipher_types = (byte)SSH_CIPHER_3DES;
+	  cipher_type = "DES3";
+	} else {
+	  System.err.println("SshIO: remote server does not supported IDEA or BlowFish, support cypher mask is "+supported_ciphers_mask[3]+".\n");
+	  disconnect();
+	  return "\rRemote server does not support IDEA / Blowfish blockcipher, closing connection.\r\n".getBytes();
+	}
+      }
     }
+    System.out.println("SshIO: Using "+cipher_type+" blockcipher.\n");
+
 
     // 	anti_spoofing_cookie : the same 
     //      double_encrypted_session_key :
@@ -563,23 +550,23 @@ public abstract class SshIO
     /// java.util.Date date = new java.util.Date(); ////the number of milliseconds since January 1, 1970, 00:00:00 GMT. 
     //Math.random()   a pseudorandom double between 0.0 and 1.0. 
     random_bits2 = random_bits1 =
-      // MD5.hash("" + Math.random() * (new java.util.Date()).getDate());
-      MD5.hash("" + Math.random() * (new java.util.Date()).getTime());
+      // md5.hash("" + Math.random() * (new java.util.Date()).getDate());
+      md5.hash("" + Math.random() * (new java.util.Date()).getTime());
 
-    random_bits1 = MD5.hash(SshMisc.addArrayOfBytes(MD5.hash(password+login), 
+    random_bits1 = md5.hash(SshMisc.addArrayOfBytes(md5.hash(password+login), 
                             random_bits1));
-    random_bits2 = MD5.hash(SshMisc.addArrayOfBytes(MD5.hash(password+login),
+    random_bits2 = md5.hash(SshMisc.addArrayOfBytes(md5.hash(password+login),
                             random_bits2));
 
     // SecureRandom random = new java.security.SecureRandom(random_bits1); //no supported by netscape :-(
     // random.nextBytes(random_bits1);
     // random.nextBytes(random_bits2);
-			
+
     session_key  = SshMisc.addArrayOfBytes(random_bits1,random_bits2);
 
     //Xor the 16 first bytes with the session-id
     byte[] session_keyXored  = SshMisc.XORArrayOfBytes(random_bits1,hash_md5);
-    session_keyXored = SshMisc.addArrayOfBytes(session_keyXored, session_keyXored);
+    session_keyXored = SshMisc.addArrayOfBytes(session_keyXored, random_bits2);
 
     //We encrypt now!!
     byte[] encrypted_session_key = 
@@ -592,8 +579,8 @@ public abstract class SshIO
     //	protocol_flags :protocol extension   cf. page 18
     byte[] protocol_flags = new  byte[4];	//32-bit int
     protocol_flags [0] = protocol_flags [1] = 
-      protocol_flags [2] = protocol_flags [3]  = 0;
-		
+    protocol_flags [2] = protocol_flags [3] = 0;
+
     //set the data
     int length = 1 + //cipher_type
       anti_spoofing_cookie.length + 
@@ -603,22 +590,24 @@ public abstract class SshIO
 
     byte[] data = new byte[length];
     boffset = 0;
-    data[boffset++] = (byte) cipher_type;
-    for (int i=0; i<8; i++) data[boffset++] = anti_spoofing_cookie[i];
-    for (int i=0; i<encrypted_session_key.length; i++) data[boffset++] = encrypted_session_key[i];
-    for (int i=0; i<4; i++) data[boffset++] = protocol_flags[i];
+    data[boffset++] = (byte) cipher_types;
+
+    for (int i=0; i<8; i++)
+	data[boffset++] = anti_spoofing_cookie[i];
+
+    for (int i=0; i<encrypted_session_key.length; i++)
+	data[boffset++] = encrypted_session_key[i];
+
+    for (int i=0; i<4; i++)
+	data[boffset++] = protocol_flags[i];
 		
     //set the packet_type
     byte packet_type = SSH_CMSG_SESSION_KEY;
     SshPacket packet = createPacket(packet_type, data);
     sendPacket(packet);
 
-    if (cipher_type == (byte) SSH_CIPHER_IDEA) {
-      byte[] IDEAKey = new byte[16];
-      for(int i=0; i<16; i++) IDEAKey[i] = session_key[i];
-      crypto = new SshCrypto(IDEAKey);
-      encryption=true;
-    }
+    crypto = new SshCrypto(cipher_type,session_key);
+    encryption=true;
     return null;
   } //Send_SSH_CMSG_SESSION_KEY
 

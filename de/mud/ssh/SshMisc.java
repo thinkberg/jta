@@ -20,17 +20,11 @@ package de.mud.ssh;
 
 
 import java.io.IOException;
-
-
-import cryptix.crypt.MD5; 
+import de.mud.ssh.MD5;
 
 class SshMisc {
+  static MD5 md5 = new MD5();
 
-
-	
-	
-	
-	
   /**
    * return the strint at the position offset in the data
    *  First 4 bytes are the length of the string, msb first (not
@@ -64,17 +58,12 @@ class SshMisc {
     return str;
   }
 
-	
-	
-	
-	
   static public byte getNotZeroRandomByte() {
 		
     java.util.Date date = new java.util.Date();
     String randomString = String.valueOf( date.getTime() * Math.random() );
-    byte[] randomBytes = MD5.hash( randomString );
+    byte[] randomBytes = md5.hash( randomString );
     int i=0;
-
     while (i<20) {
       byte b=0;
       if (i<randomBytes.length) b = randomBytes[i];
@@ -83,9 +72,6 @@ class SshMisc {
     }
     return getNotZeroRandomByte();
   }
-
-
-	
 
   static public byte[] addArrayOfBytes(byte[] a, byte[]  b) {
     if (a==null) return b;
