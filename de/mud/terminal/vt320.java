@@ -1957,7 +1957,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           if (R>0)
             deleteArea(0,0,columns,R);
           if (C>0)
-            deleteArea(0,R,C,1);    // Ray: Should at least include character before this one, not C-1
+            deleteArea(0,R,C+1,1);	// include up to and including current
           break;
         case 2:
           deleteArea(0,0,columns,rows);
