@@ -62,6 +62,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import java.util.Properties;
+import java.util.Hashtable;
 
 /**
  * The terminal plugin represents the actual terminal where the
@@ -233,8 +234,50 @@ public class Terminal extends Plugin
     if((tmp = cfg.getProperty("Terminal", id, "background")) != null)
       terminal.setBackground(Color.decode(tmp));
  
-    if((tmp = cfg.getProperty("Terminal", id, "colorSet")) != null)
-      error("colorSet not implemented yet");
+    if((tmp = cfg.getProperty("Terminal", id, "colorSet")) != null) {
+      Properties colorSet = new Properties();
+
+      try {
+        colorSet.load(getClass().getResourceAsStream(tmp));
+      } catch(Exception e) {
+        try {
+          colorSet.load(new URL(tmp).openStream());
+        } catch(Exception ue) {
+	  error("cannot find colorSet: "+tmp);
+	  error("resource access failed: "+e);
+          error("URL access failed: "+ue);
+	  colorSet = null;
+        }
+      }
+
+      Hashtable colors = new Hashtable();
+      colors.put("black", Color.black);
+      colors.put("red", Color.red);
+      colors.put("green", Color.green);
+      colors.put("yellow", Color.yellow);
+      colors.put("blue", Color.blue);
+      colors.put("magenta", Color.magenta);
+      colors.put("orange", Color.orange);
+      colors.put("pink", Color.pink);
+      colors.put("cyan", Color.cyan);
+      colors.put("white", Color.white);
+      colors.put("gray", Color.white);
+        
+
+      if(colorSet != null) {
+        Color set[] = terminal.getColorSet();
+        for(int i = 0; i < 8; i++)
+          if((tmp = colorSet.getProperty("color"+i)) != null)
+	    if(colors.get(tmp) != null)
+	      set[i] = (Color)colors.get(tmp);
+	    else try {
+	      set[i] = Color.getColor(tmp);
+	    } catch(Exception e) {
+	      error("ignoring unknown color code: "+tmp);
+	    }
+        terminal.setColorSet(set);
+      }
+    }
  
     if((tmp = cfg.getProperty("Terminal", id, "border")) != null) {
       String size = tmp;
@@ -300,33 +343,32 @@ public class Terminal extends Plugin
 
     if((tmp = cfg.getProperty("Terminal", id, "keyCodes")) != null) {
       Properties keyCodes = new Properties();
-      InputStream is = null;
 
       try {
-        is = getClass().getResourceAsStream(tmp);
+        keyCodes.load(getClass().getResourceAsStream(tmp));
       } catch(Exception e) {
-	// ignore error
+        try {
+        keyCodes.load(new URL(tmp).openStream());
+        } catch(Exception ue) {
+          error("cannot find keyCodes: "+tmp);
+	  error("resource access failed: "+e);
+          error("URL access failed: "+ue);
+	  keyCodes = null;
+        }
       }
 
-      if(is == null) try {
-        is = new URL(tmp).openStream();
-      } catch(Exception ue) {
-        error("cannot find: "+tmp);
-      }
-	    
-      // load the key codes if we got a URL
-      if(is != null) try {
-        keyCodes.load(is);
+      // set the key codes if we got the properties
+      if(keyCodes != null) 
         terminal.setKeyCodes(keyCodes);
-      } catch(IOException e) {
-        error("cannot load keyCodes: "+e);
-      }
     }
 
     if((tmp = cfg.getProperty("Terminal", id, "VMS")) != null)
       terminal.setVMS((Boolean.valueOf(tmp)).booleanValue());
     if((tmp = cfg.getProperty("Terminal", id, "IBM")) != null)
       terminal.setIBMCharset((Boolean.valueOf(tmp)).booleanValue());
+
+
+    tPanel.setBackground(terminal.getBackground());
   }
 
   /**

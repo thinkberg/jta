@@ -1078,10 +1078,12 @@ public class VDU extends Component
   /**
    * Update the display. To reduce flashing we have overridden this method.
    */
+  /*
   public void update(Graphics g) {
     if(debug > 0) System.err.println("update()");
     paint(g);
   }
+  */
 
   /**
    * Paint the current screen. All painting is done here. Only lines that have
