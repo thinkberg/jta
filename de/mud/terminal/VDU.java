@@ -251,6 +251,8 @@ public class VDU extends Component
 
   public void setColorSet(Color[] colorset) {
     System.arraycopy(colorset, 0, color, 0, 8);
+    update[0] = true;
+    redraw();
   }
 
   public Color[] getColorSet() {
@@ -800,6 +802,8 @@ public class VDU extends Component
       charHeight = fm.getHeight();
       charDescent = fm.getDescent();
     }
+    if(update != null) update[0] = true;
+    redraw();
   }
       
   /**
@@ -845,7 +849,7 @@ public class VDU extends Component
     topMargin = 0;
     bottomMargin = height - 1;
     update = new boolean[height + 1];
-    for(int i = 0; i <= height; i++) update[i] = true;
+    update[0] = true;
     screenLocked = false;
   }
 
