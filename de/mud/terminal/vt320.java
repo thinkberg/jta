@@ -483,6 +483,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   private static char gr = 2;		// default GR to G2
   private static int onegl = -1;	// single shift override for GL.
 
+  // map from scoansi linedrawing to DEC
+  private final static String scoansi_acs="3x4u?kZl@mYjEnBwDqCtAvMq:xNnIl;kHm<j";
   // array to store DEC Special -> Unicode mapping
   //  Unicode   DEC  Unicode name    (DEC name)
   private static char DECSPECIAL[] = {
@@ -1267,6 +1269,18 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    if ( c >= '\u0020' && c <= '\u007f' ) {
 	      switch (gx[thisgl]) {
 	      case '0':
+	        // Remap SCOANSI line drawing to VT100 line drawing chars
+		// for our SCO using customers.
+	        if ( terminalID.equals("scoansi") ) {
+		   byte[] arr = scoansi_acs.getBytes();
+		   int i;
+		   for (i=0;i<arr.length;i+=2) {
+		      if (c==arr[i]) {
+			c=(char)arr[i+1];
+			break;
+		      }
+		   }
+		}
 		if ( c >= '\u005f' && c <= '\u007e' ) {
 		  c = DECSPECIAL[(short)c - 0x5f];
 		  mapped = true;
@@ -2129,13 +2143,13 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* 10 - ANSI X3.64-1979, select primary font, don't display control
 	 *      chars, don't set bit 8 on output */
 	  case 10:
-           gl = 0;
+           gl = 0;usedcharsets = true;
 	   break;
         /* 11 - ANSI X3.64-1979, select second alt. font, display control
 	 *      chars, set bit 8 on output */
 	  case 11: /* SMACS , as */
 	  case 12: 
-	   gl = 1;
+	   gl = 1;usedcharsets = true;
 	   break;
           case 25: /* blinking off */
             break;
