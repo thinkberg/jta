@@ -184,7 +184,7 @@ public abstract class TelnetProtocolHandler {
   /**
    * Send a Telnet Escape character (IAC <code>)
    */
-  private void sendTelnetControl(byte code)
+  public void sendTelnetControl(byte code)
     throws IOException {
     byte[] b = new byte[2];
 
