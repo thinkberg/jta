@@ -49,9 +49,8 @@ import java.io.IOException;
 /**
  * Secure Shell plugin for the Java Telnet Application. This is a plugin
  * to be used instead of Telnet for secure remote terminal sessions over
- * insecure networks. The implementation uses code that was derived from
- * </I>Cedric Gourio</I>'s implementation that used parts of the old Java
- * Telnet Applet. Have a look at the package de.mud.ssh for further information
+ * insecure networks. 
+ * Take a look at the package de.mud.ssh for further information
  * about ssh or look at the official ssh homepage:
  * <A HREF="http://www.ssh.org/">http://www.ssh.fi/</A>.
  * <P>
@@ -112,8 +111,6 @@ public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
           final Frame frame = new Frame("SSH User Authentication");
           Panel panel = new Panel(new GridLayout(3,1));
 	  panel.add(new Label("SSH Authorization required"));
-	  panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
-          panel.add(new Label("Adapted 1999 to the JTA by Matthias L. Jugel"));
 	  frame.add("North", panel);
           panel = new Panel(new GridLayout(2,2));
 	  final TextField login = new TextField(user, 10);
