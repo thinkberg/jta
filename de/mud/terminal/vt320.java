@@ -376,6 +376,9 @@ public abstract class vt320 extends VDU implements KeyListener {
   public void setTerminalID(String terminalID) { 
     this.terminalID = terminalID; 
   }
+  public void setAnswerBack(String ab) { 
+    this.answerBack = unEscape(ab); 
+  }
 
   /**
    * Get the terminal id used to identify this terminal.
@@ -411,6 +414,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   // private long pressedWhen = ' ';
 
   private String terminalID = "vt320";
+  private String answerBack = "Use Terminal.answerback to set ...\n";
 
   // X - COLUMNS, Y - ROWS
   int  R,C;
@@ -1159,6 +1163,9 @@ public abstract class vt320 extends VDU implements KeyListener {
       case ESC:
         term_state = TSTATE_ESC;
         lastwaslf=0;
+        break;
+      case 5: /* ENQ */
+        write(answerBack,false);
         break;
       case 12:
         /* FF ? */ 
