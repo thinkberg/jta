@@ -151,6 +151,7 @@ public class Telnet extends Plugin implements FilterPlugin {
 	if (n==-1) // buffer empty.
 	  break;
       }
+      return 0;
     }
   }
 
