@@ -483,24 +483,18 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     /* DISABLED: this is non-portable :(
     if (keyChar == 0x7f) {
-      write(Remove[0]);
+      write(Remove[0],false);
       return;
     }
     */
     if(shift && (keyChar == '\t')) {
-      write(KeyBacktab);
+      write(KeyBacktab,false);
       return;
     }
     if (alt) {
       write(""+((char)(keyChar|0x80)));
       return;
     }
-    /*
-    if(capslock && !shift) {
-      write((""+keyChar).toUpperCase());
-      return;
-    }
-    */
     if(!(keyChar == '\r' || keyChar == '\n') || control)
       write(""+keyChar);
   }
@@ -594,43 +588,43 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
 
     switch (keyCode) {
-      case KeyEvent.VK_F1: write(fmap[1]); break;
-      case KeyEvent.VK_F2: write(fmap[2]); break;
-      case KeyEvent.VK_F3: write(fmap[3]); break;
-      case KeyEvent.VK_F4: write(fmap[4]); break;
-      case KeyEvent.VK_F5: write(fmap[5]); break;
-      case KeyEvent.VK_F6: write(fmap[6]); break;
-      case KeyEvent.VK_F7: write(fmap[7]); break;
-      case KeyEvent.VK_F8: write(fmap[8]); break;
-      case KeyEvent.VK_F9: write(fmap[9]); break;
-      case KeyEvent.VK_F10: write(fmap[10]); break;
-      case KeyEvent.VK_F11: write(fmap[11]); break;
-      case KeyEvent.VK_F12: write(fmap[12]); break;
-      case KeyEvent.VK_UP: write(KeyUp); break;
-      case KeyEvent.VK_DOWN: write(KeyDown); break;
-      case KeyEvent.VK_LEFT: write(KeyLeft); break;
-      case KeyEvent.VK_RIGHT: write(KeyRight); break;
-      case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind]); break;
-      case KeyEvent.VK_PAGE_UP: write(PrevScn[xind]); break;
-      case KeyEvent.VK_INSERT: write(Insert[xind]); break;
-      case KeyEvent.VK_DELETE: write(Remove[xind]); break;
+      case KeyEvent.VK_F1: write(fmap[1],false); break;
+      case KeyEvent.VK_F2: write(fmap[2],false); break;
+      case KeyEvent.VK_F3: write(fmap[3],false); break;
+      case KeyEvent.VK_F4: write(fmap[4],false); break;
+      case KeyEvent.VK_F5: write(fmap[5],false); break;
+      case KeyEvent.VK_F6: write(fmap[6],false); break;
+      case KeyEvent.VK_F7: write(fmap[7],false); break;
+      case KeyEvent.VK_F8: write(fmap[8],false); break;
+      case KeyEvent.VK_F9: write(fmap[9],false); break;
+      case KeyEvent.VK_F10: write(fmap[10],false); break;
+      case KeyEvent.VK_F11: write(fmap[11],false); break;
+      case KeyEvent.VK_F12: write(fmap[12],false); break;
+      case KeyEvent.VK_UP: write(KeyUp,false); break;
+      case KeyEvent.VK_DOWN: write(KeyDown,false); break;
+      case KeyEvent.VK_LEFT: write(KeyLeft,false); break;
+      case KeyEvent.VK_RIGHT: write(KeyRight,false); break;
+      case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind],false); break;
+      case KeyEvent.VK_PAGE_UP: write(PrevScn[xind],false); break;
+      case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
+      case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
       case KeyEvent.VK_HOME:
         if(vms) 
-	  write("" + (char)8);
+	  write("" + (char)8,false);
         else
-	  write(KeyHome[xind]);
+	  write(KeyHome[xind],false);
 	break;
       case KeyEvent.VK_END:
         if(vms)
-	  write("" + (char)5);
+	  write("" + (char)5,false);
         else
-	  write(KeyEnd[xind]);
+	  write(KeyEnd[xind],false);
 	break;
       case KeyEvent.VK_NUM_LOCK:
         if(vms && control)
 	  if(pressedKey != keyCode) {
 	    pressedKey = keyCode;
-	    write(PF1);
+	    write(PF1,false);
 	  } else
 	    //  Here, we eat a second numlock since that returns numlock state
 	    pressedKey = ' ';
