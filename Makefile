@@ -20,7 +20,7 @@ JAR	=	jar
 JAVAC	=	javac
 #DEBUG	=	-g -deprecation
 DEBUG	=	-O
-JFLAGS	=	-classpath $(CLASSPATH):jar/cryptix.jar:.
+JFLAGS	=	-classpath $(CLASSPATH):jar/cryptix.jar:jar/capsapi.zip:.
 SRCDIR	=	de
 PKGNAME	=	jta20
 VERSION	=	`java -version 2>&1 | head -1 | \
@@ -94,7 +94,8 @@ dist:	all opt revision changes
 	                                  > $(PKGNAME)/index.new && \
 	  mv $(PKGNAME)/index.new $(PKGNAME)/index.html && \
 	  echo "s/<!-- DATE -->/$(DATE)/g" > /tmp/jta.sed && \
-	  (cd $(PKGNAME); make cont; rm -r contrib/de; \
+	  (cd $(PKGNAME); make cont; \
+	   rm -r contrib/de/mud/bsx contrib/de/mud/jta/plugin/BSX*; \
 	   $(JAR) cvMf ../jar/contrib.jar contrib) &&\
 	  (cd jar; for i in *.jar; do \
 	    echo 's/<!-- SIZE-'$$i' -->/'`\ls -l $$i | \
@@ -109,6 +110,7 @@ dist:	all opt revision changes
 	  rm -r $(PKGNAME)/tools/* \
 	        $(PKGNAME)/html/users.db \
 	        $(PKGNAME)/bin/users.pl && \
+          (cd $(PKGNAME); $(MAKE) clean) && \
 	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME) \
 	 ) > /dev/null 
 	@rm -rf $(PKGNAME) 

@@ -54,6 +54,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
+// this is to allow system clipboard access for Netscape
+import netscape.security.PrivilegeManager;
+
 /**
  * <B>The Java Telnet Applet</B><P>
  * This is the implementation of whole set of applications. It's modular
@@ -199,6 +202,8 @@ public class Applet extends java.applet.Applet {
 
         // set up the clipboard
         try {
+	  // this works for Netscape only!
+	  PrivilegeManager.enablePrivilege("UniversalSystemClipboardAccess");
           clipboard = appletFrame.getToolkit().getSystemClipboard();
         } catch(Exception e) {
           System.err.println("Applet: system clipboard access denied: "+e);
