@@ -68,9 +68,10 @@ public class Main extends Frame {
       System.exit(0);
     }
 
-    final Frame frame = new Frame("jta: "
-                                 +options.getProperty("Socket.host")
-                                 +options.getProperty("Socket.port"));
+    String host = options.getProperty("Socket.host");
+    String port = options.getProperty("Socket.port");
+
+    final Frame frame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
 
     // configure the application and load all plugins
     Common setup = new Common(options);
@@ -98,8 +99,7 @@ public class Main extends Frame {
     frame.pack();
     frame.show();
 
-    setup.broadcast(new SocketRequest(options.getProperty("Socket.host"),
-                     Integer.parseInt(options.getProperty("Socket.port"))));
+    setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
   }
 
   /**
@@ -107,20 +107,32 @@ public class Main extends Frame {
    * with the new values if applicable.
    * <P><SMALL>
    * This method does not work with jdk 1.1.x as the setProperty()
-   * method is not available. You need to comment this method out
-   * and replace the class for the old jdk!
+   * method is not available. So it used the put() method from 
+   * Hashtable instead.
    * </SMALL>
    * @param options the original options
    * @param args the command line parameters
    * @return a possible error message if problems occur
    */
   private static String parseOptions(Properties options, String args[]) {
+    boolean host = false, port = false;
     for(int n = 0; n < args.length; n++) {
-      if(args[n].equals("-term"))
+      if(args[n].equals("-addplugin"))
         if(!args[n+1].startsWith("-"))
-          /* options.setProperty("Terminal.id", args[++n]) */;
+	  options.put("plugins", options.get("plugins")+","+args[++n]);
+        else
+	  return "missing parameter for -addplugin";
+      else if(args[n].equals("-term"))
+        if(!args[n+1].startsWith("-"))
+          options.put("Terminal.id", args[++n]);
         else 
 	  return "missing parameter for -term";
+      else if(!host) {
+	options.put("Socket.host", args[n]); host = true;
+      } else if(host && !port) {
+	options.put("Socket.port", args[n]); port = true;
+      } else
+        return "unknown parameter '"+args[n]+"'";
     }
     return null;
   }

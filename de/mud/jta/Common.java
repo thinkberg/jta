@@ -48,8 +48,9 @@ public class Common extends PluginLoader {
 
   public Common(Properties config) {
     System.out.println("** The Java(tm) Telnet Application");
+    System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
     System.out.println("** Copyright (c) 1996-1999 Matthias L. Jugel, "
-                      +"Marcus Meiﬂner");
+                      +"Marcus Meissner");
 
     plugins = new Hashtable();
     components = new Hashtable();
