@@ -67,7 +67,7 @@ dist:	jar doc revision changes
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
 	  cp REVISION CHANGES $(PKGNAME)/ && \
-	  cp -r doc $(PKGNAME)/ && \
+	  cp -r doc/source $(PKGNAME)/doc/ && \
 	  touch "$(PKGNAME)/Created-$(DATE)" && \
 	  sed "s/<!-- DATE -->/$(DATE)/g" < $(PKGNAME)/index.html \
 	                                  > $(PKGNAME)/index.new && \
