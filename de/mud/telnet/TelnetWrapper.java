@@ -178,6 +178,7 @@ public class TelnetWrapper extends TelnetProtocolHandler {
       if (n<0)
         return n;
       inputfeed(b,n);
+      n = negotiate(b);
     }
     return n;
   }
