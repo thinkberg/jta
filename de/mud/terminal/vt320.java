@@ -2077,6 +2077,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	for (int i=0;i<DCEvars[0];i++)
 	  insertChar(C,R,' ',attributes);
 	break;
+      case 'X':
+        if (debug>1)
+          System.out.println("ESC [ "+DCEvars[0]+" X, C="+C+",R="+R);
+	if (DCEvars[0]==0) DCEvars[0]=1;
+	for (int i=0;(i<DCEvars[0]) && (C+i<columns);i++)
+          putChar(C+i,R,' ');
+	// does not change cursorpos.
+        break;
       case 'P':
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" P, C="+C+",R="+R);
