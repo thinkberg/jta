@@ -270,7 +270,7 @@ public class Applet extends java.applet.Applet {
 
 	// only add the menubar if the property is true
         if((new Boolean(options.getProperty("Applet.detach.menuBar"))
-           .booleanValue())) {
+           .booleanValue()))
           ((Frame)appletFrame).setMenuBar(mb);
 
 	// add window closing event handler
