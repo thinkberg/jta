@@ -1045,7 +1045,8 @@ public class VDU extends Component
         ) {
           if(charArray[windowBase + l][c + addr] < ' ') {
             charArray[windowBase + l][c + addr] = ' ';
-	    charAttributes[windowBase + l][c + addr] = currAttr;
+	    charAttributes[windowBase + l][c + addr] = 0;
+	    continue;
 	  }
           addr++;
         }
