@@ -292,14 +292,14 @@ public class Applet extends java.applet.Applet {
 
 	pluginLoader.registerPluginListener(new OnlineStatusListener() {
 	  public void online() {
-	 		Online=true;
-			if(((Frame)appletFrame).isVisible() == false) {
-      	((Frame)appletFrame).setVisible(true);
-			}
+            Online=true;
+            if(((Frame)appletFrame).isVisible() == false)
+      	      ((Frame)appletFrame).setVisible(true);
 	  }
 	  public void offline() {
-	 		Online=false;
-	    ((Frame)appletFrame).setVisible(false);
+	    if(disconnectCloseWindow)
+	      ((Frame)appletFrame).setVisible(false);
+            Online=false;
 	    close.setLabel(startText != null ? startText : "Connect");
 	  }
 	});
