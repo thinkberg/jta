@@ -189,6 +189,7 @@ public abstract class SshIO {
 
   public void disconnect() {
     // System.err.println("In Disconnect");
+    idstr = "";
     login = "";
     password = "";
     phase = 0;
@@ -234,11 +235,14 @@ public abstract class SshIO {
         // followed by newline character(ascii 10 = '\n' or '\r')
         idstr += (char) b;
         if (b == '\n') {
-          phase++;
           if (!idstr.substring(0, 4).equals("SSH-")) {
-            System.out.println("Received invalid ID string: " + idstr + ", (substr " + idstr.substring(0, 4) + ")");
-            throw (new IOException());
+              // we need to ignore lines of data that precede the idstr
+              if (debug > 0)
+                System.out.print("Received data line: " + idstr);
+              idstr = "";
+              continue;
           }
+          phase++;
           remotemajor = Integer.parseInt(idstr.substring(4, 5));
           String minorverstr = idstr.substring(6, 8);
           if (!Character.isDigit(minorverstr.charAt(1)))
@@ -600,6 +604,7 @@ public abstract class SshIO {
       case SSH_SMSG_FAILURE:
         if (lastPacketSentType == SSH_CMSG_AUTH_PASSWORD) {// password incorrect ???
           System.out.println("failed to log in");
+          Send_SSH_MSG_DISCONNECT("Failed to log in.");
           disconnect();
           return "\nLogin & password not accepted\r\n";
         }
@@ -732,6 +737,7 @@ public abstract class SshIO {
             cipher_type = "DES";
           } else {
             System.err.println("SshIO: remote server does not supported IDEA, BlowFish or 3DES, support cypher mask is " + supported_ciphers_mask[3] + ".\n");
+            Send_SSH_MSG_DISCONNECT("No more auth methods available.");
             disconnect();
             return "\rRemote server does not support IDEA/Blowfish/3DES blockcipher, closing connection.\r\n";
           }
@@ -791,6 +797,17 @@ public abstract class SshIO {
     packet.putInt32(protocol_flags);
     sendPacket1(packet);
     crypto = new SshCrypto(cipher_type, session_key);
+    return "";
+  }
+
+  /**
+   * SSH_MSG_DISCONNECT
+   *   string       disconnect reason
+   */
+  private String Send_SSH_MSG_DISCONNECT(String reason) throws IOException {
+    SshPacket1 p = new SshPacket1(SSH_MSG_DISCONNECT);
+    p.putString(reason);    // String   Disconnect reason
+    sendPacket1(p);
     return "";
   }
 
