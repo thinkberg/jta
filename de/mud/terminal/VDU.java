@@ -730,18 +730,24 @@ public class VDU extends Component
     if(amount < maxBufSize) {
       char cbuf[][] = new char[amount][size.width];
       int abuf[][] = new int[amount][size.width];
+      int copyStart = bufSize - amount < 0 ? 0 : bufSize - amount;
+      int copyCount = bufSize - amount < 0 ? bufSize : amount;
       if(charArray != null)
-        System.arraycopy(charArray, bufSize - amount, cbuf, 0, amount);
+        System.arraycopy(charArray, copyStart, cbuf, 0, copyCount);
       if(charAttributes != null)
-        System.arraycopy(charAttributes, bufSize - amount, abuf, 0, amount);
+        System.arraycopy(charAttributes, copyStart, abuf, 0, copyCount);
       charArray = cbuf;
       charAttributes = abuf;
+      bufSize = copyCount;
+      screenBase = bufSize - size.height;
+      windowBase = screenBase;
     }
     maxBufSize = amount;
  
     screenLocked = false;
 
-    repaint();
+    update[0] = true;
+    redraw();
   }
 
   /**
@@ -770,7 +776,8 @@ public class VDU extends Component
     if(line > screenBase) line = screenBase;
     else if(line < 0) line = 0;
     windowBase = line;
-    repaint();
+    update[0] = true;
+    redraw();
   }
 
   /**
@@ -917,157 +924,149 @@ public class VDU extends Component
    */
   public void redraw() {
     if(debug > 0) System.err.println("redraw()");
-    update[0] = true;
 
-    if(backingStore == null || screenLocked) return;
+    if(backingStore != null) {
 
-    Graphics g = backingStore.getGraphics();
+      Graphics g = backingStore.getGraphics();
 
-    if(debug > 0) {
-      System.err.println("Clip region: "+g.getClipBounds());
-      System.err.println("paint()");
-      for(int l = 0; l < size.height; l++) 
-        if(update[l])
-          System.err.println("update["+l+"] = "+update[l]);
-    }
 
-    int xoffset = (super.getSize().width - size.width * charWidth) / 2;
-    int yoffset = (super.getSize().height - size.height * charHeight) / 2;
+      int xoffset = (super.getSize().width - size.width * charWidth) / 2;
+      int yoffset = (super.getSize().height - size.height * charHeight) / 2;
 
-    Color fg = color[COLOR_FG_STD];
-    Color bg = color[COLOR_BG_STD];
+      Color fg = color[COLOR_FG_STD];
+      Color bg = color[COLOR_BG_STD];
 
-    g.setFont(normalFont);
+      g.setFont(normalFont);
 
-    for(int l = 0; l < size.height; l++) {
-      if(update[0] && !update[l + 1]) continue;
-      update[l + 1] = false;
-      for(int c = 0; c < size.width; c++) {
-        int addr = 0;
-        int currAttr = charAttributes[windowBase + l][c];
+      for(int l = 0; l < size.height; l++) {
+        if(!update[0] && !update[l + 1]) continue;
+        update[l + 1] = false;
+        for(int c = 0; c < size.width; c++) {
+          int addr = 0;
+          int currAttr = charAttributes[windowBase + l][c];
 
-        fg = getForeground();
-        bg = getBackground();
-        // fg = color[COLOR_FG_STD];
-    	// bg = color[COLOR_BG_STD];
+          fg = getForeground();
+          bg = getBackground();
 
-	// Special handling of BOLD for terminals used on 5ESS 
-        if(((currAttr & BOLD) != 0)   &&
-	   ((currAttr & COLOR_FG) == 0) &&
-	   ((currAttr & COLOR_BG) == 0))
-	  fg = color[COLOR_FG_BOLD];
+	  // Special handling of BOLD for terminals used on 5ESS 
+          if(((currAttr & BOLD) != 0)   &&
+	     ((currAttr & COLOR_FG) == 0) &&
+	     ((currAttr & COLOR_BG) == 0))
+	    fg = color[COLOR_FG_BOLD];
 
-        if ((currAttr & COLOR_FG) != 0)
-          fg = color[((currAttr & COLOR_FG) >> 3)-1];
-        if ((currAttr & COLOR_BG) != 0)
-          bg = color[((currAttr & COLOR_BG) >> 7)-1];
+          if ((currAttr & COLOR_FG) != 0)
+            fg = color[((currAttr & COLOR_FG) >> 3)-1];
+          if ((currAttr & COLOR_BG) != 0)
+            bg = color[((currAttr & COLOR_BG) >> 7)-1];
 
-        if((currAttr & BOLD) != 0)
-          if(fg.equals(Color.black))
-            fg = Color.gray;
-          else {
-	    fg = fg.brighter();
-	    bg = bg.brighter();
-	  }
+          if((currAttr & BOLD) != 0)
+            if(fg.equals(Color.black))
+              fg = Color.gray;
+            else {
+	      fg = fg.brighter();
+	      bg = bg.brighter();
+	    }
 
-        if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }
+          if((currAttr & INVERT) != 0) { Color swapc = bg; bg=fg;fg=swapc; }
 
-        if (sf.inSoftFont(charArray[windowBase + l][c])) {
-          g.setColor(bg);	
-          g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset, 
-		     charWidth, charHeight);
-          g.setColor(fg);	
-          sf.drawChar(g,charArray[windowBase + l][c],xoffset+c*charWidth,
-		      l*charHeight+yoffset, charWidth, charHeight);
+          if (sf.inSoftFont(charArray[windowBase + l][c])) {
+            g.setColor(bg);	
+            g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset, 
+		       charWidth, charHeight);
+            g.setColor(fg);	
+            sf.drawChar(g,charArray[windowBase + l][c],xoffset+c*charWidth,
+		        l*charHeight+yoffset, charWidth, charHeight);
+            if((currAttr & UNDERLINE) != 0)
+              g.drawLine(c * charWidth + xoffset,
+                       (l+1) * charHeight - charDescent / 2 + yoffset,
+                       c * charWidth + charWidth + xoffset, 
+                       (l+1) * charHeight - charDescent / 2 + yoffset);
+            continue;
+          }
+        
+	  // determine the maximum of characters we can print in one go
+          while(c + addr < size.width && 
+                charAttributes[windowBase + l][c + addr] == currAttr &&
+                !sf.inSoftFont(charArray[windowBase + l ][c+addr])
+          ) {
+            if(charArray[windowBase + l][c + addr] < ' ')
+              charArray[windowBase + l][c + addr] = ' ';
+            addr++;
+          }
+        
+          // clear the part of the screen we want to change (fill rectangle)
+          g.setColor(bg);
+          g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
+                     addr * charWidth, charHeight);
+
+          g.setColor(fg);
+        
+	  // draw the characters
+          g.drawChars(charArray[windowBase + l], c, addr, 
+                      c * charWidth + xoffset, 
+                      (l+1) * charHeight - charDescent + yoffset);
+
           if((currAttr & UNDERLINE) != 0)
             g.drawLine(c * charWidth + xoffset,
-                     (l+1) * charHeight - charDescent / 2 + yoffset,
-                     c * charWidth + charWidth + xoffset, 
-                     (l+1) * charHeight - charDescent / 2 + yoffset);
-          continue;
+                       (l+1) * charHeight - charDescent / 2 + yoffset,
+                       c * charWidth + addr * charWidth + xoffset, 
+                       (l+1) * charHeight - charDescent / 2 + yoffset);
+          
+          c += addr - 1;
         }
-        
-	// determine the maximum of characters we can print in one go
-        while(c + addr < size.width && 
-              charAttributes[windowBase + l][c + addr] == currAttr &&
-              !sf.inSoftFont(charArray[windowBase + l ][c+addr])
-        ) {
-          if(charArray[windowBase + l][c + addr] < ' ')
-            charArray[windowBase + l][c + addr] = ' ';
-          addr++;
+      }
+
+      if(screenBase + cursorY >= windowBase && 
+         screenBase + cursorY < windowBase + size.height) {
+        g.setColor(color[COLOR_FG_STD]);
+        g.setXORMode(color[COLOR_BG_STD]);
+        g.fillRect( cursorX * charWidth + xoffset, 
+                   (cursorY + screenBase - windowBase) * charHeight + yoffset,
+                   charWidth, charHeight);
+        g.setPaintMode();
+      }
+
+      if(windowBase <= selectBegin.y || windowBase <= selectEnd.y) {
+        int beginLine = selectBegin.y - windowBase;
+        int endLine = selectEnd.y - selectBegin.y;
+        if(beginLine < 0) {
+          endLine += beginLine;
+          beginLine = 0;
         }
-        
-        // clear the part of the screen we want to change (fill rectangle)
-        g.setColor(bg);
-        g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
-                   addr * charWidth, charHeight);
-
-        g.setColor(fg);
-        
-	// draw the characters
-        g.drawChars(charArray[windowBase + l], c, addr, 
-                    c * charWidth + xoffset, 
-                    (l+1) * charHeight - charDescent + yoffset);
-
-        if((currAttr & UNDERLINE) != 0)
-          g.drawLine(c * charWidth + xoffset,
-                     (l+1) * charHeight - charDescent / 2 + yoffset,
-                     c * charWidth + addr * charWidth + xoffset, 
-                     (l+1) * charHeight - charDescent / 2 + yoffset);
-        
-        c += addr - 1;
-      }
-    }
-
-    if(screenBase + cursorY >= windowBase && 
-       screenBase + cursorY < windowBase + size.height) {
-      g.setColor(color[COLOR_FG_STD]);
-      g.setXORMode(color[COLOR_BG_STD]);
-      g.fillRect( cursorX * charWidth + xoffset, 
-                 (cursorY + screenBase - windowBase) * charHeight + yoffset,
-                 charWidth, charHeight);
-      g.setPaintMode();
-    }
-
-    if(windowBase <= selectBegin.y || windowBase <= selectEnd.y) {
-      int beginLine = selectBegin.y - windowBase;
-      int endLine = selectEnd.y - selectBegin.y;
-      if(beginLine < 0) {
-        endLine += beginLine;
-        beginLine = 0;
-      }
-      if(endLine > size.height) endLine = size.height - beginLine;
+        if(endLine > size.height) endLine = size.height - beginLine;
        
-      g.setXORMode(color[COLOR_BG_STD]);
-      g.fillRect(selectBegin.x * charWidth + xoffset,
-                 beginLine * charHeight + yoffset,
-                 (endLine == 0 ? (selectEnd.x - selectBegin.x) : 
-                  (size.width - selectBegin.x)) 
-                 * charWidth,
-                 charHeight);
-      if(endLine > 1)
-        g.fillRect(0 + xoffset, 
-                   (beginLine + 1) * charHeight + yoffset, 
-                   size.width * charWidth, 
-                   (endLine - 1) * charHeight);
-      if(endLine > 0)
-        g.fillRect(0 + xoffset, 
-                   (beginLine + endLine) * charHeight + yoffset,
-                   selectEnd.x * charWidth, 
+        g.setXORMode(color[COLOR_BG_STD]);
+        g.fillRect(selectBegin.x * charWidth + xoffset,
+                   beginLine * charHeight + yoffset,
+                   (endLine == 0 ? (selectEnd.x - selectBegin.x) : 
+                    (size.width - selectBegin.x)) 
+                   * charWidth,
                    charHeight);
-      g.setPaintMode();
-    }
+        if(endLine > 1)
+          g.fillRect(0 + xoffset, 
+                     (beginLine + 1) * charHeight + yoffset, 
+                     size.width * charWidth, 
+                     (endLine - 1) * charHeight);
+        if(endLine > 0)
+          g.fillRect(0 + xoffset, 
+                     (beginLine + endLine) * charHeight + yoffset,
+                     selectEnd.x * charWidth, 
+                     charHeight);
+        g.setPaintMode();
+      }
     
-    if(insets != null) {
-      g.setColor(getBackground());
-      xoffset--; yoffset--;
-      for(int i = insets.top - 1; i >= 0; i--)
-        g.draw3DRect(xoffset - i, yoffset - i,
-                     charWidth * size.width + 1 + i * 2, 
-                     charHeight * size.height + 1 + i * 2,
-                     raised);
+      if(insets != null) {
+        g.setColor(getBackground());
+        xoffset--; yoffset--;
+        for(int i = insets.top - 1; i >= 0; i--)
+          g.draw3DRect(xoffset - i, yoffset - i,
+                       charWidth * size.width + 1 + i * 2, 
+                       charHeight * size.height + 1 + i * 2,
+                       raised);
+      }
+      update[0] = false;
+
     }
-    update[0] = false;
 
     repaint();
   }
@@ -1088,8 +1087,12 @@ public class VDU extends Component
     if(backingStore == null) {
       Dimension size = super.getSize();
       backingStore = createImage(size.width, size.height);
+      update[0] = true;
       redraw();
     }
+
+    if(debug > 0)
+      System.err.println("Clip region: "+g.getClipBounds());
 
     g.drawImage(backingStore, 0, 0, this);
   }
@@ -1266,8 +1269,10 @@ public class VDU extends Component
         selectEnd.x = x;
         selectEnd.y = y;
       }
-      if(oldx != x || oldy != y) 
-        repaint();
+      if(oldx != x || oldy != y) {
+	update[0] = true;
+        redraw();
+      }
     }
   }
 
@@ -1312,7 +1317,8 @@ public class VDU extends Component
   
       if(selectBegin.x == selectEnd.x &&
          selectBegin.y == selectEnd.y) {
-        repaint();
+	update[0] = true;
+        redraw();
         return;
       }
       selection = "";
@@ -1332,7 +1338,6 @@ public class VDU extends Component
 	if(end == charArray[l].length - 1)
 	  selection += "\n";
       }
-      //repaint();
     }
   } 
 

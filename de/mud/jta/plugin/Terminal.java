@@ -131,11 +131,24 @@ public class Terminal extends Plugin
 	}
       }
     });
+    menu.add(item = new MenuItem("Buffer +50"));
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        terminal.setBufferSize(terminal.getBufferSize() + 50);
+      }
+    });
+    menu.add(item = new MenuItem("Buffer -50"));
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        terminal.setBufferSize(terminal.getBufferSize() - 50);
+      }
+    });
+    menu.addSeparator();
     menu.add(item = new MenuItem("Reset Terminal"));
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-	    terminal.reset();
-	  }
+        terminal.reset();
+      }
     });
     
     } // !personalJava
