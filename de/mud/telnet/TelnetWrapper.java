@@ -131,7 +131,9 @@ public class TelnetWrapper extends TelnetProtocolHandler {
 
   /**
    * Wait for a string to come from the remote host and return all
-   * that characters that are received until that happens.
+   * that characters that are received until that happens (including
+   * the string being waited for).
+   *
    * @param match the string to look for
    * @return skipped characters
    */
