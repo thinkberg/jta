@@ -935,6 +935,7 @@ public class VDU extends Component
     for(int l = 0; l < size.height; l++) {
       if(!update[0] && !update[l + 1]) continue;
       update[l + 1] = false;
+      if(debug > 2) System.err.println("redraw(): line "+l);
       for(int c = 0; c < size.width; c++) {
         int addr = 0;
         int currAttr = charAttributes[windowBase + l][c];
@@ -1065,7 +1066,7 @@ public class VDU extends Component
   /**
    * Paint the current screen using the backing store image.
    */
-  public void paint(Graphics g) {
+  public synchronized void paint(Graphics g) {
     if(backingStore == null) {
       Dimension size = super.getSize();
       backingStore = createImage(size.width, size.height);

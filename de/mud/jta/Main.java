@@ -269,6 +269,13 @@ public class Main {
     } // !personalJava
 
     frame.pack();
+
+    if((new Boolean(options.getProperty("Applet.detach.fullscreen"))
+         .booleanValue()))
+      frame.setSize(frame.getToolkit().getScreenSize());
+    else
+      frame.pack();
+
     frame.show();
 
     setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
