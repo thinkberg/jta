@@ -34,6 +34,7 @@ import java.util.Vector;
 import java.util.Properties;
 
 import java.awt.Dimension;
+import de.mud.jta.Wrapper;
 
 /**
  * The telnet wrapper is a sample class for how to use the telnet protocol
@@ -61,66 +62,40 @@ import java.awt.Dimension;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class TelnetWrapper extends TelnetProtocolHandler {
+public class TelnetWrapper extends Wrapper {
+  protected TelnetProtocolHandler handler;
 
   /** debugging level */
   private final static int debug = 0;
 
-  protected ScriptHandler scriptHandler = new ScriptHandler();
-  private Thread reader;
+  TelnetWrapper() {
+	handler = new TelnetProtocolHandler() {
+	  /** get the current terminal type */
+	  public String getTerminalType() {
+	    return "vt320";
+	  }
+	  /** get the current window size */
+	  public Dimension getWindowSize() {
+	    return new Dimension(80,25);
+	  }
+	  /** notify about local echo */
+	  public void setLocalEcho(boolean echo) {
+	    /* EMPTY */
+	  }
+	  /** write data to our back end */
+	  public void write(byte[] b) throws IOException {
+	    out.write(b);
+	  }
 
-  protected InputStream in;
-  protected OutputStream out;
-  protected Socket socket;
-  protected String host;
-  protected int port = 23;
-  protected Vector script = new Vector();
+	  /** sent on IAC EOR (prompt terminator for remote access systems). */
+	  public void notifyEndOfRecord() {
+	  }
+	};
+  }
 
-  /** Connect the socket and open the connection. */
   public void connect(String host, int port) throws IOException {
-    if(debug>0) System.err.println("TelnetWrapper: connect("+host+","+port+")");
-    try {
-      socket = new java.net.Socket(host, port);
-      in = socket.getInputStream();
-      out = socket.getOutputStream();
-      reset();
-    } catch(Exception e) {
-      System.err.println("TelnetWrapper: "+e);
-      disconnect();
-      throw ((IOException)e);
-    }
-  }  
- 
-  /** Disconnect the socket and close the connection. */
-  public void disconnect() throws IOException {
-    if(debug>0) System.err.println("TelnetWrapper: disconnect()");
-    if (socket != null)
-	socket.close();
-  }
-
-  /** sent on IAC EOR (prompt terminator for remote access systems). */
-  public void notifyEndOfRecord() {
-  }
-
-  /**
-   * Login into remote host. This is a convenience method and only
-   * works if the prompts are "login:" and "Password:".
-   * @param user the user name 
-   * @param pwd the password
-   */
-  public void login(String user, String pwd) throws IOException {
-    waitfor("login:");		// throw output away
-    send(user);
-    waitfor("Password:");	// throw output away
-    send(pwd);
-  }
-
-  /**
-   * Set the prompt for the send() method.
-   */
-  private String prompt = null;
-  public void setPrompt(String prompt) {
-    this.prompt = prompt;
+    super.connect(host,port);
+    handler.reset();
   }
 
   /**
@@ -133,56 +108,10 @@ public class TelnetWrapper extends TelnetProtocolHandler {
   public String send(String cmd) throws IOException {
     byte arr[]; 
     arr = (cmd+"\n").getBytes();
-    transpose(arr);
-    if(prompt != null)
-      return waitfor(prompt);
+    handler.transpose(arr);
+    if(getPrompt() != null)
+      return waitfor(getPrompt());
     return null;
-  }
-
-  /**
-   * Wait for a string to come from the remote host and return all
-   * that characters that are received until that happens (including
-   * the string being waited for).
-   *
-   * @param match the string to look for
-   * @return skipped characters
-   */
-
-  public String waitfor( String[] searchElements ) throws IOException {
-    ScriptHandler[] handlers = new ScriptHandler[searchElements.length];
-    for ( int i = 0; i < searchElements.length; i++ ) {
-      // initialize the handlers
-      handlers[i] = new ScriptHandler();
-      handlers[i].setup( searchElements[i] );
-    }
-
-    byte[] b = new byte[256];
-    int n = 0;
-    StringBuffer ret = new StringBuffer();
-    String current;
-
-    while(n >= 0) {
-      n = read(b);
-      if(n > 0) {
-	current = new String( b, 0, n );
-	if (debug > 0)
-	  System.err.print( current );
-	ret.append( current );
-	for ( int i = 0; i < handlers.length ; i++ ) {
-	  if ( handlers[i].match( b, n ) ) {
-	    return ret.toString();
-	  } // if
-	} // for
-      } // if
-    } // while
-    return null; // should never happen
-  }
-
-  public String waitfor(String match) throws IOException {
-    String[] matches = new String[1];
-
-    matches[0] = match;
-    return waitfor(matches);
   }
 
   /**
@@ -192,44 +121,23 @@ public class TelnetWrapper extends TelnetProtocolHandler {
    * @return the amount of bytes read
    */
   public int read(byte[] b) throws IOException {
-    int n = negotiate(b);
+    int n = handler.negotiate(b);
 
     if (n>0)
       return n;
 
     while (n<=0) {
       do {
-	n = negotiate(b);
+	n = handler.negotiate(b);
 	if (n>0)
 	  return n;
       } while (n==0);
       n = in.read(b);
       if (n<0)
         return n;
-      inputfeed(b,n);
-      n = negotiate(b);
+      handler.inputfeed(b,n);
+      n = handler.negotiate(b);
     }
     return n;
-  }
-
-  /**
-   * Write data to the socket.
-   * @param b the buffer to be written
-   */
-  public void write(byte[] b) throws IOException {
-    out.write(b);
-  }
-
-  public String getTerminalType() {
-    return "dumb";
-  }
-
-  public Dimension getWindowSize() {
-    return new Dimension(80,24);
-  }
-
-  public void setLocalEcho(boolean echo) {
-    if(debug > 0)
-      System.err.println("local echo "+(echo ? "on" : "off"));
   }
 }
