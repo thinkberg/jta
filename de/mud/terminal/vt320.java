@@ -1155,6 +1155,13 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 'c':
         /* Hard terminal reset */
+	/* reset character sets */
+	gx[0] = 'B';
+	gx[1] = '0';
+	gx[2] = 'A';
+	gx[3] = '<';
+	gl = 0;  // default GL to G0
+	gr = 1;  // default GR to G1
 	/* reset tabs */
 	int nw = getColumns();
 	if (nw<132) nw=132;
@@ -1874,5 +1881,24 @@ public abstract class vt320 extends VDU implements KeyListener {
   if (doshowcursor)
     setCursorPosition(C, R);
   markLine(R,1);
+  }
+
+  /* hard reset the terminal */
+  public void reset() {
+    gx[0] = 'B';
+    gx[1] = '0';
+    gx[2] = 'A';
+    gx[3] = '<';
+    gl = 0;  // default GL to G0
+    gr = 1;  // default GR to G1
+    /* reset tabs */
+    int nw = getColumns();
+    if (nw<132) nw=132;
+    Tabs = new byte[nw];
+    for (int i=0;i<nw;i+=8) {
+      Tabs[i]=1;
+    }
+    /*FIXME:*/
+    term_state = TSTATE_DATA;
   }
 }

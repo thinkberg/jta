@@ -131,6 +131,12 @@ public class Terminal extends Plugin
 	}
       }
     });
+    menu.add(item = new MenuItem("Reset Terminal"));
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+	    terminal.reset();
+	  }
+    });
     
     } // !personalJava
 
