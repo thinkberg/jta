@@ -241,7 +241,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	b[4] = (byte) (0x20 + pos.x + 1);
 	b[5] = (byte) (0x20 + pos.y + 1);
 
-	write(b);
+	write(b); // FIXME: writeSpecial here
       }
       public void mouseReleased(MouseEvent evt) {
         if (mouserpt==0)
@@ -268,7 +268,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	b[3] = (byte)mousecode;
 	b[4] = (byte) (0x20 + pos.x + 1);
 	b[5] = (byte) (0x20 + pos.y + 1);
-	write(b);
+	write(b); // FIXME: writeSpecial here
 	mousebut = 0;
       }
     });
@@ -436,6 +436,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   int  insertmode  = 0;
   int  statusmode = 0;
   boolean  vt52mode  = false;
+  boolean  keypadmode  = false; /* false - numeric, true - application */
+  boolean  output8bit  = false;
   int  normalcursor  = 0;
   boolean moveoutsidemargins = true;
   boolean wraparound = true;
@@ -476,6 +478,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private final static int TSTATE_ESCSPACE  = 13; /* ESC <space> */
   private final static int TSTATE_VT52X  = 14;
   private final static int TSTATE_VT52Y  = 15;
+  private final static int TSTATE_CSI_TICKS  = 16;
 
   /* The graphics charsets
    * B - default ASCII
@@ -603,17 +606,24 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   /**
    * A small conveniance method thar converts a 7bit string to the 8bit
-   * version if VT52 mode is not set.
+   * version depending on VT52/Output8Bit mode.
+   *
    * @param s the string to be sent
-   * @param doecho echo to terminal
    */
-  private boolean writeNumpad(String s) {
-    if (((s.length() == 3) && (s.charAt(0) == 27) && (s.charAt(1)=='O'))) {
+  private boolean writeSpecial(String s) {
+    if (((s.length() >= 3) && (s.charAt(0) == 27) && (s.charAt(1)=='O'))) {
       if (vt52mode) {
       	s="\u001b?"+s.substring(2); /* ESC ? x */
       } else {
-	s="\u008f"+s.substring(2);  /* SS3 ? x */
+        if (output8bit) {
+	  s="\u008f"+s.substring(2);  /* SS3 x */
+	} /* else keep string as it is */
       }
+    }
+    if (((s.length() >= 3) && (s.charAt(0) == 27) && (s.charAt(1)=='['))) {
+      if (output8bit) {
+        s="\u009b"+s.substring(2); /* CSI ... */
+      } /* else keep */
     }
     return write(s,false);
   }
@@ -643,33 +653,33 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (shift || control)
 	   sendTelnetCommand((byte)243); // BREAK
 	break;
-      case KeyEvent.VK_F1: write(fmap[1],false); break;
-      case KeyEvent.VK_F2: write(fmap[2],false); break;
-      case KeyEvent.VK_F3: write(fmap[3],false); break;
-      case KeyEvent.VK_F4: write(fmap[4],false); break;
-      case KeyEvent.VK_F5: write(fmap[5],false); break;
-      case KeyEvent.VK_F6: write(fmap[6],false); break;
-      case KeyEvent.VK_F7: write(fmap[7],false); break;
-      case KeyEvent.VK_F8: write(fmap[8],false); break;
-      case KeyEvent.VK_F9: write(fmap[9],false); break;
-	  case KeyEvent.VK_F10: write(fmap[10],false); break;
-	  case KeyEvent.VK_F11: write(fmap[11],false); break;
-      case KeyEvent.VK_F12: write(fmap[12],false); break;
-      case KeyEvent.VK_UP: write(KeyUp[xind],false); break;
-      case KeyEvent.VK_DOWN: write(KeyDown[xind],false); break;
-      case KeyEvent.VK_LEFT: write(KeyLeft[xind],false); break;
-      case KeyEvent.VK_RIGHT: write(KeyRight[xind],false); break;
-      case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind],false); break;
-      case KeyEvent.VK_PAGE_UP: write(PrevScn[xind],false); break;
-      case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
-      case KeyEvent.VK_DELETE: write(Remove[xind],false); break;
-      case KeyEvent.VK_ESCAPE: write(Escape[xind],false); break;
-      case KeyEvent.VK_BACK_SPACE: write(BackSpace[xind]); break;
-      case KeyEvent.VK_HOME: write(KeyHome[xind],false); break;
-      case KeyEvent.VK_END: write(KeyEnd[xind],false); break;
+      case KeyEvent.VK_F1: writeSpecial(fmap[1]); break;
+      case KeyEvent.VK_F2: writeSpecial(fmap[2]); break;
+      case KeyEvent.VK_F3: writeSpecial(fmap[3]); break;
+      case KeyEvent.VK_F4: writeSpecial(fmap[4]); break;
+      case KeyEvent.VK_F5: writeSpecial(fmap[5]); break;
+      case KeyEvent.VK_F6: writeSpecial(fmap[6]); break;
+      case KeyEvent.VK_F7: writeSpecial(fmap[7]); break;
+      case KeyEvent.VK_F8: writeSpecial(fmap[8]); break;
+      case KeyEvent.VK_F9: writeSpecial(fmap[9]); break;
+	  case KeyEvent.VK_F10: writeSpecial(fmap[10]); break;
+	  case KeyEvent.VK_F11: writeSpecial(fmap[11]); break;
+      case KeyEvent.VK_F12: writeSpecial(fmap[12]); break;
+      case KeyEvent.VK_UP: writeSpecial(KeyUp[xind]); break;
+      case KeyEvent.VK_DOWN: writeSpecial(KeyDown[xind]); break;
+      case KeyEvent.VK_LEFT: writeSpecial(KeyLeft[xind]); break;
+      case KeyEvent.VK_RIGHT: writeSpecial(KeyRight[xind]); break;
+      case KeyEvent.VK_PAGE_DOWN: writeSpecial(NextScn[xind]); break;
+      case KeyEvent.VK_PAGE_UP: writeSpecial(PrevScn[xind]); break;
+      case KeyEvent.VK_INSERT: writeSpecial(Insert[xind]); break;
+      case KeyEvent.VK_DELETE: writeSpecial(Remove[xind]); break;
+      case KeyEvent.VK_ESCAPE: writeSpecial(Escape[xind]); break;
+      case KeyEvent.VK_BACK_SPACE: writeSpecial(BackSpace[xind]); break;
+      case KeyEvent.VK_HOME: writeSpecial(KeyHome[xind]); break;
+      case KeyEvent.VK_END: writeSpecial(KeyEnd[xind]); break;
       case KeyEvent.VK_NUM_LOCK:
         if(vms && control) {
-	  writeNumpad(PF1);
+	  writeSpecial(PF1);
 	}
 	if(!control)
 	  numlock = !numlock;
@@ -741,29 +751,29 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(vms) {
       if(keyChar == 127 && !control) {
 	if (shift) 
-	  writeNumpad(Insert[0]);        //  VMS shift delete = insert
+	  writeSpecial(Insert[0]);        //  VMS shift delete = insert
 	else
-	  writeNumpad(Remove[0]);        //  VMS delete = remove
+	  writeSpecial(Remove[0]);        //  VMS delete = remove
 	return;
       } else if(control)
 	switch(keyChar) {
-	case '0': writeNumpad(Numpad[0]); return;
-	case '1': writeNumpad(Numpad[1]); return;
-	case '2': writeNumpad(Numpad[2]); return;
-	case '3': writeNumpad(Numpad[3]); return;
-	case '4': writeNumpad(Numpad[4]); return;
-	case '5': writeNumpad(Numpad[5]); return;
-	case '6': writeNumpad(Numpad[6]); return;
-	case '7': writeNumpad(Numpad[7]); return;
-	case '8': writeNumpad(Numpad[8]); return;
-	case '9': writeNumpad(Numpad[9]); return;
-	case '.': writeNumpad(KPPeriod); return;
+	case '0': writeSpecial(Numpad[0]); return;
+	case '1': writeSpecial(Numpad[1]); return;
+	case '2': writeSpecial(Numpad[2]); return;
+	case '3': writeSpecial(Numpad[3]); return;
+	case '4': writeSpecial(Numpad[4]); return;
+	case '5': writeSpecial(Numpad[5]); return;
+	case '6': writeSpecial(Numpad[6]); return;
+	case '7': writeSpecial(Numpad[7]); return;
+	case '8': writeSpecial(Numpad[8]); return;
+	case '9': writeSpecial(Numpad[9]); return;
+	case '.': writeSpecial(KPPeriod); return;
 	case '-':
-	case 31:  writeNumpad(KPMinus); return;
-	case '+': writeNumpad(KPComma); return;
-	case 10:  writeNumpad(KPEnter); return;
-	case '/': writeNumpad(PF2); return;
-	case '*': writeNumpad(PF3); return;
+	case 31:  writeSpecial(KPMinus); return;
+	case '+': writeSpecial(KPComma); return;
+	case 10:  writeSpecial(KPEnter); return;
+	case '/': writeSpecial(PF2); return;
+	case '*': writeSpecial(PF3); return;
 	/* NUMLOCK handled in keyPressed */
 	default:
 		break;
@@ -787,18 +797,18 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
 
     if(evt.isActionKey()) switch(keyCode) {
-      case KeyEvent.VK_NUMPAD0: write(Numpad[0],false); return;
-      case KeyEvent.VK_NUMPAD1: write(Numpad[1],false); return;
-      case KeyEvent.VK_NUMPAD2: write(Numpad[2],false); return;
-      case KeyEvent.VK_NUMPAD3: write(Numpad[3],false); return;
-      case KeyEvent.VK_NUMPAD4: write(Numpad[4],false); return;
-      case KeyEvent.VK_NUMPAD5: write(Numpad[5],false); return;
-      case KeyEvent.VK_NUMPAD6: write(Numpad[6],false); return;
-      case KeyEvent.VK_NUMPAD7: write(Numpad[7],false); return;
-      case KeyEvent.VK_NUMPAD8: write(Numpad[8],false); return;
-      case KeyEvent.VK_NUMPAD9: write(Numpad[9],false); return;
-      case KeyEvent.VK_DECIMAL:	write(NUMDot[xind],false); return;
-      case KeyEvent.VK_ADD: 	write(NUMPlus[xind],false); return;
+      case KeyEvent.VK_NUMPAD0: writeSpecial(Numpad[0]); return;
+      case KeyEvent.VK_NUMPAD1: writeSpecial(Numpad[1]); return;
+      case KeyEvent.VK_NUMPAD2: writeSpecial(Numpad[2]); return;
+      case KeyEvent.VK_NUMPAD3: writeSpecial(Numpad[3]); return;
+      case KeyEvent.VK_NUMPAD4: writeSpecial(Numpad[4]); return;
+      case KeyEvent.VK_NUMPAD5: writeSpecial(Numpad[5]); return;
+      case KeyEvent.VK_NUMPAD6: writeSpecial(Numpad[6]); return;
+      case KeyEvent.VK_NUMPAD7: writeSpecial(Numpad[7]); return;
+      case KeyEvent.VK_NUMPAD8: writeSpecial(Numpad[8]); return;
+      case KeyEvent.VK_NUMPAD9: writeSpecial(Numpad[9]); return;
+      case KeyEvent.VK_DECIMAL:	writeSpecial(NUMDot[xind]); return;
+      case KeyEvent.VK_ADD: 	writeSpecial(NUMPlus[xind]); return;
     }
 
     if (!((keyChar == 8) || (keyChar == 127) || (keyChar =='\r') || (keyChar == '\n'))) {
@@ -1308,7 +1318,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	        mapped = true;
 	        break;
 	      default:
-		System.out.println("Unsupported GL mapping: "+gx[thisgl]+"\n");
+		System.out.println("Unsupported GL mapping: "+gx[thisgl]);
 		break;
 	      }
 	    }
@@ -1322,7 +1332,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 		break;
 	      case 'A':case 'B': mapped = true; break;
 	      default:
-		System.out.println("Unsupported GR mapping: "+gx[thisgl]+"\n");
+		System.out.println("Unsupported GR mapping: "+gx[gr]);
 		break;
 	      }
 	    }
@@ -1367,7 +1377,14 @@ public abstract class vt320 extends VDU implements KeyListener {
     case TSTATE_ESCSPACE:
       term_state = TSTATE_DATA;
       switch (c) {
-      default: System.out.println("ESC <space> "+c+" unhandled.");
+      case 'F': /* S7C1T, Disable output of 8-bit controls, use 7-bit */
+        output8bit=false;
+      	break;
+      case 'G': /* S8C1T, Enable output of 8-bit control codes*/
+        output8bit=true;
+        break;
+      default:
+      	System.out.println("ESC <space> "+c+" unhandled.");
       }
       break;
     case TSTATE_ESC:
@@ -1485,10 +1502,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         /*application keypad*/
         if (debug>0)
           System.out.println("ESC =");
+	keypadmode = true;
         break;
       case '>': /*normal keypad*/
         if (debug>0)
           System.out.println("ESC >");
+	keypadmode = false;
         break;
       case '7': /*save cursor, attributes, margins */
         Sc = C;		Sr = R;
@@ -1692,7 +1711,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    break;
 	  case 2: /* DECANM */
 	    vt52mode = true;
-            System.out.println("vt52 mode enabled");
+            //System.out.println("vt52 mode enabled");
 	    break;
 	  case 3: /* 132 columns*/
 	    size = getSize();
@@ -1762,7 +1781,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    break;
 	  case 2: /* DECANM */
 	    vt52mode = false;
-            System.out.println("vt52 mode disabled");
+            //System.out.println("vt52 mode disabled");
 	    break;
 	  case 3: /* 80 columns*/
 	    size = getSize();
@@ -1828,6 +1847,21 @@ public abstract class vt320 extends VDU implements KeyListener {
 	break;
       }
       break;
+    case TSTATE_CSI_TICKS:
+      term_state = TSTATE_DATA;
+      switch (c) {
+      case 'p':
+      	System.out.println("Conformance level: "+DCEvars[0]+" (unsupported),"+DCEvars[1]);
+	if (DCEvars[1]==1)
+	  output8bit = false;
+	else
+	  output8bit = true; /* 0 or 2 */
+      	break;
+      default:
+        System.out.println("Unknown ESC [...  \""+c);
+	break;
+      }
+      break;
     case TSTATE_CSI_DOLLAR:
       term_state = TSTATE_DATA;
       switch (c) {
@@ -1851,6 +1885,9 @@ public abstract class vt320 extends VDU implements KeyListener {
     case TSTATE_CSI:
       term_state = TSTATE_DATA;
       switch (c) {
+      case '"':
+      	term_state = TSTATE_CSI_TICKS;
+        break;
       case '$':
 	term_state=TSTATE_CSI_DOLLAR;
 	break;
@@ -2174,13 +2211,15 @@ public abstract class vt320 extends VDU implements KeyListener {
       case 'n':
         switch (DCEvars[0]){
         case 5: /* malfunction? No malfunction. */
-          write(((char)ESC)+"[0n",false);
+          writeSpecial(((char)ESC)+"[0n");
           if(debug > 1)
             System.out.println("ESC[5n");
           break;
         case 6:
 	  // DO NOT offset R and C by 1! (checked against /usr/X11R6/bin/resize
-          write(((char)ESC)+"["+R+";"+C+"R",false);
+	  // FIXME check again.
+	  // FIXME: but vttest thinks different???
+          writeSpecial(((char)ESC)+"["+R+";"+C+"R");
           if(debug > 1)
             System.out.println("ESC[6n");
           break;
