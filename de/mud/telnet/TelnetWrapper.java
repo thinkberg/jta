@@ -81,13 +81,15 @@ public class TelnetWrapper extends TelnetProtocolHandler {
     } catch(Exception e) {
       System.err.println("TelnetWrapper: "+e);
       disconnect();
+      throw ((IOException)e);
     }
   }  
  
   /** Disconnect the socket and close the connection. */
   public void disconnect() throws IOException {
     if(debug>0) System.err.println("TelnetWrapper: disconnect()");
-    socket.close();
+    if (socket != null)
+	socket.close();
   }
 
   /** sent on IAC EOR (prompt terminator for remote access systems). */
