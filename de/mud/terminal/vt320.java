@@ -1208,11 +1208,11 @@ public abstract class vt320 extends VDU implements KeyListener {
       case 7:
         beep();
 	break;
-      case '\016':
+      case '\016': /* SMACS , as */
         /* ^N, Shift out - Put G1 into GL */
         gl = 1;
         break;
-      case '\017':
+      case '\017': /* RMACS , ae */
         /* ^O, Shift in - Put G0 into GL */
         gl = 0;
         break;
@@ -2044,6 +2044,17 @@ public abstract class vt320 extends VDU implements KeyListener {
             break;
           case 5: /* blink on */
             break;
+        /* 10 - ANSI X3.64-1979, select primary font, don't display control
+	 *      chars, don't set bit 8 on output */
+	  case 10:
+           gl = 0;
+	   break;
+        /* 11 - ANSI X3.64-1979, select second alt. font, display control
+	 *      chars, set bit 8 on output */
+	  case 11: /* SMACS , as */
+	  case 12: 
+	   gl = 1;
+	   break;
           case 25: /* blinking off */
             break;
           case 27:
@@ -2084,10 +2095,6 @@ public abstract class vt320 extends VDU implements KeyListener {
             attributes &= ~(0xf<<7);
             break;
 
-        /* 10 - ANSI X3.64-1979, select primary font, don't display control
-	 *      chars, don't set bit 8 on output */
-        /* 11 - ANSI X3.64-1979, select second alt. font, display control
-	 *      chars, set bit 8 on output */
           default:
             System.out.println("ESC [ "+DCEvars[i]+" m unknown...");
             break;
