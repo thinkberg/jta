@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.77C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.12-ac2 i686) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.77C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.13-ac7 i686) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Script Plugin</title>
@@ -54,8 +54,8 @@ Test</a></font></b></td>
 <font color="#CC0000">Terminal (ANSI/vt320) Plugin</font></h2></center>
 The terminal plugin is a visual software component that acts as the front
 end. It displays the data that is transmitted by the remote host and translates
-keystrokes to be sent to the remote host. It implements an <b>ANSI</b>
-and <b>vt320/vt220/vt100</b> compliant terminal.
+keystrokes to be sent to the remote host. It implements an <b>ANSI</b>,
+<b>vt320/vt220/vt100</b> and <b>SCOANSI</b>&nbsp;compliant terminal.
 <p>Most of the features of the terminal emulation can be configured using
 the properties explained below. Additionally it provides a plugin menu
 that can be operated if a menu bar is available.
@@ -167,9 +167,9 @@ Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
 <td ALIGN=LEFT VALIGN=TOP NOSAVE>If this property points to a fully qualified
 URL of a sound file this will be played in case of a terminal <b>bell</b>
 signal. This works for applets only.
-<br>Note:&nbsp;Some browsers (Netscape 4, IE&nbsp;5.5 or earlier)&nbsp;sometimes
-can only play .au files here. In IE the sound needs to be on the same server
-as the applet or you get a security exception.</td>
+<br>Note: Some browsers (Netscape 4, IE 5.5 or earlier) sometimes can only
+play .au files here. In IE the sound needs to be on the same server as
+the applet or you get a security exception.</td>
 </tr>
 
 <tr NOSAVE>
@@ -325,6 +325,8 @@ character:</font></dt>
 
 <br>&nbsp;
 <p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
 <br>&nbsp;
 <br>&nbsp;
 <p><font color="#000000">As you can see the string you can define may contain
