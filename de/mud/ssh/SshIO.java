@@ -84,8 +84,8 @@ public abstract class SshIO
    
   // phase : handleBytes
   private int phase = 0;
-  private final int PHASE_INIT =					0;
-  private final int PHASE_SSH_RECEIVE_PACKET =	1;
+  private final int PHASE_INIT 			= 0;
+  private final int PHASE_SSH_RECEIVE_PACKET	= 1;
 	
 
 		
@@ -137,6 +137,8 @@ public abstract class SshIO
   private final int SSH_AUTH_RHOSTS_RSA =  4;   //.rhosts with RSA host authentication
 
 
+
+  private boolean cansenddata = false;
 
   /**
    * Initialise SshIO
@@ -222,8 +224,10 @@ public abstract class SshIO
     if(debug > 1) System.out.println( "SshIO.send(" + str + ")" );
     if (dataToSend==null) dataToSend = str;
     else dataToSend += str;
-    Send_SSH_CMSG_STDIN_DATA(str);
-    dataToSend = null;
+    if (cansenddata) {
+	Send_SSH_CMSG_STDIN_DATA(dataToSend);
+	dataToSend = null;
+    }
   }
 	
 
@@ -400,6 +404,13 @@ public abstract class SshIO
       if (lastPacketSentType==SSH_CMSG_REQUEST_PTY) {// pty accepted !!
 	Send_SSH_CMSG_EXEC_SHELL(); //we start a shell
 	break;
+      }
+      if (lastPacketSentType==SSH_CMSG_EXEC_SHELL) {// shell is running ...
+        cansenddata = true;
+	if (dataToSend != null ) {
+	    Send_SSH_CMSG_STDIN_DATA(dataToSend);
+	    dataToSend = null;
+	}
       }
 
       break;
@@ -700,9 +711,4 @@ public abstract class SshIO
     sendPacket(packet);
     return null;
   }
-
 }// class SshIO
-
-
-					
-		
