@@ -70,6 +70,8 @@ import java.awt.event.KeyEvent;
  */
 public class Applet extends java.applet.Applet {
 
+  private java.awt.Container appletFrame;
+
   /** holds the defaults */
   private Properties options = new Properties();
 
@@ -155,20 +157,19 @@ public class Applet extends java.applet.Applet {
         port = "23";
 
 
-      if(!(new Boolean(options.getProperty("Applet.disconnect"))
+    if(!(new Boolean(options.getProperty("Applet.disconnect"))
+       .booleanValue()))
+      disconnect = false;
+
+    if(!(new Boolean(options.getProperty("Applet.disconnect.closeWindow"))
             .booleanValue()))
-        disconnect = false;
+       disconnectCloseWindow = false;
 
-      if(!(new Boolean(options.getProperty("Applet.disconnect.closeWindow"))
-            .booleanValue()))
-        disconnectCloseWindow = false;
 
-  		final java.awt.Container appletFrame ;
-
-      if((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
-        appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
+    if((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
+       appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
      } else
-        appletFrame = this;
+       appletFrame = this;
 
       appletFrame.setLayout(new BorderLayout());
 
@@ -208,7 +209,9 @@ public class Applet extends java.applet.Applet {
 	    } else {
 	      ((Frame)appletFrame).pack();
               ((Frame)appletFrame).show();
-	      Applet.this.start();
+              getAppletContext().showStatus("Trying "+host+" "+port+" ...");
+              pluginLoader.broadcast(new SocketRequest(host, 
+	                                               Integer.parseInt(port)));
 	      close.setLabel(stopText != null ? stopText : "Disconnect");
 	    }
           }
@@ -312,10 +315,10 @@ public class Applet extends java.applet.Applet {
    * Start the applet. Connect to the remote host.
    */
   public void start() {
-		if(Online == false) {
-    	getAppletContext().showStatus("Trying "+host+" "+port+" ...");
-    	pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
-		} 
+    if(Online == false && appletFrame == this) {
+      getAppletContext().showStatus("Trying "+host+" "+port+" ...");
+      pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+    } 
   }
 
   /**

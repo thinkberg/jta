@@ -382,6 +382,8 @@ public class Terminal extends Plugin
     int n = 0;
     while(n >= 0) try {
       n = read(b);
+      if(debug > 0 && n > 0) 
+        System.err.println("Terminal: \""+(new String(b, 0, n))+"\"");
       if(n > 0) terminal.putString(new String(b, 0, n));
     } catch(IOException e) {
       reader = null;
