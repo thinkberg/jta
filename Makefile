@@ -71,7 +71,14 @@ jar:	app
 	@rm -f Created-*
 	@echo Created jar/$(PKGNAME).jar
 
-dist:	jar doc revision changes
+cont:
+	@echo Compiling contributed software ...
+	@(cd contrib; make)
+	@echo Creating contrib.jar ...
+	@$(JAR) cvf jar/contrib.jar contrib
+	@echo Created jar/contrib.jar
+
+dist:	jar cont doc revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
