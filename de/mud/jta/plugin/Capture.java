@@ -38,6 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Hashtable;
 
 /**
  * A capture plugin that captures data and stores it in a
@@ -59,7 +60,7 @@ import java.net.URLEncoder;
  * @author Matthias L. Jugel, Marcus Meißner
  */
 public class Capture extends Plugin
-        implements FilterPlugin, VisualPlugin {
+        implements FilterPlugin, VisualPlugin,ActionListener {
 
   // this enables or disables the compilation of menu entries
   private final static boolean personalJava = false;
@@ -68,10 +69,11 @@ public class Capture extends Plugin
   private final static int debug = 1;
 
   /** The remote storage URL */
-  protected URL remoteURL = null;
+  protected Hashtable remoteUrlList = new Hashtable();
 
   /** The plugin menu */
   protected Menu menu;
+  protected Dialog dialog;
 
   /** Whether the capture is currently enabled or not */
   protected boolean captureEnabled = false;
@@ -103,9 +105,9 @@ public class Capture extends Plugin
       frame.pack();
 
       // an error dialogue, in case the upload fails
-      final Dialog dialog = new Dialog(frame);
+      dialog = new Dialog(frame);
       dialog.setLayout(new BorderLayout());
-      dialog.add(new TextField("Cannot store data on remote server!"));
+      dialog.add(new Label("Cannot store data on remote server!"));
       Button close = new Button("Close Dialog");
       dialog.add(close);
       close.addActionListener(new ActionListener() {
@@ -165,69 +167,90 @@ public class Capture extends Plugin
       });
       menu.add(view);
 
-      save = new MenuItem("Save Protocol");
-      save.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          if (debug > 0) System.err.println("Capture: storing text: " + remoteURL);
-          try {
-            URLConnection urlConnection = remoteURL.openConnection();
-            DataOutputStream out;
-            DataInputStream in;
-
-            // Let the RTS know that we want to do output.
-            urlConnection.setDoInput(true);
-            // Let the RTS know that we want to do output.
-            urlConnection.setDoOutput(true);
-            // No caching, we want the real thing.
-            urlConnection.setUseCaches(false);
-            // Specify the content type.
-            urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            // Send POST output.
-
-            // send the data to the url receiver ...
-            out = new DataOutputStream(urlConnection.getOutputStream());
-            String content = "content=" + URLEncoder.encode(textArea.getText());
-            if(debug > 0) System.err.println("Capture: " + content);
-            out.writeBytes(content);
-            out.flush();
-            out.close();
-
-            // retrieve response from the remote host and display it.
-            if(debug > 0) System.err.println("Capture: reading response");
-            in = new DataInputStream(urlConnection.getInputStream());
-            String str;
-            while (null != ((str = in.readLine()))) {
-              System.out.println("Capture: "+str);
-            }
-            in.close();
-
-          } catch (IOException ioe) {
-            dialog.setVisible(true);
-            System.err.println("Capture: cannot store text on remote server: " + remoteURL);
-            ioe.printStackTrace();
-          }
-          if (debug > 0) System.err.println("Capture: storage complete: " + remoteURL);
-        }
-      });
-      save.setEnabled(false);
-      menu.add(save);
     } // !personalJava
+
 
     // configure the remote URL
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
         String tmp;
-        if ((tmp = config.getProperty("Capture", id, "url")) != null) {
+        int i = 1;
+        while ((tmp = config.getProperty("Capture", id, i+".url")) != null) {
           try {
-            remoteURL = new URL(tmp);
-            save.setLabel("Save to: " + tmp);
+            String urlID = "URL."+i;
+            URL remoteURL = new URL(tmp);
+            remoteUrlList.put(urlID, remoteURL);
+            if((tmp = config.getProperty("Capture", id, i+".params")) != null) {
+              remoteUrlList.put(urlID+".params", tmp);
+            }
+            // use name if applicable or URL
+            if((tmp = config.getProperty("Capture", id, i+".name")) != null) {
+              save = new MenuItem("Save As "+tmp);
+            } else {
+              save = new MenuItem("Save As "+remoteURL.toString());
+            }
+            // enable menu entry
             save.setEnabled(true);
+            save.addActionListener(Capture.this);
+            save.setActionCommand(urlID);
+            menu.add(save);
+            // count up
+            i++;
           } catch (MalformedURLException e) {
             System.err.println("capture url invalid: " + e);
           }
         }
       }
     });
+  }
+
+  public void actionPerformed(ActionEvent e) {
+    String urlID = e.getActionCommand();
+    URL url = (URL)remoteUrlList.get(urlID);
+
+    if (debug > 0) System.err.println("Capture: storing text: "
+                                      + urlID+": "
+                                      + remoteUrlList.get(urlID));
+    try {
+      URLConnection urlConnection = url.openConnection();
+      DataOutputStream out;
+      DataInputStream in;
+
+      // Let the RTS know that we want to do output.
+      urlConnection.setDoInput(true);
+      // Let the RTS know that we want to do output.
+      urlConnection.setDoOutput(true);
+      // No caching, we want the real thing.
+      urlConnection.setUseCaches(false);
+      // Specify the content type.
+      urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+      // retrieve extra arguments
+      // Send POST output.
+      // send the data to the url receiver ...
+      out = new DataOutputStream(urlConnection.getOutputStream());
+      String content = (String)remoteUrlList.get(urlID+".param");
+      content =  (content == null ? "" : content + "&") + "content=" + URLEncoder.encode(textArea.getText());
+      if(debug > 0) System.err.println("Capture: " + content);
+      out.writeBytes(content);
+      out.flush();
+      out.close();
+
+      // retrieve response from the remote host and display it.
+      if(debug > 0) System.err.println("Capture: reading response");
+      in = new DataInputStream(urlConnection.getInputStream());
+      String str;
+      while (null != ((str = in.readLine()))) {
+        System.out.println("Capture: "+str);
+      }
+      in.close();
+
+    } catch (IOException ioe) {
+      dialog.setVisible(true);
+      System.err.println("Capture: cannot store text on remote server: " + url );
+      ioe.printStackTrace();
+    }
+    if (debug > 0) System.err.println("Capture: storage complete: " + url);
   }
 
   // this is where we get the data from (left side in plugins list)

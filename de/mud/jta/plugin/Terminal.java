@@ -114,6 +114,7 @@ public class Terminal extends Plugin
    */
   public Terminal(final PluginBus bus, final String id) {
     super(bus, id);
+
     // initialize colors
     colors.put("black", Color.black);
     colors.put("red", Color.red);
