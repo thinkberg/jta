@@ -38,6 +38,8 @@ import java.util.Vector;
  * The script property Script.script should contain <B>|</B> separated strings
  * where each two represent a match and answer pair. A newline will be appended
  * to each answer!<P>
+ * If the first matching string is empty, the answer string will be sent upon
+ * connect.
  * The script is very basic but is a very good example how to
  * write a plugin for <B>The Java<SUP>tm</SUP> Telnet Application</B>.
  * <P>
@@ -158,7 +160,17 @@ public class Script extends Plugin implements FilterPlugin {
     this.script = (Vector)script.clone();
     if(debug > 0) 
       System.err.println("Script: script contains "+script.size()+" elements");
+
+    // If the first element is empty, just send the value string.
     match = ((String[])this.script.firstElement())[0].getBytes();
+    if (match.length == 0) {
+	try {
+	    write(found());
+	} catch (Exception e){
+	    // Ignore any errors here
+	};
+    }
+
     reset();
     done = false;
   }
