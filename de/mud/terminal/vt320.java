@@ -1168,6 +1168,13 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 'c':
         /* Hard terminal reset */
+	/* reset tabs */
+	int nw = getColumns();
+	if (nw<132) nw=132;
+	Tabs = new byte[nw];
+	for (int i=0;i<nw;i+=8) {
+	  Tabs[i]=1;
+	}
         /*FIXME:*/
         term_state = TSTATE_DATA;
         break;
