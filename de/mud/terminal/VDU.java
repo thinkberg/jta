@@ -1018,7 +1018,8 @@ public class VDU extends Canvas {
       System.err.println("VDU: looking for better match for "+normalFont);
 
     Font tmpFont = normalFont;
-    String fontName = normalFont.getName();
+    String fontName = tmpFont.getName();
+    int fontStyle = tmpFont.getStyle();
     fm = getFontMetrics(normalFont);
     if(fm != null) {
       charWidth = fm.charWidth('@');
@@ -1033,21 +1034,21 @@ public class VDU extends Canvas {
       int height = h / size.height;
       int width = w / size.width;
       
-      fm = getFontMetrics(normalFont = new Font(fontName, Font.PLAIN, 
+      fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
                                                 charHeight));
       
       // adapt current font size (from small up to best fit)
       if(fm.getHeight() < height || fm.charWidth('@') < width)
         do {
-          fm = getFontMetrics(normalFont = new Font(fontName, Font.PLAIN, 
-                                                    ++charHeight));
+          fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
+	                                            ++charHeight));
         } while(fm.getHeight() < height || fm.charWidth('@') < width); 
       
       // now check if we got a font that is too large
       if(fm.getHeight() > height || fm.charWidth('@') > width)
         do {
-          fm = getFontMetrics(normalFont = new Font(fontName, Font.PLAIN, 
-                                                    --charHeight));
+          fm = getFontMetrics(normalFont = new Font(fontName, fontStyle,
+	                                            --charHeight));
         } while(charHeight > 1 && 
                 (fm.getHeight() > height || 
                  fm.charWidth('@') > width));
