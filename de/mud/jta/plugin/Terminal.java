@@ -168,8 +168,13 @@ public class Terminal extends Plugin
     // the container for our terminal must use double-buffering
     // or at least reduce flicker by overloading update()
     tPanel = new Panel(new BorderLayout()) {
+      // reduce flickering
       public void update(java.awt.Graphics g) {
         paint(g);
+      }
+      // we don't want to print the container, just the terminal contents
+      public void print(java.awt.Graphics g) {
+        terminal.print(g);
       }
     };
     tPanel.add("Center", terminal);

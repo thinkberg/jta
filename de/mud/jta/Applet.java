@@ -42,6 +42,7 @@ import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.MenuShortcut;
+import java.awt.PrintJob;
 
 import java.awt.datatransfer.Clipboard;
 
@@ -239,6 +240,20 @@ public class Applet extends java.applet.Applet {
           }
         });
 	file.add(new MenuItem("-"));
+        file.add(tmp = new MenuItem("Print"));
+        tmp.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            if(pluginLoader.getComponents().get("Terminal") != null) {
+              PrintJob printJob = 
+                appletFrame.getToolkit()
+                  .getPrintJob((Frame)appletFrame,"JTA Terminal",null);
+              ((Component)pluginLoader.getComponents().get("Terminal"))
+                .print(printJob.getGraphics());
+              printJob.end();
+            }
+          }
+        });
+        file.add(new MenuItem("-"));
         file.add(tmp = new MenuItem("Exit"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {

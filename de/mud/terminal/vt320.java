@@ -188,11 +188,13 @@ public abstract class vt320 extends VDU implements KeyListener {
     /* ... */
 
     addKeyListener(this);
+    /* I don't think we want that here ...
     addMouseListener(new MouseAdapter() {
       public void mouseEntered(MouseEvent evt) {
         requestFocus();
       }
     });
+    */
       
   }
 

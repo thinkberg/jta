@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import java.awt.Frame;
+import java.awt.PrintJob;
 import java.awt.Dialog;
 import java.awt.Label;
 import java.awt.Button;
@@ -183,6 +184,19 @@ public class Main {
       }
     });
     file.add(new MenuItem("-"));
+    file.add(tmp = new MenuItem("Print"));
+    tmp.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+	if(setup.getComponents().get("Terminal") != null) {
+          PrintJob printJob = 
+	    frame.getToolkit().getPrintJob(frame,"JTA Terminal",null);
+	  ((Component)setup.getComponents().get("Terminal"))
+	    .print(printJob.getGraphics());
+	  printJob.end();
+	}
+      }
+    });
+    file.add(new MenuItem("-"));
     file.add(tmp = new MenuItem("Exit"));
     tmp.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -231,8 +245,8 @@ public class Main {
 	  }
 	});
 	d.add("South", close);
-	d.setResizable(false);
 	d.pack();
+	d.setResizable(false);
 	d.show();
       }
     });
