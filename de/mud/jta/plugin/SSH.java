@@ -233,6 +233,13 @@ public class SSH extends Plugin implements FilterPlugin {
   public void write(byte[] b) throws IOException {
     // no write until authorization is done
     if(!auth) return;
+    for (int i=0;i<b.length;i++) {
+    	switch (b[i]) { 
+	case 10: /* \n -> \r */
+		b[i] = 13;
+		break;
+	}
+    }
     handler.sendData(new String(b));
   }
 }
