@@ -89,7 +89,11 @@ dist:	jar doc revision changes
 	  sed -f /tmp/jta.sed < $(PKGNAME)/html/download.html \
 	                      > $(PKGNAME)/html/download.new && \
 	  mv $(PKGNAME)/html/download.new $(PKGNAME)/html/download.html && \
-	  rm -f $(PKGNAME)/tools/* && \
+	  sed -e 's/<!-- USER-LIST -->/'`bin/users.pl < html/users.db`'/g' \
+	    < $(PKGNAME)/html/users.html > $(PKGNAME)/html/users.html.new && \
+	  mv $(PKGNAME)/html/users.html.new $(PKGNAME)/html/users.html && \
+	  rm -f $(PKGNAME)/tools/* $(PKGNAME)/html/user.db \
+	        $(PKGNAME)/bin/users.pl && \
 	  $(JAR) cvMf jar/$(PKGNAME)-src.jar $(PKGNAME)) > /dev/null 
 	 @rm -rf $(PKGNAME) 
 	 @echo Created jar/$(PKGNAME)-src.jar
