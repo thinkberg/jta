@@ -24,7 +24,7 @@ SRCDIR	=	de
 PKGNAME	=	jta20
 VERSION	=	`java -version 2>&1 | head -1 | \
 		 sed 's/^java version //' | sed 's/"//g'`
-DATE	=	`date +%Y%m%d`
+DATE	=	`date +%Y%m%d-%H%M`
 
 .SUFFIXES:	.java .class
 
