@@ -242,7 +242,7 @@ public class Applet extends java.applet.Applet {
 	  System.err.println("Applet: This is not Netscape ...");
         }
 
-	if(privilegeManager != null && enable != null)
+	if(privilegeManager != null && enable != null && privileges != null)
 	  for(int i = 0; i < privileges.size(); i++) try {
 	    enable.invoke(privilegeManager, 
 	                  new Object[] { privileges.elementAt(i) });
