@@ -1161,7 +1161,7 @@ public abstract class vt320 extends VDU implements KeyListener {
       }
       switch (c) {
       case CSI: // should be in the 8bit section, but some BBS use this
-        term_state = TSTATE_DCEQ;
+        term_state = TSTATE_CSI;
         break;
       case ESC:
         term_state = TSTATE_ESC;
