@@ -96,11 +96,11 @@ public class Telnet extends Plugin implements FilterPlugin {
 
   public int read(byte[] b) throws IOException {
     int n = source.read(b);
-    if(n > 0) n = handler.negotiate(b, n);
+    if(n > 0) n = handler.negotiate(b, n); // handle telnet negotiation
     return n;
   }
 
   public void write(byte[] b) throws IOException {
-    source.write(b);
+    handler.transpose(b); // transpose 0xff or \n and send data
   }
 }

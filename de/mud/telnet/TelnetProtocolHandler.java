@@ -189,6 +189,19 @@ public abstract class TelnetProtocolHandler {
   }
 
   /**
+   * Transpose special telnet codes like 0xff or newlines to values
+   * that are compliant to the protocol. This method will also send
+   * the buffer immediately after transposing the data.
+   * @param buf the data buffer to be sent
+   */
+  public void transpose(byte[] buf) throws IOException {
+    for(int i = 0; i < buf.length; i++) {
+      // Here comes your code, Marcus. If you can optimize it, do it!
+    }   
+    write(buf); // just to check in working code
+  }
+
+  /**
    * Handle telnet protocol negotiation. The buffer will be parsed
    * and necessary actions are taken according to the telnet protocol.
    * See <A HREF="RFC-Telnet-URL">RFC-Telnet</A>
