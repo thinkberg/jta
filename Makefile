@@ -57,6 +57,7 @@ jar:	app
 	@$(JAR) cvf jar/$(PKGNAME).jar \
 	  "Created-$(DATE)" README \
 	  license/COPYING license/COPYING.LIB \
+	  de/mud/ssh/license.txt \
 	  `find $(SRCDIR) -name *.class` \
 	  `find $(SRCDIR) -name defaults.\*` > /dev/null
 	@rm -f Created-*
