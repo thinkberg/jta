@@ -39,7 +39,7 @@ import java.io.IOException;
 
 class SshPacket {
 
-
+  private final static boolean debug = true;
 
   //SSH_RECEIVE_PACKET
   private byte[] packet_length_array = new byte[4];				// 4 bytes
@@ -231,6 +231,13 @@ class SshPacket {
     crc_arrayCheck[1] = (byte) ((crcCheck>>16) & 0xff);
     crc_arrayCheck[0] = (byte) ((crcCheck>>24) & 0xff);
 
+    if(debug) {
+      System.err.println(crc_arrayCheck[3]+" == "+crc_array[3]);
+      System.err.println(crc_arrayCheck[2]+" == "+crc_array[2]);
+      System.err.println(crc_arrayCheck[1]+" == "+crc_array[1]);
+      System.err.println(crc_arrayCheck[0]+" == "+crc_array[0]);
+    }
+
     if	(crc_arrayCheck[3] != crc_array[3]) return false; 
     if	(crc_arrayCheck[2] != crc_array[2]) return false;
     if	(crc_arrayCheck[1] != crc_array[1]) return false;
@@ -258,6 +265,7 @@ class SshPacket {
 	
     //packet type
     packet_type = decryptedBlock[blockOffset++];
+    if(debug) System.err.println("Packet type: "+packet_type);
 				
     //data
     if(packet_length > 5)  {
