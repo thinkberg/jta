@@ -24,7 +24,7 @@ import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
-import de.mud.jta.event.SocketListener;
+import de.mud.jta.event.OnlineStatusListener;
 
 import java.io.IOException;
 
@@ -60,11 +60,11 @@ public class Script extends Plugin implements FilterPlugin {
   public Script(PluginBus bus, final String id) {
     super(bus, id);
 
-    bus.registerPluginListener(new SocketListener() {
-      public void connect(String host, int port) {
+    bus.registerPluginListener(new OnlineStatusListener() {
+      public void online() {
         setup(savedScript);
       }
-      public void disconnect() {
+      public void offline() {
         // ignore disconnection
       }
     });
@@ -102,8 +102,8 @@ public class Script extends Plugin implements FilterPlugin {
 	    if(debug > 0) System.out.print(pair[1]);
 	  } else
 	    Script.this.error("unmatched pairs of script elements");
-	  // set up the script
-	  setup(savedScript);
+	   // set up the script
+	  //  setup(savedScript);
         }
       }
     });
@@ -172,13 +172,12 @@ public class Script extends Plugin implements FilterPlugin {
    */
   private void match(byte[] s, int length) throws IOException {
     for(int i = 0; !done && i < length; i++) {
-      if(s[i] == match[matchPos])
-       // the whole thing matched so, return the match answer 
-       // and reset to use the next match
-       if(++matchPos >= match.length)
-         write(found());
-       // if the current character did not match reset
-       else
+      if(s[i] == match[matchPos]) {
+        // the whole thing matched so, return the match answer 
+        // and reset to use the next match
+        if(++matchPos >= match.length)
+          write(found());
+      } else // if the current character did not match reset
          reset();
     }
   }
