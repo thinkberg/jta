@@ -18,6 +18,11 @@
 JAVA	=	java
 JAR	=	jar
 JAVAC	=	javac
+JAVADOC =	javadoc
+#JAVA	=	/q/opt/jdk1.2.2/bin/java
+#JAR	=	/q/opt/jdk1.2.2/bin/jar
+#JAVAC	=	/q/opt/jdk1.2.2/bin/javac
+#JAVADOC	=	/q/opt/jdk1.2.2/bin/javadoc
 #DEBUG	=	-g -deprecation
 DEBUG	=	-g
 JFLAGS	=	-classpath $(CLASSPATH):jar/cryptix.jar:.
@@ -45,7 +50,7 @@ doc:	app
 	@echo Creating source documentation ...
 	@if [ ! -d doc ]; then mkdir doc; fi
 	@-rm -r doc/source/*.html doc/source/de
-	@javadoc -d doc/source -version -author \
+	@$(JAVADOC) -d doc/source -version -author \
 	  -sourcepath $(CLASSPATH):.:contrib \
 	  `(find de -name \*.java -printf '%h\n'; \
 	    (cd contrib; find * -name \*.java -printf '%h\n')) | \
@@ -55,7 +60,7 @@ doc:	app
 
 tex:	app
 	@echo Creating latex source documentation ...
-	@javadoc -docletpath ../tex -doclet TexDoclet \
+	@$(JAVADOC) -docletpath ../tex -doclet TexDoclet \
 	  -output $(PKGNAME).tex \
 	  -docdir de/mud/jta `find de/mud -type d -print | \
 	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
@@ -158,7 +163,9 @@ app:
 clean:
 	-find . -name \*.class -print | xargs rm > /dev/null 2>&1
 	-find . -name \*~ -print | xargs rm > /dev/null 2>&1
-	-rm tools/relayd tools/mrelayd
+	-rm -f tools/relayd tools/mrelayd
+	cd jni && $(MAKE) clean
 
 realclean: clean
 	-rm -f jar/$(PKGNAME).jar jar/$(PKGNAME)-src.jar
+	cd jni && $(MAKE) realclean
