@@ -45,9 +45,11 @@ doc:	app
 	@if [ ! -d doc ]; then mkdir doc; fi
 	@-rm -r doc/source/*.html doc/source/de
 	@javadoc -d doc/source -version -author \
-	  -sourcepath $(CLASSPATH):. \
-	  `find de/mud -type d -print | \
-	    grep -v CVS | grep -v '^de/mud$$' | sed 's/\//./g'`; > /dev/null
+	  -sourcepath $(CLASSPATH):.:contrib \
+	  `(find de -name \*.java -printf '%h\n'; \
+	    (cd contrib; find * -name \*.java -printf '%h\n')) | \
+	    sort | uniq | \
+	    grep -v CVS | sed 's/\//./g'`; > /dev/null
 	@echo Source documentation done.
 
 tex:	app
