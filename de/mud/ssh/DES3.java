@@ -1,19 +1,31 @@
-/******************************************************************************
- *
- * Copyright (c) 1998,99 by Mindbright Technology AB, Stockholm, Sweden.
- *                 www.mindbright.se, info@mindbright.se
- *
- *****************************************************************************
- * $Author$
- * $Date$
- * $Name$
- *****************************************************************************/
 /*
- * !!! Author's comment: See DES.java for additional copyright-info on DES
+ * This file is part of "The Java Telnet Application".
+ *
+ * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ *
+ * Please visit http://javatelnet.org/ for updates and contact.
+ *
+ * --LICENSE NOTICE--
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * --LICENSE NOTICE--
+ *
+ * Additional NOTICE: This file uses DES (see DES.java for copyright
+ * information!)
  */
 package de.mud.ssh;
 
-import java.math.BigInteger;
 
 public final class DES3 extends Cipher {
   DES des1 = new DES();
@@ -43,7 +55,7 @@ public final class DES3 extends Cipher {
 
   /* !!! DEBUG
   public static void main(String[] argv) {
-    byte[] key = { 
+    byte[] key = {
       (byte)0x12, (byte)0x34, (byte)0x56, (byte)0x78,
       (byte)0x87, (byte)0x65, (byte)0x43, (byte)0x21,
       (byte)0x44, (byte)0x55, (byte)0x66, (byte)0x77,
@@ -58,7 +70,7 @@ public final class DES3 extends Cipher {
       (byte)0x00, (byte)0x11, (byte)0x22, (byte)0x33,
       (byte)0x44, (byte)0x55, (byte)0x66, (byte)0x77,
       (byte)0x00, (byte)0x11, (byte)0x22, (byte)0x33,
-      (byte)0x44, (byte)0x55, (byte)0x66, (byte)0x77 
+      (byte)0x44, (byte)0x55, (byte)0x66, (byte)0x77
     };
 
     byte[] enc;

@@ -72,7 +72,7 @@
 #include <netdb.h>
 #endif
 #include <memory.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <sys/types.h>
 

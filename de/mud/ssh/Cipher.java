@@ -1,48 +1,78 @@
-/******************************************************************************
+/*
+ * This file is part of "The Java Telnet Application".
  *
- * Copyright (c) 1998,99 by Mindbright Technology AB, Stockholm, Sweden.
- *                 www.mindbright.se, info@mindbright.se
+ * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Please visit http://javatelnet.org/ for updates and contact.
+ *
+ * --LICENSE NOTICE--
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- *****************************************************************************
- * $Author$
- * $Date$
- * $Name$
- *****************************************************************************/
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * --LICENSE NOTICE--
+ */
 package de.mud.ssh;
+
+/**
+ * Cipher class is the type for all other ciphers.
+ * @author Marcus Meissner
+ * @version $Id$
+ */
 
 public abstract class Cipher {
 
   public static Cipher getInstance(String algorithm) {
     Class c;
     try {
-      c = Class.forName("de.mud.ssh."+algorithm);
-      return (Cipher)c.newInstance();
-    } catch(Throwable t) {
+      c = Class.forName("de.mud.ssh." + algorithm);
+      return (Cipher) c.newInstance();
+    } catch (Throwable t) {
+      System.err.println("Cipher: unable to load instance of '" + algorithm + "'");
       return null;
     }
   }
 
-  public byte[] encrypt(byte[] src) { byte[] dest = new byte[src.length];
-                                      encrypt(src, 0, dest, 0, src.length); 
-				      return dest; }
+  /**
+   * Encrypt source byte array using the instantiated algorithm.
+   */
+  public byte[] encrypt(byte[] src) {
+    byte[] dest = new byte[src.length];
+    encrypt(src, 0, dest, 0, src.length);
+    return dest;
+  }
+
+  /**
+   * The actual encryption takes place here.
+   */
   public abstract void encrypt(byte[] src, int srcOff, byte[] dest, int destOff, int len);
-  public byte[] decrypt(byte[] src) { byte[] dest = new byte[src.length];
-                                      decrypt(src, 0, dest, 0, src.length);
-                                      return dest; }
+
+  /**
+   * Decrypt source byte array using the instantiated algorithm.
+   */
+  public byte[] decrypt(byte[] src) {
+    byte[] dest = new byte[src.length];
+    decrypt(src, 0, dest, 0, src.length);
+    return dest;
+  }
+
+  /**
+   * The actual decryption takes place here.
+   */
   public abstract void decrypt(byte[] src, int srcOff, byte[] dest, int destOff, int len);
-  public abstract void   setKey(byte[] key);
+
+  public abstract void setKey(byte[] key);
 
   public void setKey(String key) {
-  	setKey(key.getBytes());
+    setKey(key.getBytes());
   }
 }

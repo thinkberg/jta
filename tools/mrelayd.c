@@ -84,7 +84,7 @@ void xperror(char *s) {
 #include <sys/ioctl.h>
 #endif
 #include <memory.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <sys/types.h>
 

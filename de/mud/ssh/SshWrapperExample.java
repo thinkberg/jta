@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -25,10 +25,9 @@
 
 package de.mud.ssh;
 
-import de.mud.ssh.SshWrapper;
 
 /**
- * This is an example for using the SshWrapper class. Note that the 
+ * This is an example for using the SshWrapper class. Note that the
  * password here is in plaintext, so do not make this .class file
  * available with your password inside it.
  *
@@ -39,21 +38,21 @@ import de.mud.ssh.SshWrapper;
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
 public class SshWrapperExample {
-   public static void main(String args[]) {
-     SshWrapper ssh = new SshWrapper();
-     try {
-       byte[] buffer = new byte[256];
-       ssh.connect(args[0], 22);
-       ssh.login("marcus", "xxxxx");
-       ssh.setPrompt("marcus");
+  public static void main(String args[]) {
+    SshWrapper ssh = new SshWrapper();
+    try {
+      byte[] buffer = new byte[256];
+      ssh.connect(args[0], 22);
+      ssh.login("marcus", "xxxxx");
+      ssh.setPrompt("marcus");
 
- System.out.println("after login");
+      System.out.println("after login");
 
-       ssh.send("ls -l");
-       ssh.read(buffer);
-       System.out.println(new String(buffer));
-     } catch(java.io.IOException e) {
-       e.printStackTrace();
-     }
-   }
+      ssh.send("ls -l");
+      ssh.read(buffer);
+      System.out.println(new String(buffer));
+    } catch (java.io.IOException e) {
+      e.printStackTrace();
+    }
+  }
 }

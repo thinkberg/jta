@@ -1,29 +1,48 @@
-/**
- * SshMisc 
- * --
- * 
- * This file provides miscellaneous functions:
- * 
- * crc
- * createString
- * getMpInt
- * addArrayOfBytes
- * getNotZeroRandomByte
- * getString
- * XORArrayOfBytes
+/*
+ * This file is part of "The Java Telnet Application".
  *
- * 
- * This file is part of "The Java Ssh Applet".
+ * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ *
+ * Please visit http://javatelnet.org/ for updates and contact.
+ *
+ * --LICENSE NOTICE--
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * --LICENSE NOTICE--
  */
-  
 package de.mud.ssh;
 
 
 import java.io.IOException;
-import de.mud.ssh.MD5;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-class SshMisc {
-  static MD5 md5 = new MD5();
+/**
+ * @author Marcus Meissner
+ * @version $Id$
+ */
+public class SshMisc {
+  static MessageDigest md5;
+
+  static {
+    try {
+      md5 = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      System.err.println("SshMisc: unable to load message digest algorithm: "+e);
+      e.printStackTrace();
+    }
+  }
 
   /**
    * return the strint at the position offset in the data
@@ -31,7 +50,7 @@ class SshMisc {
    *  including the length itself).  The following "length" bytes are
    *  the string value.  There are no terminating null characters.
    */
-  static public  String getString(int offset, byte[] byteArray) throws IOException { 
+  static public String getString(int offset, byte[] byteArray) throws IOException {
 
 
     short d0 = byteArray[offset++];
@@ -39,56 +58,56 @@ class SshMisc {
     short d2 = byteArray[offset++];
     short d3 = byteArray[offset++];
 
-    if (d0<0) d0 = (short)(256 + d0);
-    if (d1<0) d1 = (short)(256 + d1);
-    if (d2<0) d2 = (short)(256 + d2);
-    if (d3<0) d3 = (short)(256 + d3);
-		
-    int length =  d0 * 16777216  //to be checked
-      + d1 * 65536 
-      + d2 * 256 
+    if (d0 < 0) d0 = (short) (256 + d0);
+    if (d1 < 0) d1 = (short) (256 + d1);
+    if (d2 < 0) d2 = (short) (256 + d2);
+    if (d3 < 0) d3 = (short) (256 + d3);
+
+    int length = d0 * 16777216  //to be checked
+      + d1 * 65536
+      + d2 * 256
       + d3;
     String str = ""; //new String(byteArray,0);
-    for (int i=0;i<length;i++) {
-	if (byteArray[offset]>=0)
-	    str += (char)(byteArray[offset++]);
-	else
-	    str += (char)(256+byteArray[offset++]);
+    for (int i = 0; i < length; i++) {
+      if (byteArray[offset] >= 0)
+        str += (char) (byteArray[offset++]);
+      else
+        str += (char) (256 + byteArray[offset++]);
     }
     return str;
   }
 
   static public byte getNotZeroRandomByte() {
-		
+
     java.util.Date date = new java.util.Date();
-    String randomString = String.valueOf( date.getTime() * Math.random() );
-    byte[] randomBytes = md5.hash( randomString );
-    int i=0;
-    while (i<20) {
-      byte b=0;
-      if (i<randomBytes.length) b = randomBytes[i];
-      if (b!=0) return  b;
+    String randomString = String.valueOf(date.getTime() * Math.random());
+    byte[] randomBytes = md5.digest(randomString.getBytes());
+    int i = 0;
+    while (i < 20) {
+      byte b = 0;
+      if (i < randomBytes.length) b = randomBytes[i];
+      if (b != 0) return b;
       i++;
     }
     return getNotZeroRandomByte();
   }
 
-  static public byte[] addArrayOfBytes(byte[] a, byte[]  b) {
-    if (a==null) return b;
-    if (b==null) return a;
-    byte [] temp = new byte[a.length + b.length];
-    for (int i=0;i<a.length;i++) temp[i] = a[i];
-    for (int i=0;i<b.length;i++) temp[i+a.length] = b[i];
+  static public byte[] addArrayOfBytes(byte[] a, byte[] b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    byte[] temp = new byte[a.length + b.length];
+    for (int i = 0; i < a.length; i++) temp[i] = a[i];
+    for (int i = 0; i < b.length; i++) temp[i + a.length] = b[i];
     return temp;
   }
 
 
-  static public byte[] XORArrayOfBytes(byte[] a, byte[]  b) {
-    if (a==null) return null;
-    if (b==null) return null;
-    if (a.length!=b.length) return null;
+  static public byte[] XORArrayOfBytes(byte[] a, byte[] b) {
+    if (a == null) return null;
+    if (b == null) return null;
+    if (a.length != b.length) return null;
     byte[] result = new byte[a.length];
-    for(int i=0; i<result.length; i++) result[i] = (byte)( ((a[i] & 0xff) ^ (b[i] & 0xff)) & 0xff);// ^ xor operator
+    for (int i = 0; i < result.length; i++) result[i] = (byte) (((a[i] & 0xff) ^ (b[i] & 0xff)) & 0xff);// ^ xor operator
     return result;
   }
 
@@ -101,24 +120,23 @@ class SshMisc {
    * The number of bits is followed by (bits + 7) / 8 bytes of binary
    * data, msb first, giving the value of the integer.
    */
-	
-  static public byte[] getMpInt(int offset, byte[] byteArray) throws IOException { 
+
+  static public byte[] getMpInt(int offset, byte[] byteArray) throws IOException {
 
     byte[] MpInt;
 
     short d0 = byteArray[offset++];
     short d1 = byteArray[offset++];
 
-    if (d0<0) d0 = (short) (256 + d0);
-    if (d1<0) d1 = (short) (256 + d1);
+    if (d0 < 0) d0 = (short) (256 + d0);
+    if (d1 < 0) d1 = (short) (256 + d1);
 
 
-    int byteLength =  (d0*256 + d1 + 7)/8;
+    int byteLength = (d0 * 256 + d1 + 7) / 8;
     MpInt = new byte[byteLength];
-    for (int i=0;i<byteLength;i++) MpInt[i] = byteArray[offset++];
+    for (int i = 0; i < byteLength; i++) MpInt[i] = byteArray[offset++];
     return MpInt;
   } //getMpInt
-
 
 
   /**
@@ -127,31 +145,26 @@ class SshMisc {
    * including the length itself).  The following "length" bytes are
    * the string value.  There are no terminating null characters.
    */
-  static public byte[] 	createString(String str) throws IOException {
+  static public byte[] createString(String str) throws IOException {
 
     int length = str.length();
     byte[] value = new byte[4 + length];
-		
-    value[3] = (byte) ((length) & 0xff);
-    value[2] = (byte) ((length>>8) & 0xff);
-    value[1] = (byte) ((length>>16) & 0xff);
-    value[0] = (byte) ((length>>24) & 0xff);
 
-    byte [] strByte = str.getBytes();
-		
-    for (int i=0; i<length; i++) value[i+4] = strByte[i];
+    value[3] = (byte) ((length) & 0xff);
+    value[2] = (byte) ((length >> 8) & 0xff);
+    value[1] = (byte) ((length >> 16) & 0xff);
+    value[0] = (byte) ((length >> 24) & 0xff);
+
+    byte[] strByte = str.getBytes();
+
+    for (int i = 0; i < length; i++) value[i + 4] = strByte[i];
     return value;
   } //createString
-	
-
-
-
-
 
 
   /**
-   * This table simply represent the results of eight shift/xor operations for 
-   * all combinations of data and CRC register values. In other words, it caches 
+   * This table simply represent the results of eight shift/xor operations for
+   * all combinations of data and CRC register values. In other words, it caches
    * all the possible resulting values such that they won't need to be computed.
    */
   static private long crc32_tab[] = {
@@ -216,28 +229,28 @@ class SshMisc {
   /**
    * Compute the crc	Cyclic Redundancy Check, with the polynomial 0xedb88320,
    * The polynomial is X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0
-   *  We take it "backwards" and put the highest-order term in the lowest-order bit. 
-   * The X^32 term is "implied"; the LSB is the X^31 term, etc.  
+   *  We take it "backwards" and put the highest-order term in the lowest-order bit.
+   * The X^32 term is "implied"; the LSB is the X^31 term, etc.
    * The X^0 term (usually shown as "+1") results in the MSB being 1.
    * so the poly is 0x04c11db7 (used for Ethernet)
-   * The buf will be the Padding, Packet type, and Data fields. 
+   * The buf will be the Padding, Packet type, and Data fields.
    * The crc is computed before any encryption.
    * R =X^n * M rem P		M message		P polynomial crc	R : crc calculated.
    * T(x) = x^n * M(x)  +  R(x)	property: T rem P = 0
    */
 
-	
-	
+
+
   // Return a 32-bit CRC of the byte using the feedback terms table
 
-  static public long crc32( byte[] s, int len){
+  static public long crc32(byte[] s, int len) {
     int i;
     long crc32val = 0;
-    for (i = 0;  i < len;  i ++) {
+    for (i = 0; i < len; i++) {
       crc32val =
-	crc32_tab[(int) ((crc32val ^ s[i]) & 0xff)] ^ (crc32val >> 8);
+        crc32_tab[(int) ((crc32val ^ s[i]) & 0xff)] ^ (crc32val >> 8);
     }
     return crc32val;
   }
-	
+
 }
