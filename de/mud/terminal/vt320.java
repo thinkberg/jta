@@ -157,10 +157,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     KeyTab     = "\u0009";
     KeyBacktab = "\u001bOP\u0009";
-    KeyUp      = "\u001b[A";
-    KeyDown    = "\u001b[B";
-    KeyRight   = "\u001b[C";
-    KeyLeft    = "\u001b[D";
+    KeyUp      = new String[4];
+    KeyUp[0]   = "\u001b[A";
+    KeyDown    = new String[4];
+    KeyDown[0] = "\u001b[B";
+    KeyRight   = new String[4];
+    KeyRight[0]= "\u001b[C";
+    KeyLeft    = new String[4];
+    KeyLeft[0] = "\u001b[D";
     Numpad = new String[10];
     Numpad[0]  = "\u001bOp";
     Numpad[1]  = "\u001bOq";
@@ -274,11 +278,15 @@ public abstract class vt320 extends VDU implements KeyListener {
       if (res!=null) Insert[i]=unEscape(res);
       res = codes.getProperty(prefixes[i]+"REMOVE");
       if (res!=null) Remove[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"UP");
+      if (res!=null) KeyUp[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"DOWN");
+      if (res!=null) KeyDown[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"LEFT");
+      if (res!=null) KeyLeft[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"RIGHT");
+      if (res!=null) KeyRight[i]=unEscape(res);
     }
-    res = codes.getProperty("UP");if (res!=null) KeyUp=unEscape(res);
-    res = codes.getProperty("DOWN");if (res!=null) KeyDown=unEscape(res);
-    res = codes.getProperty("LEFT");if (res!=null) KeyLeft=unEscape(res);
-    res = codes.getProperty("RIGHT");if (res!=null) KeyRight=unEscape(res);
 
   }
 
@@ -419,7 +427,8 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String FunctionKeyShift[];
   private String FunctionKeyCtrl[];
   private String FunctionKeyAlt[];
-  private String KeyUp,KeyDown,KeyLeft,KeyRight,KeyTab,KeyBacktab;
+  private String KeyUp[],KeyDown[],KeyLeft[],KeyRight[];
+  private String KeyTab,KeyBacktab;
   private String KPMinus, KPComma, KPPeriod,KPEnter;
   private String PF1, PF2, PF3, PF4;
   private String Help, Do, Find, Select;
@@ -605,10 +614,10 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_F10: write(fmap[10],false); break;
       case KeyEvent.VK_F11: write(fmap[11],false); break;
       case KeyEvent.VK_F12: write(fmap[12],false); break;
-      case KeyEvent.VK_UP: write(KeyUp,false); break;
-      case KeyEvent.VK_DOWN: write(KeyDown,false); break;
-      case KeyEvent.VK_LEFT: write(KeyLeft,false); break;
-      case KeyEvent.VK_RIGHT: write(KeyRight,false); break;
+      case KeyEvent.VK_UP: write(KeyUp[xind],false); break;
+      case KeyEvent.VK_DOWN: write(KeyDown[xind],false); break;
+      case KeyEvent.VK_LEFT: write(KeyLeft[xind],false); break;
+      case KeyEvent.VK_RIGHT: write(KeyRight[xind],false); break;
       case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind],false); break;
       case KeyEvent.VK_PAGE_UP: write(PrevScn[xind],false); break;
       case KeyEvent.VK_INSERT: write(Insert[xind],false); break;
@@ -1410,10 +1419,10 @@ public abstract class vt320 extends VDU implements KeyListener {
         /* DEC Mode set */
         switch (DCEvars[0]){
         case 1:  /* Application cursor keys */
-          KeyUp  = "\u001bOA";
-          KeyDown  = "\u001bOB";
-          KeyRight= "\u001bOC";
-          KeyLeft  = "\u001bOD";
+          KeyUp[0]  = "\u001bOA";
+          KeyDown[0]  = "\u001bOB";
+          KeyRight[0]= "\u001bOC";
+          KeyLeft[0]  = "\u001bOD";
           break;
         case 3: /* 132 columns*/
           size = getSize();
@@ -1437,10 +1446,10 @@ public abstract class vt320 extends VDU implements KeyListener {
           System.out.println("ESC [ ? "+DCEvars[0]+" l");
         switch (DCEvars[0]){
         case 1:  /* Application cursor keys */
-          KeyUp  = "\u001b[A";
-          KeyDown  = "\u001b[B";
-          KeyRight= "\u001b[C";
-          KeyLeft  = "\u001b[D";
+          KeyUp[0]  = "\u001b[A";
+          KeyDown[0]  = "\u001b[B";
+          KeyRight[0]= "\u001b[C";
+          KeyLeft[0]  = "\u001b[D";
           break;
         case 3: /* 80 columns*/
           size = getSize();
