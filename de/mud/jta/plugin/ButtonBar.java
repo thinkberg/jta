@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 
@@ -114,6 +115,9 @@ public class ButtonBar extends Plugin
   private Hashtable buttons = null;
   private Hashtable fields = null;
 
+  // the switch for clearing input fields after enter
+  private boolean clearFields = true;
+
   /**
    * Initialize the button bar and register plugin listeners
    */
@@ -123,21 +127,37 @@ public class ButtonBar extends Plugin
     // configure the button bar
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig cfg) {
-	String url = cfg.getProperty("ButtonBar", id, "setup");
+	String file = cfg.getProperty("ButtonBar", id, "setup");
+	clearFields = 
+	  (new Boolean(cfg.getProperty("ButtonBar", id, "clearFields")))
+	    .booleanValue();
 
 	// check for the setup file
-        if(url == null) {
+        if(file == null) {
 	  ButtonBar.this.error("no setup file");
 	  return;
         }
-	
-	// create a new stream tokenizer to read the file
+
         StreamTokenizer setup = null;
+	InputStream is = null;
+
 	try {
-	  InputStreamReader ir=new InputStreamReader(new URL(url).openStream());
+	  is = getClass().getResourceAsStream(file);
+	} catch(Exception e) {
+          try {
+	    is = new URL(file).openStream();
+	  } catch(Exception ue) {
+            ButtonBar.this.error("cannot find "+file+": "+ue);
+	    return;
+	  }
+	}
+
+	// create a new stream tokenizer to read the file
+	try {
+	  InputStreamReader ir = new InputStreamReader(is);
 	  setup = new StreamTokenizer(new BufferedReader(ir));
 	} catch(Exception e) {
-	  ButtonBar.this.error("cannot load "+url+": "+e);
+	  ButtonBar.this.error("cannot load "+file+": "+e);
 	  return;
 	}
 
@@ -295,7 +315,7 @@ public class ButtonBar extends Plugin
 	    break;
 	  }
 	  cmd += t.getText();
-	  t.setText("");
+	  if(clearFields) t.setText("");
 	  break;
 	}
 	default : cmd += tmp.substring(idx, ++idx);
