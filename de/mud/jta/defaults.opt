@@ -18,12 +18,11 @@
 # =======================================================================
 # common program defaults
 # =======================================================================
-plugins			=	Status,Socket,SSH,Timeout,Terminal
+plugins			=	Status,Socket,Telnet,Timeout,Terminal
 layout			=	BorderLayout
 layout.Terminal		=	Center
 layout.Status		=	South
-SSH.user		=	leo
-SSH.password		=	pass
+
 # =======================================================================
 # Socket defaults
 # =======================================================================
