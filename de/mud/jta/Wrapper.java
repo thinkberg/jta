@@ -162,8 +162,6 @@ public class Wrapper {
 	if (debug > 0)
 	  System.err.print( current );
 	ret.append( current );
-        if (b1[0] != '\n')
-	  continue;
 	for ( int i = 0; i < handlers.length ; i++ ) {
 	  if ( handlers[i].match( ret.toString().getBytes(), ret.length() ) ) {
 	    return ret.toString();
