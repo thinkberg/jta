@@ -195,10 +195,38 @@ public abstract class TelnetProtocolHandler {
    * @param buf the data buffer to be sent
    */
   public void transpose(byte[] buf) throws IOException {
-    for(int i = 0; i < buf.length; i++) {
-      // Here comes your code, Marcus. If you can optimize it, do it!
-    }   
-    write(buf); // just to check in working code
+    byte[] nbuf,xbuf;
+    int i,nbufptr=0;
+
+    nbuf = new byte[buf.length*2];
+    for (i = 0; i < buf.length ; i++) {
+      switch (buf[i]) {
+      // Escape IAC twice in stream ... to be telnet protocol compliant
+      case IAC:
+	  nbuf[nbufptr++]=IAC;
+	  nbuf[nbufptr++]=IAC;
+	  break;
+      // We need to heed RFC 854. LF (\n) is 10, CR (\r) is 13
+      // we assume that the Terminal sends \n for lf+cr and \r for just cr
+      // linefeed+carriage return is CR LF */ 
+      case 10:	// \n
+	  nbuf[nbufptr++]=13;
+	  nbuf[nbufptr++]=10;
+	  break;
+      // carriage return is CR NUL */ 
+      case 13:	// \r
+	  nbuf[nbufptr++]=13;
+	  nbuf[nbufptr++]=0;
+	  break;
+      // all other characters are just copied
+      default:
+	  nbuf[nbufptr++]=buf[i];
+	  break;
+      }
+    }
+    xbuf = new byte[nbufptr];
+    System.arraycopy(nbuf,0,xbuf,0,nbufptr);
+    write(xbuf);
   }
 
   /**
