@@ -33,11 +33,13 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Scrollbar;
 
+/*
 import java.awt.Graphics;
 import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.awt.print.PrinterException;
 import java.awt.print.PageFormat;
+*/
 
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
@@ -52,7 +54,7 @@ import java.awt.event.AdjustmentEvent;
  * @version $Id$
  * @author  Matthias L. Jugel, Marcus Meißner
  */
-public class VDU extends Canvas implements Printable {
+public class VDU extends Canvas {
   /** The current version id tag */
   public final static String ID = "$Id$";
 
@@ -173,7 +175,7 @@ public class VDU extends Canvas implements Printable {
     selectBegin = new Point(0,0);
     selectEnd = new Point(0,0); 
 
-
+/*
     addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
         System.err.println(evt);
@@ -191,6 +193,7 @@ public class VDU extends Canvas implements Printable {
         }
       }
     });
+*/
   }
   
   /**
@@ -1043,6 +1046,7 @@ public class VDU extends Canvas implements Printable {
     update[0] = false;
   }
 
+/*
   public int print(Graphics g, PageFormat pf, int pi) throws PrinterException {
     if(pi >= 1) {
       return Printable.NO_SUCH_PAGE;
@@ -1050,7 +1054,7 @@ public class VDU extends Canvas implements Printable {
     paint(g);
     return Printable.PAGE_EXISTS;
   }
-
+*/
     // draw cursor
 
   private int checkBounds(int value, int lower, int upper) {
