@@ -16,7 +16,7 @@ SRCDIR	=	de
 #
 all: 	app doc jar
 	
-doc:
+doc:	app
 	-mkdir doc
 	javadoc -d doc -version -author \
 	  `find de/mud -type d -print | \
