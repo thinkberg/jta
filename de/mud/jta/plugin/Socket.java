@@ -33,6 +33,14 @@ import java.net.UnknownHostException;
 
 import java.util.Properties;
 
+import java.awt.Frame;
+import java.awt.Panel;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  * The socket plugin acts as the data source for networked operations.
  * <P>
@@ -95,6 +103,27 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
         write(("relay "+host+" "+port+"\n").getBytes());
       bus.broadcast(new OnlineStatus(true));
     } catch(Exception e) {
+      final Frame frame = new Frame("Java Telnet Applet: Socket Error");
+      Panel p = new Panel(new BorderLayout());
+      TextArea msg = new TextArea(
+        "Your are either behind a firewall or the\n"+
+	"Java Telnet Applet has a broken configuration.\n\n"+
+        "The error is:\n"+e+"\n\n"+
+        "If unsure, please contact the administrator"+
+        "of the web page.\n", 10, 40);
+      msg.setEditable(false);
+      p.add("Center", msg);
+      Button close = new Button("Close Window");
+      close.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+	  frame.hide();
+	  frame.dispose();
+	}
+      });
+      p.add("South", close);
+      frame.add("Center", p);
+      frame.pack();
+      frame.show();
       System.err.println("Socket: "+e);
       disconnect();
     }
