@@ -32,11 +32,11 @@ import de.mud.jta.event.LocalEchoListener;
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
 public class LocalEchoRequest implements PluginMessage {
-  protected boolean echo;
+  protected boolean xecho = false;
 
   /** Create a new local echo request with the specified value. */
   public LocalEchoRequest(boolean echo) {
-    this.echo = echo;
+    xecho = echo;
   }
 
   /**
@@ -46,7 +46,7 @@ public class LocalEchoRequest implements PluginMessage {
    */
   public Object firePluginMessage(PluginListener pl) {
     if(pl instanceof LocalEchoListener)
-      ((LocalEchoListener)pl).setLocalEcho(echo);
+      ((LocalEchoListener)pl).setLocalEcho(xecho);
     return null;
   }
 }
