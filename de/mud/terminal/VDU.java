@@ -960,7 +960,7 @@ public class VDU extends Component
     }
   }
 
-  protected synchronized void redraw(Graphics g) {
+  protected /*synchronized */void redraw(Graphics g) {
     if(debug > 0) System.err.println("redraw()");
 
     int xoffset = (super.getSize().width - size.width * charWidth) / 2;
@@ -1160,7 +1160,7 @@ public class VDU extends Component
   /**
    * Paint the current screen using the backing store image.
    */
-  public synchronized void paint(Graphics g) {
+  public /*synchronized */void paint(Graphics g) {
     if(backingStore == null) {
       Dimension size = super.getSize();
       backingStore = createImage(size.width, size.height);
