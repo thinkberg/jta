@@ -73,10 +73,19 @@ public class VDUBuffer {
   public final static int INVERT = 0x04;
   /** Lower intensity character. */
   public final static int LOW = 0x08;
+  /** Invisible character. */
+  public final static int INVISIBLE = 0x10;
 
-  public final static int COLOR = 0xff0;
-  public final static int COLOR_FG = 0xf0;
-  public final static int COLOR_BG = 0xf00;
+  /** how much to left shift the foreground color */
+  public final static int COLOR_FG_SHIFT = 5;
+  /** how much to left shift the background color */
+  public final static int COLOR_BG_SHIFT = 9;
+  /** color mask */
+  public final static int COLOR = 0x1fe0;
+  /** foreground color mask */
+  public final static int COLOR_FG = 0x1e0;
+  /** background color mask */
+  public final static int COLOR_BG = 0x1e00;
 
   /**
    * Create a new video display buffer with the passed width and height in
@@ -122,7 +131,9 @@ public class VDUBuffer {
    * @see #BOLD
    * @see #UNDERLINE
    * @see #INVERT
+   * @see #INVISIBLE
    * @see #NORMAL
+   * @see #LOW
    * @see #insertChar
    * @see #deleteChar
    * @see #redraw
@@ -171,7 +182,9 @@ public class VDUBuffer {
    * @see #BOLD
    * @see #UNDERLINE
    * @see #INVERT
+   * @see #INVISIBLE
    * @see #NORMAL
+   * @see #LOW
    * @see #putChar
    * @see #deleteChar
    * @see #redraw
@@ -217,7 +230,9 @@ public class VDUBuffer {
    * @see #BOLD
    * @see #UNDERLINE
    * @see #INVERT
+   * @see #INVISIBLE
    * @see #NORMAL
+   * @see #LOW
    * @see #putChar
    * @see #insertLine
    * @see #deleteLine
@@ -238,7 +253,9 @@ public class VDUBuffer {
    * @see #BOLD
    * @see #UNDERLINE
    * @see #INVERT
+   * @see #INVISIBLE
    * @see #NORMAL
+   * @see #LOW
    * @see #putChar
    * @see #insertLine
    * @see #deleteLine

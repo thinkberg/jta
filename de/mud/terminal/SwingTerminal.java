@@ -365,9 +365,9 @@ public class SwingTerminal extends Component
         bg = darken(getBackground());
 
         if ((currAttr & buffer.COLOR_FG) != 0)
-          fg = darken(color[((currAttr & buffer.COLOR_FG) >> 4) - 1]);
+          fg = darken(color[((currAttr & buffer.COLOR_FG) >> buffer.COLOR_FG_SHIFT) - 1]);
         if ((currAttr & buffer.COLOR_BG) != 0)
-          bg = darken(darken(color[((currAttr & buffer.COLOR_BG) >> 8) - 1]));
+          bg = darken(darken(color[((currAttr & buffer.COLOR_BG) >> buffer.COLOR_BG_SHIFT) - 1]));
 
         if ((currAttr & VDUBuffer.BOLD) != 0) {
           g.setFont(new Font(normalFont.getName(), Font.BOLD, normalFont.getSize()));
@@ -410,8 +410,9 @@ public class SwingTerminal extends Component
           g.fillRect(c * charWidth + xoffset, l * charHeight + yoffset,
                      charWidth, charHeight);
           g.setColor(fg);
-          sf.drawChar(g, buffer.charArray[buffer.windowBase + l][c], xoffset + c * charWidth,
-                      l * charHeight + yoffset, charWidth, charHeight);
+	  if ((currAttr & VDUBuffer.INVISIBLE) == 0)
+            sf.drawChar(g, buffer.charArray[buffer.windowBase + l][c], xoffset + c * charWidth,
+                        l * charHeight + yoffset, charWidth, charHeight);
           if ((currAttr & VDUBuffer.UNDERLINE) != 0)
             g.drawLine(c * charWidth + xoffset,
                        (l + 1) * charHeight - charDescent / 2 + yoffset,
@@ -440,8 +441,9 @@ public class SwingTerminal extends Component
 
         g.setColor(fg);
 
-        // draw the characters
-        g.drawChars(buffer.charArray[buffer.windowBase + l], c, addr,
+        // draw the characters, if not invisible.
+	if ((currAttr & VDUBuffer.INVISIBLE) == 0)
+          g.drawChars(buffer.charArray[buffer.windowBase + l], c, addr,
                     c * charWidth + xoffset,
                     (l + 1) * charHeight - charDescent + yoffset);
 
@@ -845,12 +847,32 @@ public class SwingTerminal extends Component
       if (selectEnd.x > buffer.charArray[0].length)
         selectEnd.x = buffer.charArray[0].length;
 
+      // Initial buffer space for selectEnd - selectBegin + 1 lines
+      // NOTE: Selection includes invisible text as spaces!
+      // (also leaves invisible non-whitespace selection ending as spaces)
+      StringBuffer selectionBuf =
+	new StringBuffer(buffer.charArray[0].length*(selectEnd.y-selectBegin.y+1));
+
       for (int l = selectBegin.y; l <= selectEnd.y; l++) {
         int start, end;
         start = (l == selectBegin.y ? start = selectBegin.x : 0);
         end = (l == selectEnd.y ? end = selectEnd.x : buffer.charArray[l].length);
+
+	boolean newlineFound = false;
+	char ch = ' ';
+	for(int i = start; i < end; i++) {
+	  if((buffer.charAttributes[l][i] & VDUBuffer.INVISIBLE) != 0)
+	    ch = ' ';
+	  else
+	    ch = buffer.charArray[l][i];
+	  if(ch == '\n')
+	    newlineFound = true;
+	  selectionBuf.append(ch);
+	}
+	if(!newlineFound)
+	  selectionBuf.append('\n');
         // Trim all spaces from end of line, like xterm does.
-        selection += ("-" + (new String(buffer.charArray[l])).substring(start, end)).trim().substring(1);
+        selection += ("-" + (selectionBuf.toString())).trim().substring(1);
         if (end == buffer.charArray[l].length)
           selection += "\n";
       }

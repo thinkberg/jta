@@ -2474,10 +2474,10 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                     if ((ncolor & 8) == 8)
                       attributes |= BOLD;
                     ncolor = ((ncolor & 1) << 2) | (ncolor & 2) | ((ncolor & 4) >> 2);
-                    attributes |= ((ncolor) + 1) << 4;
+                    attributes |= ((ncolor) + 1) << COLOR_FG_SHIFT;
                     ncolor = DCEvars[i + 2];
                     ncolor = ((ncolor & 1) << 2) | (ncolor & 2) | ((ncolor & 4) >> 2);
-                    attributes |= ((ncolor) + 1) << 8;
+                    attributes |= ((ncolor) + 1) << COLOR_BG_SHIFT;
                     i += 2;
                   } else {
                     attributes |= LOW;
@@ -2488,6 +2488,9 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                   break;
                 case 7:
                   attributes |= INVERT;
+                  break;
+                case 8:
+                  attributes |= INVISIBLE;
                   break;
                 case 5: /* blink on */
                   break;
@@ -2512,6 +2515,9 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                 case 27:
                   attributes &= ~INVERT;
                   break;
+                case 28:
+                  attributes &= ~INVISIBLE;
+                  break;
                 case 24:
                   attributes &= ~UNDERLINE;
                   break;
@@ -2527,7 +2533,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                 case 36:
                 case 37:
                   attributes &= ~COLOR_FG;
-                  attributes |= ((DCEvars[i] - 30) + 1) << 4;
+                  attributes |= ((DCEvars[i] - 30) + 1) << COLOR_FG_SHIFT;
                   break;
                 case 39:
                   attributes &= ~COLOR_FG;
@@ -2541,7 +2547,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                 case 46:
                 case 47:
                   attributes &= ~COLOR_BG;
-                  attributes |= ((DCEvars[i] - 40) + 1) << 8;
+                  attributes |= ((DCEvars[i] - 40) + 1) << COLOR_BG_SHIFT;
                   break;
                 case 49:
                   attributes &= ~COLOR_BG;
