@@ -200,9 +200,9 @@ public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
       e.printStackTrace();
     }
 
-    // empty the buffer before we do anything else
+    // Empty the buffer before we do anything else
     if(buffer != null) {
-      int amount = (buffer.length - pos) <= b.length ? 
+      int amount = ((buffer.length - pos) <= b.length) ? 
                       buffer.length - pos : b.length;
       System.arraycopy(buffer, pos, b, 0, amount);
       if(pos + amount < buffer.length) {
@@ -217,9 +217,12 @@ public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
     if(n > 0) {
       byte[] tmp = new byte[n];
       System.arraycopy(b, 0, tmp, 0, n);
+      pos = 0;
       buffer = handler.handleSSH(tmp);
+
       if(debug > 0 && buffer != null && buffer.length > 0)
-        System.err.println("ssh: "+new String(buffer));
+        System.err.println("ssh: "+buffer);
+
       if(buffer != null && buffer.length > 0) {
         if(debug > 0) 
 	  System.err.println("ssh: incoming="+n+" now="+buffer.length);
