@@ -149,6 +149,8 @@ public abstract class TelnetProtocolHandler {
   private final static byte SB  = (byte)250;
   /** [IAC] Sub End */
   private final static byte SE  = (byte)240;
+  /** Telnet option: binary mode */
+  private final static byte TELOPT_BINARY= (byte)0;  /* binary mode */
   /** Telnet option: echo text */
   private final static byte TELOPT_ECHO  = (byte)1;  /* echo on/off */
   /** Telnet option: sga */
@@ -245,6 +247,7 @@ public abstract class TelnetProtocolHandler {
     for (i = 0; i < buf.length ; i++) {
       switch (buf[i]) {
       // Escape IAC twice in stream ... to be telnet protocol compliant
+      // this is there in binary and non-binary mode.
       case IAC:
 	nbuf[nbufptr++]=IAC;
 	nbuf[nbufptr++]=IAC;
@@ -253,23 +256,34 @@ public abstract class TelnetProtocolHandler {
       // we assume that the Terminal sends \n for lf+cr and \r for just cr
       // linefeed+carriage return is CR LF */ 
       case 10:	// \n
-	while (nbuf.length - nbufptr < crlf.length) {
-		xbuf = new byte[nbuf.length*2];
-    		System.arraycopy(nbuf,0,xbuf,0,nbufptr);
-		nbuf = xbuf;
+        if (receivedDX[TELOPT_BINARY + 128 ] != DO) {
+	    while (nbuf.length - nbufptr < crlf.length) {
+		    xbuf = new byte[nbuf.length*2];
+		    System.arraycopy(nbuf,0,xbuf,0,nbufptr);
+		    nbuf = xbuf;
+	    }
+	    for (int j=0;j<crlf.length;j++)
+		nbuf[nbufptr++]=crlf[j];
+	    break;
+	} else {
+	    // copy verbatim in binary mode.
+	    nbuf[nbufptr++]=buf[i];
 	}
-        for (int j=0;j<crlf.length;j++)
-	    nbuf[nbufptr++]=crlf[j];
 	break;
       // carriage return is CR NUL */ 
       case 13:	// \r
-	while (nbuf.length - nbufptr < cr.length) {
-		xbuf = new byte[nbuf.length*2];
-    		System.arraycopy(nbuf,0,xbuf,0,nbufptr);
-		nbuf = xbuf;
+        if (receivedDX[TELOPT_BINARY + 128 ] != DO) {
+	    while (nbuf.length - nbufptr < cr.length) {
+		    xbuf = new byte[nbuf.length*2];
+		    System.arraycopy(nbuf,0,xbuf,0,nbufptr);
+		    nbuf = xbuf;
+	    }
+	    for (int j=0;j<cr.length;j++)
+		nbuf[nbufptr++]=cr[j];
+	} else {
+	    // copy verbatim in binary mode.
+	    nbuf[nbufptr++]=buf[i];
 	}
-        for (int j=0;j<cr.length;j++)
-	    nbuf[nbufptr++]=cr[j];
 	break;
       // all other characters are just copied
       default:
@@ -382,6 +396,10 @@ public abstract class TelnetProtocolHandler {
           if(debug > 2) System.err.println("EOR");
           reply = DO;
           break;
+        case TELOPT_BINARY:
+          if(debug > 2) System.err.println("BINARY");
+          reply = DO;
+          break;
         default:
           if(debug > 2) System.err.println("<UNKNOWN,"+b+">");
           reply = DONT;
@@ -413,6 +431,10 @@ public abstract class TelnetProtocolHandler {
           if(debug > 2) System.err.println("EOR");
           reply = DONT;
           break;
+        case TELOPT_BINARY:
+          if(debug > 2) System.err.println("BINARY");
+          reply = DONT;
+          break;
         default:
           if(debug > 2) System.err.println("<UNKNOWN,"+b+">");
           reply = DONT;
@@ -441,6 +463,10 @@ public abstract class TelnetProtocolHandler {
           break;
         case TELOPT_TTYPE:
           if(debug > 2) System.err.println("TTYPE");
+          reply = WILL;
+          break;
+        case TELOPT_BINARY:
+          if(debug > 2) System.err.println("BINARY");
           reply = WILL;
           break;
         case TELOPT_NAWS:
@@ -497,6 +523,10 @@ public abstract class TelnetProtocolHandler {
           break;
         case TELOPT_NAWS:
           if(debug > 2) System.err.println("NAWS");
+          reply = WONT;
+          break;
+        case TELOPT_BINARY:
+          if(debug > 2) System.err.println("BINARY");
           reply = WONT;
           break;
         default:
