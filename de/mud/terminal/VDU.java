@@ -941,6 +941,25 @@ public class VDU extends Component
 
     g.setFont(normalFont);
 
+   
+   /* for debug only
+    if (update[0]) {
+        System.err.println("Redrawing all");
+    } else {
+	for (int l = 1; l < size.height+1; l++) {
+	    if (update[l]) {
+	    	for (int c = 0; c < size.height-l;c++) {
+		    if (!update[c+l]) {
+			System.err.println("Redrawing "+(l-1)+" - "+(l+c-2));
+			l=l+c;
+			break;
+		    }
+		}
+	    }
+	}
+    }
+    */
+
     for(int l = 0; l < size.height; l++) {
       if(!update[0] && !update[l + 1]) continue;
       update[l + 1] = false;
@@ -955,7 +974,7 @@ public class VDU extends Component
         if((currAttr & COLOR_FG) != 0)
           fg = color[((currAttr & COLOR_FG) >> 3)-1];
         if((currAttr & COLOR_BG) != 0)
-          bg = color[((currAttr & COLOR_BG) >> 7)-1];
+          bg = color[((currAttr & COLOR_BG) >> 7)-1].darker();
 
         if((currAttr & BOLD) != 0)
           if(fg.equals(Color.black))
