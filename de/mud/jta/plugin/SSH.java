@@ -148,6 +148,10 @@ public class SSH extends Plugin implements FilterPlugin {
   
 	  frame.pack();
 	  frame.show();
+	  frame.setLocation(frame.getToolkit().getScreenSize().width/2 -
+	                    frame.getSize().width/2, 
+	                    frame.getToolkit().getScreenSize().height/2 -
+	                    frame.getSize().height/2);
 	} else {
 	  error(user+":"+pass);
 	  handler.setLogin(user);
@@ -157,7 +161,7 @@ public class SSH extends Plugin implements FilterPlugin {
       }
       public void offline() {
         handler.disconnect();
-				auth=false;
+	auth=false;
       }
     });
   }
