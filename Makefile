@@ -32,7 +32,7 @@ JAVAH 	=	javah
 #JAVADOC	=	/q/opt/jdk1.2.2/bin/javadoc
 #DEBUG	=	-g -deprecation
 DEBUG	=	-g
-JFLAGS	=	-classpath $(CLASSPATH):.
+JFLAGS	=	-classpath $(CLASSPATH):jar/org.apache.crimson.jar:jar/jdom.jar:jar/gnu-regexp-1.0.8.jar:.
 SRCDIR	=	de
 PKGNAME	=	jta20
 VERSION	=	`java -version 2>&1 | head -1 | \
@@ -98,7 +98,7 @@ dist:	all opt revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
-	  export CLASSPATH=`pwd`/jar/gnu-regexp-1.0.8.jar:`pwd`/jar/cryptix.jar && \
+	  export CLASSPATH=$(CLASSPATH):`pwd`/jar/cryptix.jar && \
 	  cp REVISION CHANGES $(PKGNAME)/ && \
 	  cp -r doc/source $(PKGNAME)/doc/ && \
 	  touch "$(PKGNAME)/Created-$(DATE)" && \
