@@ -34,6 +34,7 @@ import de.mud.ssh.SshIO;
 
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Dialog;
 import java.awt.Panel;
 import java.awt.Button;
 import java.awt.Label;
@@ -106,8 +107,7 @@ public class SSH extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new OnlineStatusListener() {
       public void online() {
 	if(pass == null) {
-	  MAKE A DIALOG!
-          final Frame frame = new Frame("SSH User Authentication");
+          final Dialog frame = new Dialog((Frame)null,"SSH User Authentication");
           Panel panel = new Panel(new GridLayout(3,1));
 	  panel.add(new Label("SSH Authorization required"));
 	  panel.add(new Label("SSH implementation 1998 by Cedric Gourio"));
