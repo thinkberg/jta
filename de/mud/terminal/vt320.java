@@ -1330,9 +1330,9 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     case TSTATE_SETG1:
-      if(c!='0' && c!='A' && c!='B')
-        System.out.println("ESC ) :G1 char set?  ("+((int)c)+")");
-      else {
+      if(c!='0' && c!='A' && c!='B') {
+        System.out.println("ESC ) " + c + " ("+ ((int)c) + ") :G1 char set?");
+      } else {
         if (debug>2) System.out.println("ESC ) :G1 char set  ("+c+" "+((int)c)+")");
         gx[1] = c;
       }
@@ -1434,19 +1434,19 @@ public abstract class vt320 extends VDU implements KeyListener {
           size = getSize();
           setScreenSize(132,rows);
           break;
-        case 4: /* scrolling mode, smooth */
-          break;
-        case 5: /* light background */
-          break;
         case 6: /* move inside margins ? */
           moveoutsidemargins = false;
           break;
-        case 12:/* local echo off */
-          break;
-        case 18:/* DECPFF - Printer Form Feed Mode -> On */
-          break;
-        case 19:/* DECPEX - Printer Extent Mode -> Screen */
-          break;
+
+	/* unimplemented stuff, fall through */
+        /* 4  - scrolling mode, smooth */
+        /* 5  - light background */
+        /* 12 - local echo off */
+        /* 18 - DECPFF - Printer Form Feed Mode -> On */
+        /* 19 - DECPEX - Printer Extent Mode -> Screen */
+	default:
+          System.out.println("ESC [ ? "+DCEvars[0]+" h, unsupported.");
+	  break;
         }
         break;
       case 'i': // DEC Printer Control, autoprint, echo screenchars to printer
@@ -1484,19 +1484,18 @@ public abstract class vt320 extends VDU implements KeyListener {
           size = getSize();
           setScreenSize(80,rows);
           break;
-        case 4: /* scrolling mode, jump */
-          break;
-        case 5: /* dark background */
-          break;
         case 6: /* move outside margins ? */
           moveoutsidemargins = true;
           break;
-        case 12:/* local echo on */
-          break;
-        case 18:/* DECPFF - Printer Form Feed Mode -> Off*/
-          break;
-        case 19:/* DECPEX - Printer Extent Mode -> Scrolling Region */
-          break;
+	/* Unimplemented stuff: */
+        /* 4  - scrolling mode, jump */
+        /* 5  - dark background */
+        /* 12 - local echo on */
+        /* 18 - DECPFF - Printer Form Feed Mode -> Off*/
+        /* 19 - DECPEX - Printer Extent Mode -> Scrolling Region */
+	default:
+          System.out.println("ESC [ ? "+DCEvars[0]+" l, unsupported.");
+	  break;
         }
         break;
       case 'n':
@@ -1508,13 +1507,13 @@ public abstract class vt320 extends VDU implements KeyListener {
           write(((char)ESC)+"[?13n",false);
           System.out.println("ESC[5n");
           break;
-        default:
+	default:
+          System.out.println("ESC [ ? "+DCEvars[0]+" n, unsupported.");
           break;
         }
         break;
       default:
-        if (debug>0)
-          System.out.println("ESC [ ? "+DCEvars[0]+" "+c);
+        System.out.println("ESC [ ? "+DCEvars[0]+" "+c + ", unsupported.");
         break;
       }
       break;
