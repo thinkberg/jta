@@ -445,7 +445,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   boolean  useibmcharset = false;
 
-  static  int  lastwaslf = 0;
+  int  lastwaslf = 0;
   boolean  usedcharsets  = false;
 
   private final static char ESC = 27;
