@@ -80,7 +80,6 @@ jar:	app build
 	@$(JAR) cvfm jar/$(PKGNAME).jar jta.manifest \
 	  "Created-$(DATE)" README \
 	  license/COPYING \
-	  de/mud/ssh/license.txt \
 	  `find $(SRCDIR) -name \*.class` \
 	  `find $(SRCDIR) -name \*.conf` > /dev/null
 	@rm -f Created-*
