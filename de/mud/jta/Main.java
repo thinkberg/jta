@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.net.URL;
@@ -94,7 +95,7 @@ public class Main {
       System.err.println(error);
       System.err.println("usage: de.mud.jta.Main [-plugins pluginlist] "
                         +"[-addplugin plugin] "
-                        +"[-config url] "
+                        +"[-config url_or_file] "
                         +"[-term id] [host [port]]");
       System.exit(0);
     }
@@ -103,7 +104,11 @@ public class Main {
     if(cfg != null) try {
       options.load(new URL(cfg).openStream());
     } catch(IOException e) {
-      System.err.println("jta: cannot load "+cfg);
+      try {
+        options.load(new FileInputStream(cfg));
+      } catch(Exception fe) {
+        System.err.println("jta: cannot load "+cfg);
+      }
     }
 
     final String host = options.getProperty("Socket.host");

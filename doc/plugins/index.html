@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: Plugins</title>
@@ -89,6 +89,12 @@ and the <a href="../../html/applet.conf">applet.conf </a>used there.
 </tr>
 
 <tr NOSAVE>
+<td COLSPAN="2" BGCOLOR="#999999" NOSAVE>
+<center><b><font color="#FFFFFF">Basic Plugins</font></b></center>
+</td>
+</tr>
+
+<tr NOSAVE>
 <td ALIGN=CENTER NOSAVE><b><a href="Socket.html">Socket</a></b></td>
 
 <td NOSAVE>A most basic plugin used for low level communication with remote
@@ -110,11 +116,13 @@ Telnet plugin as it provides a way for secure communication over insecure
 networks.</td>
 </tr>
 
-<tr NOSAVE>
-<td ALIGN=CENTER NOSAVE><b><a href="Script.html">Script</a></b></td>
+<tr>
+<td>
+<center><b>Shell</b></center>
+</td>
 
-<td>The script plugin may be used to automate login procedures for guest
-accounts.</td>
+<td>A shell plugin for use with local command shells. <i>Not really useful
+right now.</i></td>
 </tr>
 
 <tr NOSAVE>
@@ -122,6 +130,12 @@ accounts.</td>
 
 <td>This is a very important plugin as it is the actual terminal so you
 can see what you do. It implements an ANSI/VT320 compatible terminal emulation.</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" BGCOLOR="#999999" NOSAVE>
+<center><b><font color="#FFFFFF">Add-On</font></b></center>
+</td>
 </tr>
 
 <tr NOSAVE>
@@ -146,6 +160,42 @@ timeout to close the connection.</td>
 
 <td>The new implemenation of our well known button bar module. With new
 configuration options and better look than ever.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="Script.html">Script</a></b></center>
+</td>
+
+<td>The script plugin may be used to automate login procedures for guest
+accounts.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="URLFilter.html">URLFilter</a></b></center>
+</td>
+
+<td>Filters URLs out of the incoming data and displays a list to open them
+in a web browser (Applet)</td>
+</tr>
+
+<tr>
+<td>
+<center><b>MudConnector</b></center>
+</td>
+
+<td>A special plugin for <a href="www.mudconnector.com">www.mudconnector.com</a>
+to display a list of muds to connect to.</td>
+</tr>
+
+<tr>
+<td>
+<center><b>BSX plugin</b></center>
+</td>
+
+<td>A third party plugin for use with BSX enabled MUDs. It is contained
+in the <a href="../../jar/contrib.jar">contrib.jar</a> package.</td>
 </tr>
 </table></center>
 </td>

@@ -25,6 +25,7 @@ import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketListener;
+import de.mud.jta.event.SocketRequest;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -39,12 +40,18 @@ import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.CardLayout;
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.List;
 import java.awt.Component;
 import java.awt.Menu;
 import java.awt.Dimension;
 import java.awt.Button;
 import java.awt.Label;
+import java.awt.TextField;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 /**
  * <P>
@@ -61,6 +68,8 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
   protected URL listURL = null;
   protected Hashtable mudList = null;
   protected List mudListSelector = new List();
+  protected TextField mudName, mudAddr, mudPort;
+  protected Button connect;
   protected Panel mudListPanel;
   protected CardLayout layouter;
   protected ProgressBar progress;
@@ -72,13 +81,14 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
    */
   class ProgressBar extends Component {
     int max, current;
+    String text;
     Dimension size = new Dimension(250, 20);
 
     public void setMax(int max) {
       this.max = max;
     }
 
-    public void paint(Graphics g) {
+    public synchronized void paint(Graphics g) {
       int width = (int) (((float)current/(float)max) * getSize().width);
       g.fill3DRect(0, 0, getSize().width, getSize().height, false);
       g.setColor(getBackground());
@@ -86,12 +96,17 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
       g.setColor(getForeground());
       g.setXORMode(getBackground());
       g.drawString(""+(current * 100 / (max>0?max:1))+"%", 
-                   getSize().width/2 - 15, getSize().height / 2 + 7);
+                   getSize().width/2 - 15, getSize().height / 2);
+      g.drawString(text,
+                   getSize().width/2 - 
+		     getFontMetrics(getFont()).stringWidth(text) / 2, 
+		   getSize().height / 2 + 12);
     }
 
-    public void adjust(int value) {
+    public synchronized void adjust(int value, String name) {
       if((current = value) > max)
         current = max;
+      text = name;
       repaint();
     }
 
@@ -107,7 +122,7 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
   /**
    * Create the list plugin and get the url to the actual list.
    */
-  public MudConnector(PluginBus bus, final String id) {
+  public MudConnector(final PluginBus bus, final String id) {
     super(bus, id);
 
     bus.registerPluginListener(new ConfigurationListener() {
@@ -133,7 +148,11 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
       public void connect(String host, int port) { setup(); }
       public void disconnect() { setup(); }
     });
-    mudListPanel = new Panel(layouter = new CardLayout());
+    mudListPanel = new Panel(layouter = new CardLayout()) {
+      public void update(java.awt.Graphics g) { 
+        paint(g);
+      }
+    };
 
     mudListPanel.add("ERROR", errorLabel = new Label("Loading ..."));
     Panel panel = new Panel(new BorderLayout());
@@ -141,11 +160,56 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
     panel.add("Center", progress = new ProgressBar());
     mudListPanel.add("PROGRESS", panel);
     panel = new Panel(new BorderLayout());
-    panel.add("West", mudListSelector);
+    panel.add("Center", mudListSelector);
     mudListPanel.add("MUDLIST", panel);
-    panel.add("Center", panel = new Panel(new BorderLayout()));
-    Button connect = new Button("Connect");
-    panel.add("South", connect);
+    panel.add("East", panel = new Panel(new GridLayout(3, 1)));
+    panel.add(mudName = new TextField(20));
+    mudName.setEditable(false);
+    Panel apanel = new Panel(new BorderLayout());
+    apanel.add("Center", mudAddr = new TextField(20));
+    mudAddr.setEditable(false);
+    apanel.add("East", mudPort = new TextField(6));
+    mudPort.setEditable(false);
+    panel.add(apanel);
+    panel.add(connect = new Button("Connect"));
+
+    ActionListener al = new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        String addr = mudAddr.getText();
+	String port = mudPort.getText();
+	if(addr != null) {
+	  bus.broadcast(new SocketRequest());
+	  if(port == null || port.length() <= 0)
+	    port = "23";
+	  bus.broadcast(new SocketRequest(addr, Integer.parseInt(port)));
+	}
+      }
+    };
+
+    connect.addActionListener(al);
+    mudListSelector.addActionListener(al);
+
+    mudListSelector.addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent evt) {
+        switch(evt.getStateChange()) {
+	  case ItemEvent.SELECTED:
+	    String item = (String)mudListSelector.getSelectedItem();
+	    mudName.setText(item);
+	    Object mud[] = (Object[])mudList.get(item);
+	    mudAddr.setText((String)mud[0]);
+	    mudPort.setText(((Integer)mud[1]).toString());
+	    break;
+	  case ItemEvent.DESELECTED:
+	    mudName.setText("");
+	    mudAddr.setText("");
+	    mudPort.setText("");
+	    break;
+	}
+      }
+    });
+
+
+
     layouter.show(mudListPanel, "PROGRESS");
   }
 
@@ -201,11 +265,12 @@ public class MudConnector extends Plugin implements VisualPlugin, Runnable {
             error(name+" ["+host+","+port+"]");
           mudList.put(name, new Object[] { host, port });
           mudListSelector.add(name);
+	  System.out.println("MudConnector: "+name);
+	  progress.adjust(++counter, name);
+	  mudListPanel.repaint();
         }
 	while(token != ts.TT_EOF && token != ts.TT_EOL)
 	  token = ts.nextToken();
-	progress.adjust(++counter);
-	mudListPanel.repaint();
       }
       System.out.println("MudConnector: found "+mudList.size()+" entries");
     } catch(Exception e) {

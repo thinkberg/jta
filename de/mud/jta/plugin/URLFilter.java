@@ -66,6 +66,9 @@ public class URLFilter extends Plugin
   /** debugging level */
   private final static int debug = 0;
 
+  /* contains the recognized protocols */
+  protected Vector protocols = new Vector();
+
   protected List urlList = new List(4, false);
   protected Panel urlPanel;
   protected Menu urlMenu;
@@ -93,6 +96,7 @@ public class URLFilter extends Plugin
     Button b = new Button("Clear List");
     b.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
+	urlCache.removeAllElements();
         urlList.removeAll();
       }
     });
@@ -101,7 +105,10 @@ public class URLFilter extends Plugin
     b.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
 	String item = urlList.getSelectedItem();
-        if(item != null) urlList.remove(item);
+        if(item != null) {
+	  urlCache.removeElement(item);
+	  urlList.remove(item);
+        }
       }
     });
     p.add(b);
@@ -123,6 +130,21 @@ public class URLFilter extends Plugin
 
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
+	String s;
+        if((s = config.getProperty("protocols", id)) != null) {
+	  int old = -1, idx = s.indexOf(',');
+	  while(idx >= 0) {
+	    protocols.addElement(s.substring(old + 1, idx));
+	    old = idx;
+	    idx = s.indexOf(',', old + 1);
+	  }
+	  protocols.addElement(s.substring(old + 1));
+	} else {
+	  protocols.addElement("http");
+	  protocols.addElement("ftp");
+	  protocols.addElement("gopher");
+	  protocols.addElement("file");
+	}
       }
     });
 
@@ -141,29 +163,52 @@ public class URLFilter extends Plugin
     recognizer.start();
   }
 
+  private Vector urlCache = new Vector();
+
   public void run() {
     try {
       StreamTokenizer st = 
         new StreamTokenizer(new BufferedReader(new InputStreamReader(pin)));
-      st.eolIsSignificant(false);
+      st.eolIsSignificant(true);
       st.slashSlashComments(false);
       st.slashStarComments(false);
       st.whitespaceChars(0, 31);
-      st.wordChars(32, 127);
+      st.ordinaryChar('"');
       st.ordinaryChar('<');
       st.ordinaryChar('>');
-      st.ordinaryChar('"');
+      st.ordinaryChar('/');
+      st.ordinaryChar(':');
 
       int token;
       while((token = st.nextToken()) != StreamTokenizer.TT_EOF) {
         if(token == StreamTokenizer.TT_WORD) {
           String word = st.sval.toLowerCase();
-          if(word.startsWith("http://") ||
-	     word.startsWith("ftp://") ||
-	     word.startsWith("gopher://") ||
-	     word.startsWith("file://")) {
-	    urlList.add(st.sval);
-	    System.out.println("URLFilter: found \""+st.sval+"\"");
+
+	  // see if we have found a protocol
+          if(protocols.contains(word)) {
+	    // check that the next chars are ":/"
+	    if(st.nextToken() == ':' && st.nextToken() == '/') {
+              String url = word + ":/";
+	      // collect the test of the url
+	      while((token = st.nextToken()) == StreamTokenizer.TT_WORD ||
+	            token == '/')
+	       if(token == StreamTokenizer.TT_WORD)
+	         url += st.sval;
+               else
+	         url += (char)token;
+		
+	      // urls that end with a dot are usually wrong, so cut it off
+	      if(url.endsWith("."))
+	        url = url.substring(0, url.length() - 1);
+
+	      // check for duplicate urls by consulting the urlCache
+              if(!urlCache.contains(url)) {
+		urlCache.addElement(url);
+	        urlList.add(url);
+		urlList.makeVisible(urlList.getItemCount()-1);
+	        System.out.println("URLFilter: found \""+url+"\"");
+              }
+	    }
 	  }
         }
       }
@@ -172,8 +217,17 @@ public class URLFilter extends Plugin
     }
   }
 
+  /**
+   * Show a URL if the applet context is available.
+   * We may make it later able to run a web browser or use an HTML
+   * component.
+   * @param url the URL to display
+   */
   protected void showURL(String url) {
-    if(context == null) return;
+    if(context == null) {
+      System.err.println("URLFilter: no url-viewer available\n");
+      return;
+    }
     try {
       context.showDocument(new URL(url), "URLFilter");
     } catch(Exception e) {

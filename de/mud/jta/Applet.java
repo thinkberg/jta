@@ -76,6 +76,9 @@ public class Applet extends java.applet.Applet {
   /** hold the host and port for our connection */
   private String host, port;
 
+  /** disconnect on leave, this is to force applets to break the connection */
+  private boolean disconnect = true;
+
   /**
    * Read all parameters from the applet configuration and
    * do initializations for the plugins and the applet.
@@ -127,23 +130,27 @@ public class Applet extends java.applet.Applet {
 	}
       }
 
-      // let the terminal resize to the max possible
-      options.put("Terminal.resize", "font");
+      // see if there are parameters in the html to override properties
+      parameterOverride(options);
 
       // configure the application and load all plugins
       pluginLoader = new Common(options);
 
       // set the host to our code base, no other hosts are allowed anyway
       host = options.getProperty("Socket.host");
-      if(host == null && (host = getParameter("Socket.host")) == null)
+      if(host == null)
         host = getCodeBase().getHost();
       port = options.getProperty("Socket.port");
-      if(port == null && (port = getParameter("Socket.port")) == null)
+      if(port == null)
         port = "23";
 
       final java.awt.Container appletFrame;
 
-      if(options.getProperty("Applet.detach") != null)
+      if(!(new Boolean(options.getProperty("Applet.disconnect"))
+            .booleanValue()))
+        disconnect = false;
+
+      if((new Boolean(options.getProperty("Applet.detach"))).booleanValue())
         appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
       else
         appletFrame = this;
@@ -190,12 +197,30 @@ public class Applet extends java.applet.Applet {
    * Stop the applet and disconnect.
    */
   public void stop() {
-    pluginLoader.broadcast(new SocketRequest());
+    if(disconnect)
+      pluginLoader.broadcast(new SocketRequest());
   }
 
   public void paint(java.awt.Graphics g) {
     g.drawString("The Java Telnet Applet", 3, 10);
     g.drawString("(c) 1996-2000 Matthias L. Jugel & Marcus Meiﬂner", 3, 20);
     g.drawString("[telnet window detached]", 3, 30);
+  }
+
+  /**
+   * Override any properties that are found in the configuration files
+   * with possible values found as applet parameters.
+   * @param options the loaded configuration file properties
+   */
+  private void parameterOverride(Properties options) {
+    Enumeration e = options.keys();
+    while(e.hasMoreElements()) {
+      String key = (String)e.nextElement(), value = getParameter(key);
+      if(value != null) {
+	System.out.println("Applet: overriding value of "+key+" with "+value);
+        // options.setProperty(key, value);
+        options.put(key, value);
+      }
+    }
   }
 }

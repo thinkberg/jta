@@ -3,10 +3,10 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
-   <title>The Java Telnet Application/Applet v2.0: Test Page</title>
+   <title>The Java Telnet Application/Applet v2.0: Applet</title>
 </head>
 <body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
 &nbsp;
@@ -215,10 +215,8 @@ a width of 590 pixels and a height of 360 pixels. Adapt this according
 to your needs. In general the applet adapts its font size to match the
 size of the applet.</font></dd>
 
-<br>&nbsp;
-<p>&nbsp;
-<p>Everything else will be explained below and finally you need to close
-the applet definition using the <tt>&lt;/applet></tt> tag.
+<p><br>Everything else will be explained below and finally you need to
+close the applet definition using the <tt>&lt;/applet></tt> tag.
 <p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
 and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
 tags.
@@ -236,10 +234,38 @@ tags.
 
 <td>The parameter points to the configuration file for the applet. It may
 be either a path relative to the <tt>CODEBASE</tt> or a fully qualified
-URL.</td>
+URL. You can also set the configurations as PARAMS: <a href="#PARAMINFO">see
+below</a></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>Detach the actual terminal display and its components from the browser
+window and run in a separate window. Use with care.
+<br>The <i>boolean</i> value may either be <tt>true</tt> or <tt>false</tt>.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.disconnect"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>If set to <tt>true</tt>, the applet will disconnect from the remote
+host if you leave the web page. If <tt>false</tt>, the applet will stay
+connected and allows the user to continue the session.</td>
 </tr>
 </table></center>
-</td>
+
+<p><a NAME="PARAMINFO"></a><font color="#CC0000">Important: </font><font color="#000000">Any
+configuration options you can specify in the configuration file (<a href="../html/applet.conf">applet.conf</a>
+or <a href="../de/mud/jta/default.conf">default.conf</a>) can also appear
+as an applet's tag:&nbsp;</font>
+<blockquote><font color="#000000"><tt>&lt;PARAM NAME="</tt><i>parameter</i><tt>"
+VALUE="</tt>value<tt>"></tt></font></blockquote>
+<font color="#000000">The only drawback is, before it is recognized a <b>default
+value</b> of that parameter must have appeared <b>in</b> one of the configuration
+<b>files</b>!</font></td>
 
 <td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">To
 use the applet keep in mind, a few of the following hints:</font>
