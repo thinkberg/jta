@@ -157,18 +157,18 @@ public class ButtonBar extends Plugin
 
         // parse the setup file
         try {
-          while((token = setup.nextToken()) != setup.TT_EOF) {
+          while((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
             switch(token) {
-	      case setup.TT_WORD:
+	      case StreamTokenizer.TT_WORD:
 		// reset the constraints
 	        c.gridwidth = 1;
 		c.weightx = 0.0;
 		c.weighty = 0.0;
 	        // keyword found, parse arguments
 	        if(setup.sval.equals("button")) {
-	          if((token = setup.nextToken()) != setup.TT_EOF) {
+	          if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
 		    String descr = setup.sval;
-		    if((token = setup.nextToken()) != setup.TT_EOF) {
+		    if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
                       Button b = new Button(descr);
 		      buttons.put(b, setup.sval);
 	              b.addActionListener(ButtonBar.this);
@@ -179,9 +179,10 @@ public class ButtonBar extends Plugin
 		  } else
 		      ButtonBar.this.error("unexpected end of file");
 	        } else if(setup.sval.equals("input")) {
-	          if((token = setup.nextToken()) != setup.TT_EOF) {
+	          if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
 		    String descr = setup.sval;
-		    if((token = setup.nextToken()) == setup.TT_NUMBER) {
+		    if((token = setup.nextToken()) == 
+		       StreamTokenizer.TT_NUMBER) {
 		      int size = (int)setup.nval;
 		      String init = "", command = "";
 		      token = setup.nextToken();
@@ -230,7 +231,7 @@ public class ButtonBar extends Plugin
   private GridBagConstraints constraints(GridBagConstraints c,
                                          StreamTokenizer setup)
     throws IOException {
-    if(setup.nextToken() == setup.TT_WORD) 
+    if(setup.nextToken() == StreamTokenizer.TT_WORD) 
       if(setup.sval.equals("break"))
         c.gridwidth = GridBagConstraints.REMAINDER;
       else if(setup.sval.equals("stretch"))

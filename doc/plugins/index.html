@@ -61,19 +61,20 @@ list.</a>
 <p>In contrast to the old version we have introduced a new scheme for loading
 plugins. It is now possible to have <b>two or more plugins</b> of the same
 name <b>with several different configurations</b> used in one application.
+The <b>order</b> of the plugins <b>is important</b>!
 <p>To accomplish that we have introduced identifier for the plugins. A
-normal plugin list would look like:<tt></tt>
-<p><tt>plugins =&nbsp;Socket,Telnet,ButtonBar,Terminal</tt><tt></tt>
+normal plugin list would look like:
+<p><tt>plugins = Socket,Telnet,ButtonBar,Terminal</tt>
 <p><tt>If you wanted to set up another button bar you are in trouble because
 it would read the same options twice. So when setting up two plugins of
-the same name you do as follows:</tt><tt></tt>
-<p><tt>plugins =&nbsp;Socket,Telnet,ButtonBar(one),ButtonBar(two),Terminal</tt>
+the same name you do as follows:</tt>
+<p><tt>plugins = Socket,Telnet,ButtonBar(one),ButtonBar(two),Terminal</tt>
 <p>You give both plugins a unique name (<tt>one</tt> and <tt>two</tt>)
 and use this name in any following configuration properties:
 <p><tt>layout.ButtonBar(one) = North</tt>
-<br><tt>layout.ButtonBar(two)&nbsp;=&nbsp;South</tt>
+<br><tt>layout.ButtonBar(two) = South</tt>
 <br><tt>ButtonBar(one).setup = http://server/one.conf</tt>
-<br><tt>ButtonBar(two).setup =&nbsp;http://server/two.conf</tt>
+<br><tt>ButtonBar(two).setup = http://server/two.conf</tt>
 <p>And that is it! If you define properties without the unique name they
 will be used as fallback values in case a needed property is not set for
 a specific plugin.&nbsp;
