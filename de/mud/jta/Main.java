@@ -68,6 +68,8 @@ import java.awt.datatransfer.Clipboard;
  */
 public class Main {
 
+  private final static boolean personalJava = true;
+
   /** holds the last focussed plugin */
   private static Plugin focussedPlugin;
 
@@ -153,6 +155,8 @@ public class Main {
         frame.add(options.getProperty("layout."+name), c);
     }
 
+    if(!personalJava) {
+
     // add a menu bar
     MenuBar mb = new MenuBar();
     Menu file = new Menu("File");
@@ -225,8 +229,10 @@ public class Main {
       }
     });
     mb.setHelpMenu(help);
-
     frame.setMenuBar(mb);
+
+    } // !personalJava
+
     frame.pack();
     frame.show();
 

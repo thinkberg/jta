@@ -72,6 +72,8 @@ import java.util.Enumeration;
 public class Terminal extends Plugin 
   implements FilterPlugin, VisualTransferPlugin, ClipboardOwner, Runnable {
 
+  private final static boolean personalJava = true;
+
   private final static int debug = 0;
   
   /** holds the actual terminal emulation */
@@ -90,6 +92,8 @@ public class Terminal extends Plugin
    */
   public Terminal(PluginBus bus) {
     super(bus);
+
+    if(!personalJava) {
 
     menu = new Menu("Terminal");
     MenuItem item;
@@ -123,6 +127,10 @@ public class Terminal extends Plugin
 	}
       }
     });
+    
+    } // !personalJava
+
+    try {
 
     // create the terminal emulation
     terminal = new vt320() {
@@ -178,6 +186,12 @@ public class Terminal extends Plugin
         configure(config);
       }
     });
+
+    } catch(Exception e) {
+      System.err.println("--personal java");
+      e.printStackTrace();
+      System.err.println("--");
+    }
   }
 
   private void configure(Properties config) {
@@ -200,7 +214,7 @@ public class Terminal extends Plugin
 	    raised = Boolean.valueOf("Terminal.borderRaised").booleanValue();
 	  terminal.setBorder(Integer.parseInt(config.getProperty(key)),
 	                     raised);
-        } else if(key.equals("Terminal.scrollBar")) {
+        } else if(key.equals("Terminal.scrollBar") && !personalJava) {
 	  String direction = config.getProperty(key);
 	  if(!direction.equals("East") && !direction.equals("West"))
 	    direction = "East";
