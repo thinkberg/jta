@@ -96,6 +96,8 @@ public class Terminal extends Plugin
 
   private Hashtable colors = new Hashtable();
 
+  private boolean localecho_overridden = false;
+
   /**
    * Create a new terminal plugin and initialize the terminal emulation.
    */
@@ -267,7 +269,8 @@ public class Terminal extends Plugin
 
     bus.registerPluginListener(new LocalEchoListener() {
       public void setLocalEcho(boolean echo) {
-        terminal.setLocalEcho(echo);
+	if (!localecho_overridden)
+	    terminal.setLocalEcho(echo);
       }
     });
 
@@ -341,8 +344,10 @@ public class Terminal extends Plugin
       terminal.setBorder(Integer.parseInt(size), raised);
     }
 
-    if((tmp = cfg.getProperty("Terminal", id, "localecho")) != null)
+    if((tmp = cfg.getProperty("Terminal", id, "localecho")) != null) {
       terminal.setLocalEcho(Boolean.valueOf(tmp).booleanValue());
+      localecho_overridden = true;
+    }
  
     if((tmp = cfg.getProperty("Terminal", id, "scrollBar")) != null && 
        !personalJava) {
