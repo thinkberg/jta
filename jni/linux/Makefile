@@ -20,7 +20,7 @@ TOPDIR	=	../..
 SRCDIR	=	../../de
 CDIR	=	../src
  
-JNI_INCLUDE =	-I/usr/java/include -I/usr/java/include/linux
+JNI_INCLUDE =	-I/usr/lib/j2sdk1.3/include -I/usr/lib/j2sdk1.3/include/linux
 
 # Linux (glibc 2.1.3)
 # libutil contains forkpty()
