@@ -650,7 +650,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
       write("\n",false);
       if (localecho) putString("\r\n"); // bad hack
-    } 
+    }
     
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
     // so we can't just use it here... will probably break some other VMS
@@ -1081,8 +1081,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     C = (col<0)?0:col;
 
     if (!moveoutsidemargins) {
-      R	+= getTopMargin();
-      maxr	 = getBottomMargin();
+      R	   += tm;
+      maxr  = getBottomMargin();
     }
     if (R>maxr) R = maxr;
   }
@@ -1125,7 +1125,9 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("RI");
           break;
         case IND:
-          if (R == tm - 1 || R == bm || R == rows - 1) //  Ray: not bottom margin - 1
+	  if (debug>2)
+	    System.out.println("IND at "+R+", tm is "+tm+", bm is "+bm);
+          if (R == bm || R == rows - 1)
             insertLine(R,1,SCROLL_UP);
           else
             R++;
@@ -1133,7 +1135,7 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("IND (at "+R+" )");
           break;
         case NEL:
-          if (R == tm - 1 || R == bm || R == rows - 1) //  Ray: not bottom margin - 1
+          if (R == bm || R == rows - 1)
             insertLine(R,1,SCROLL_UP);
           else
             R++;
@@ -1198,10 +1200,8 @@ public abstract class vt320 extends VDU implements KeyListener {
             lastwaslf=c;
             /*C = 0;*/
 	  }
-	// note: we do not scroll at the topmargin! only at the bottommargin
-	// of the scrollregion and at the bottom.
 	if ( R == bm || R >= rows - 1)
-	  insertLine(R,1);
+	  insertLine(R,1,SCROLL_UP);
 	else
 	  R++;
         break;
@@ -1228,7 +1228,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           if(R < rows - 1)
             R++;
           else
-            insertLine(R,SCROLL_UP);
+            insertLine(R,1,SCROLL_UP);
           C = 0;
         }
 
@@ -1331,8 +1331,8 @@ public abstract class vt320 extends VDU implements KeyListener {
         dcs="";
         term_state = TSTATE_DCS;
         break;
-      case 'E':
-        if (R == tm - 1 || R == bm || R == rows - 1) //  Ray: not bottom margin - 1
+      case 'E': /* NEL */
+        if (R == bm || R == rows - 1)
           insertLine(R,1,SCROLL_UP);
         else
           R++;
@@ -1340,17 +1340,22 @@ public abstract class vt320 extends VDU implements KeyListener {
         if (debug>1)
           System.out.println("ESC E (at "+R+")");
         break;
-      case 'D':
-        if (R == tm - 1 || R == bm || R == rows - 1)
+      case 'D': /* IND */
+        if (R == bm || R == rows - 1)
           insertLine(R,1,SCROLL_UP);
         else
           R++;
         if (debug>1)
           System.out.println("ESC D (at "+R+" )");
         break;
-      case 'M': // IL
-        if ((R>=tm) && (R<=bm)) // in scrolregion
+      case 'M': // RI
+        if (R>bm) // outside scrolling region
+	  break;
+        if (R>tm) { // just go up 1 line.
+	  R--;
+	} else { // scroll down
           insertLine(R,1,SCROLL_DOWN);
+	}
 	/* else do nothing ; */
         if (debug>1)
           System.out.println("ESC M ");
@@ -1520,7 +1525,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    break;
 	  case 5: /* light background */
 	    break;
-	  case 6: /* move inside margins ? */
+	  case 6: /* DECOM (Origin Mode) move inside margins. */
 	    moveoutsidemargins = true;
 	    break;
 	  case 12:/* local echo off */
@@ -1553,7 +1558,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    size = getSize();
 	    setScreenSize(132,rows);
 	    break;
-	  case 6: /* move inside margins ? */
+	  case 6: /* DECOM: move inside margins. */
 	    moveoutsidemargins = false;
 	    break;
 	  case 25: /* turn cursor on */
@@ -1617,7 +1622,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    size = getSize();
 	    setScreenSize(80,rows);
 	    break;
-	  case 6: /* move outside margins ? */
+	  case 6: /* DECOM: move outside margins. */
 	    moveoutsidemargins = true;
 	    break;
 	  case 25: /* turn cursor off */
@@ -1882,14 +1887,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    }
 	  } else
 	    R = rows - 1;
-        setBottomMargin(DCEvars[1]-1);
+        setBottomMargin(R);
         if (R >= DCEvars[0])
 	  {
 	    R = DCEvars[0]-1;
 	    if (R < 0)
 	      R = 0;
 	  }
-        setTopMargin(DCEvars[0]-1);
+        setTopMargin(R);
 	_SetCursor(0,0);
         if (debug>1)
           System.out.println("ESC ["+DCEvars[0]+" ; "+DCEvars[1]+" r");
