@@ -1,0 +1,2 @@
+#! /bin/sh
+java -classpath $CLASSPATH:`dirname $0`/.. de.mud.jta.Main $*
