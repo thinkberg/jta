@@ -52,12 +52,14 @@ jar:	app
 	@echo Version: $(VERSION)
 	-mkdir jar
 	$(JAR) cvf jar/$(PKGNAME)-`date +%Y%m%d`-$(VERSION).jar \
+	  README \
+	  license/COPYING license/COPYING.LIB \
 	  `find $(SRCDIR) -name *.class` \
 	  `find $(SRCDIR) -name defaults.\*`
 
 dist:	clean jar doc revision changes
 	-mkdir jar
-	(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) telnet && \
+	(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
 	 /bin/cp REVISION CHANGES $(PKGNAME)/ && \
 	 /bin/cp -r doc $(PKGNAME)/ && \
 	 $(JAR) cvMf jar/$(PKGNAME)-`date +%Y%m%d`-src.jar $(PKGNAME) && \
