@@ -128,7 +128,7 @@ public class Status extends Plugin implements VisualPlugin, Runnable {
       public void connect(String addr, int p) {
         address = addr;
 	if(address == null || address.length() == 0)
-	  address = "<unknwon host>";
+	  address = "<unknown host>";
 	if(ports.get(""+p) != null)
 	  port = (String)ports.get(""+p);
 	else
