@@ -26,9 +26,11 @@ import de.mud.jta.PluginBus;
 
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.ConfigurationListener;
+import de.mud.jta.event.TelnetCommandListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
+import de.mud.jta.event.EndOfRecordRequest;
 import de.mud.jta.event.EndOfRecordRequest;
 
 import de.mud.telnet.TelnetProtocolHandler;
@@ -103,6 +105,11 @@ public class Telnet extends Plugin implements FilterPlugin {
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
         configure(config);
+      }
+    });
+    bus.registerPluginListener(new TelnetCommandListener() {
+      public void sendTelnetCommand(byte command) throws IOException {
+        handler.sendTelnetControl(command);
       }
     });
 
