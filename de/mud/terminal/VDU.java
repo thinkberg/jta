@@ -183,7 +183,6 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 
     addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
-	markLine(0, 24);
         if(evt.isControlDown()) {
 	  java.awt.Component frame = VDU.this;
 	  while(frame != null && !(frame instanceof java.awt.Frame))
@@ -192,6 +191,7 @@ public class VDU extends Canvas implements MouseListener, MouseMotionListener {
 	    getToolkit().getPrintJob((java.awt.Frame)frame,
 	                             "VDU terminal printout",
 				     null);
+	  markLine(0, 24);
           print(printJob.getGraphics());
         }
       }
