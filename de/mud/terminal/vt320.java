@@ -1073,6 +1073,11 @@ public abstract class vt320 extends VDU implements KeyListener {
         term_state = TSTATE_ESC;
         lastwaslf=0;
         break;
+      case 12:
+        /* FF ? */ 
+	System.out.println("FormFeed ... should we clear the page?");
+	C=R=0;
+        break;
       case '\b':
         C--;
         if (C<0)
@@ -1865,7 +1870,8 @@ public abstract class vt320 extends VDU implements KeyListener {
             System.out.println("ESC[5n");
           break;
         case 6:
-          write(((char)ESC)+"["+R+";"+C+"R",false);
+	  // don't forget to offset R and C by 1
+          write(((char)ESC)+"["+(R+1)+";"+(C+1)+"R",false);
           if(debug > 1)
             System.out.println("ESC[6n");
           break;
@@ -1879,14 +1885,14 @@ public abstract class vt320 extends VDU implements KeyListener {
         Sc = C;
         Sr = R;
         Sa = attributes;
-        if (debug>1)
+        if (debug>3)
           System.out.println("ESC[s");
         break;
       case 'u': /* DECRC - restore cursor */
         C = Sc;
         R = Sr;
         attributes = Sa;
-        if (debug>1)
+        if (debug>3)
           System.out.println("ESC[u");
         break;
       case 'm':  /* attributes as color, bold , blink,*/
