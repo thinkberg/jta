@@ -55,8 +55,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-// this is to allow system clipboard access for Netscape
-import netscape.security.PrivilegeManager;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * <B>The Java Telnet Applet</B><P>
@@ -219,12 +219,22 @@ public class Applet extends java.applet.Applet {
         // set up the clipboard
         try {
 	  // this works for Netscape only!
-	  PrivilegeManager.enablePrivilege("UniversalSystemClipboardAccess");
+	  Class privilegeManager = 
+	    Class.forName("netscape.security.PrivilegeManager");
+	  Method enable = privilegeManager
+	    .getMethod("enablePrivilege", new Class[] { String.class });
+	  enable.invoke(privilegeManager, 
+	                new Object[] { 
+			  options.getProperty("Applet.Netscape.privilege")
+			});
           clipboard = appletFrame.getToolkit().getSystemClipboard();
 	} catch(NoClassDefFoundError nc) {
 	  System.err.println("Applet: This is not Netscape ...");
         } catch(Exception e) {
-          System.err.println("Applet: system clipboard access denied: "+e);
+          System.err.println("Applet: system clipboard access denied: "+
+	    ((e instanceof InvocationTargetException) ? 
+	      ((InvocationTargetException)e).getTargetException() : e));
+	  e.printStackTrace();
         } finally {
 	  if(clipboard != null) {
             System.err.println("Applet: copy & paste only within the JTA");
