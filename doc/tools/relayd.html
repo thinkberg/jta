@@ -3,7 +3,7 @@
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
-   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; Linux 2.2.13 i586) [Netscape]">
+   <meta name="GENERATOR" content="Mozilla/4.61C-CCK-MCD Caldera Systems OpenLinux [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
    <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
    <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
    <title>The Java Telnet Application/Applet v2.0: relayd/mrelayd</title>
@@ -51,13 +51,51 @@ Test</a></font></b></td>
 <td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
 <center>
 <h1>
-<font color="#CC0000">relayd/mrelayd</font></h1></center>
-TEXT
-<p><i><font color="#CC0000">(COMMENT)</font></i>
+<font color="#CC0000">&nbsp;relayd/mrelayd</font></h1></center>
+All Java Applets have several security restrictions that prevent a random
+applet from doing damage on your computer or on the network.
+<p>Due to this reason it is not possible to open a telnet/ssh connection
+to any other machine then the one the applet was downloaded from (the webserver).
+<p>Sometimes your application is not running on the webserver, in these
+cases you need some kind of forwarder.
+<p>Any program, tool or firewall configuration that forwards connections
+going to a specified port on the webserver to your real targethost and
+port will do.
+<p>We have supplied to simple tools that establish that portforwarding.
+<p>They run on the webserver&nbsp; (you will need permission from its system
+administrator).
+<br>&nbsp;
+<h2>
+Single Relay Demon</h2>
+The first one is the single relaydemon. It can have just one targethost
+and -port (but it can be used by multiple users at the same time).
+<p>It is started on the webserver host by running:
+<p>./relayd &lt;localport> &lt;targethost> &lt;targetport>
+<p>In the applet you only set the parameter <b>Socket.port</b> to &lt;localport>.
+&lt;targethost> and &lt;targetport> are the host where the application
+is.
+<p>&lt;localport> can be choosen freely and should be above 1024.
+<br>&nbsp;
+<h2>
+Multiple Relay Demon</h2>
+This one allows multiple users going to multiple targets (only needed if
+you have more than one access point). If you have just one targethost and
+targetport, the single relay demon above works as well!
+<p>It is started on the webserver host by running:
+<p>./mrelayd
+<p>It listens on port 31415 by default.
+<p>In the applet you have to change the parameters:
+<p><b>Socket.host</b>&nbsp; to the target host you want to connect to.
+<br><b>Socket.port</b>&nbsp;&nbsp; to the target port you want to connect
+to.
+<br><b>Socket.relay&nbsp;</b> to the webserver address.
+<br><b>Socket.relayPort</b> to 31415.
+<p>(Note:&nbsp;Both relay demons impose a security risk. Always clear their
+use with your administrator.)
 <br>&nbsp;
 <br>&nbsp;</td>
 
-<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Additional
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">&deg;Additional
 Programmer Documentation is available:</font>
 <br>&nbsp;
 <center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
