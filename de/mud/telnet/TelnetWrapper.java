@@ -90,6 +90,10 @@ public class TelnetWrapper extends TelnetProtocolHandler {
     socket.close();
   }
 
+  /** sent on IAC EOR (prompt terminator for remote access systems). */
+  public void notifyEndOfRecord() {
+  }
+
   /**
    * Login into remote host. This is a convenience method and only
    * works if the prompts are "login:" and "Password:".
