@@ -57,11 +57,11 @@ public class Common extends PluginLoader {
     System.out.println("** Copyright (c) 1996-2000 Matthias L. Jugel, "
                       +"Marcus Meissner");
     try {
-      Class build = Class.forName("de.mud.jta.Build");
-      System.out.println("** Build: "+build.getDeclaredField("DATE").get(null));
+      Version build = 
+        (Version)Class.forName("de.mud.jta.Build").newInstance();
+      System.out.println("** Build: "+build.getDate());
     } catch(Exception e) {
       System.out.println("** Build: patched or selfmade, no date");
-      e.printStackTrace();
       System.err.println(e);
     }
 

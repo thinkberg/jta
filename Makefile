@@ -111,7 +111,7 @@ dist:	build all revision changes
 	  tools/relayd tools/mrelayd tools/*.c tools/*.exe
 
 build:
-	@echo "package de.mud.jta; public class Build { public static String DATE=\"$(DATE)\"; }" > de/mud/jta/Build.java
+	@echo "package de.mud.jta; public class Build implements Version { public String getDate() { return \"$(DATE)\"; } }" > de/mud/jta/Build.java
 
 changes:
 	@rcs2log > CHANGES
