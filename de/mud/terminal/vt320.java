@@ -1197,7 +1197,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 12:
         /* FormFeed, Home for the BBS world */ 
-        deleteArea(0,0,columns,rows);
+        deleteArea(0,0,columns,rows,attributes);
 	C=R=0;
         break;
       case '\b': /* 8 */
@@ -2043,14 +2043,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	case 6: /* 97801 uses ESC[6K for delete to end of line */
         case 0:/*clear to right*/
           if (C<columns-1)
-            deleteArea(C,R,columns-C,1);
+            deleteArea(C,R,columns-C,1,attributes);
           break;
         case 1:/*clear to the left, including this */
           if (C>0)
-            deleteArea(0,R,C+1,1);
+            deleteArea(0,R,C+1,1,attributes);
           break;
         case 2:/*clear whole line */
-          deleteArea(0,R,columns,1);
+          deleteArea(0,R,columns,1,attributes);
           break;
         }
         break;
@@ -2059,18 +2059,18 @@ public abstract class vt320 extends VDU implements KeyListener {
         switch (DCEvars[0]) {
         case 0:
           if (R<rows-1)
-            deleteArea(0,R + 1,columns,rows-R-1);
+            deleteArea(0,R + 1,columns,rows-R-1,attributes);
           if (C<columns-1)
-            deleteArea(C,R,columns-C,1);
+            deleteArea(C,R,columns-C,1,attributes);
           break;
         case 1:
           if (R>0)
-            deleteArea(0,0,columns,R);
+            deleteArea(0,0,columns,R,attributes);
           if (C>0)
-            deleteArea(0,R,C+1,1);	// include up to and including current
+            deleteArea(0,R,C+1,1,attributes);// include up to and including current
           break;
         case 2:
-          deleteArea(0,0,columns,rows);
+          deleteArea(0,0,columns,rows,attributes);
           break;
         }
         if (debug>1)
@@ -2090,7 +2090,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  toerase=1;
 	if (toerase+C > columns)
 	  toerase = columns-C;
-	deleteArea(C,R,toerase,1);
+	deleteArea(C,R,toerase,1,attributes);
 	// does not change cursor position
         break;
       }

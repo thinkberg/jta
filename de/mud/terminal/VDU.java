@@ -623,6 +623,34 @@ public class VDU extends Component
    * @param l y-coordinate (row)
    * @param w with of the area in characters
    * @param h height of the area in characters
+   * @param curAttr attribute to fill
+   * @see #deleteChar
+   * @see #deleteLine
+   * @see redraw
+   */
+  public void deleteArea(int c, int l, int w, int h, int curAttr) {
+    c = checkBounds(c, 0, size.width - 1);
+    l = checkBounds(l, 0, size.height - 1);
+
+    char cbuf[] = new char[w];
+    int abuf[] = new int[w];
+
+    for(int i = 0; i < w ; i++) abuf[i] = curAttr;
+    for(int i = 0; i < h && l + i < size.height; i++)
+    {
+      System.arraycopy(cbuf, 0, charArray[screenBase + l + i], c, w);
+      System.arraycopy(abuf, 0, charAttributes[screenBase + l + i], c, w);
+    }
+    markLine(l, h);
+  }
+
+  /**
+   * Delete a rectangular portion of the screen.
+   * You need to call redraw() to update the screen.
+   * @param c x-coordinate (column)
+   * @param l y-coordinate (row)
+   * @param w with of the area in characters
+   * @param h height of the area in characters
    * @see #deleteChar
    * @see #deleteLine
    * @see redraw
@@ -633,7 +661,7 @@ public class VDU extends Component
 
     char cbuf[] = new char[w];
     int abuf[] = new int[w];
-    
+
     for(int i = 0; i < h && l + i < size.height; i++)
     {
       System.arraycopy(cbuf, 0, charArray[screenBase + l + i], c, w);
@@ -1009,11 +1037,16 @@ public class VDU extends Component
         }
       
         // determine the maximum of characters we can print in one go
-        while(c + addr < size.width && 
-              charAttributes[windowBase + l][c + addr] == currAttr &&
-              !sf.inSoftFont(charArray[windowBase + l ][c+addr])) {
-          if(charArray[windowBase + l][c + addr] < ' ')
+        while((c + addr < size.width) && 
+              ( (charArray[windowBase + l][c + addr] < ' ')		||
+	      	(charAttributes[windowBase + l][c + addr] == currAttr)
+	      )	&&
+              !sf.inSoftFont(charArray[windowBase + l ][c+addr])
+        ) {
+          if(charArray[windowBase + l][c + addr] < ' ') {
             charArray[windowBase + l][c + addr] = ' ';
+	    charAttributes[windowBase + l][c + addr] = currAttr;
+	  }
           addr++;
         }
       
