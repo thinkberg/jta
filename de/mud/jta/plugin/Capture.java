@@ -31,8 +31,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.DataOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -60,7 +60,7 @@ import java.util.Hashtable;
  * @author Matthias L. Jugel, Marcus Meißner
  */
 public class Capture extends Plugin
-        implements FilterPlugin, VisualPlugin,ActionListener {
+        implements FilterPlugin, VisualPlugin, ActionListener {
 
   // this enables or disables the compilation of menu entries
   private final static boolean personalJava = false;
@@ -73,7 +73,8 @@ public class Capture extends Plugin
 
   /** The plugin menu */
   protected Menu menu;
-  protected Dialog dialog;
+  protected Dialog errorDialog;
+  protected Dialog fileDialog;
 
   /** Whether the capture is currently enabled or not */
   protected boolean captureEnabled = false;
@@ -82,6 +83,7 @@ public class Capture extends Plugin
   private MenuItem start, stop, clear, save;
   private Frame frame;
   private TextArea textArea;
+  private TextField fileName;
 
   /**
    * Initialize the Capture plugin. This sets up the menu entries
@@ -105,16 +107,47 @@ public class Capture extends Plugin
       frame.pack();
 
       // an error dialogue, in case the upload fails
-      dialog = new Dialog(frame);
-      dialog.setLayout(new BorderLayout());
-      dialog.add(new Label("Cannot store data on remote server!"));
-      Button close = new Button("Close Dialog");
-      dialog.add(close);
-      close.addActionListener(new ActionListener() {
+      errorDialog = new Dialog(frame, "Error", true);
+      errorDialog.setLayout(new BorderLayout());
+      errorDialog.add(new Label("Cannot store data on remote server!"), BorderLayout.NORTH);
+      Panel panel = new Panel();
+      Button button = new Button("Close Dialog");
+      panel.add(button);
+      errorDialog.add(panel, BorderLayout.SOUTH);
+      button.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          dialog.setVisible(false);
+          errorDialog.setVisible(false);
         }
       });
+
+
+      fileDialog = new Dialog(frame, "Enter File Name", true);
+      fileDialog.setLayout(new BorderLayout());
+      ActionListener saveFileListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          String params = (String) remoteUrlList.get("URL.file.params");
+          params = params == null ? "" : params + "&";
+          remoteUrlList.put("URL.file.params", params + "file="+URLEncoder.encode(fileName.getText()));
+          saveFile("URL.file");
+          fileDialog.setVisible(false);
+        }
+      };
+      panel = new Panel();
+      panel.add(new Label("File Name: "));
+      panel.add(fileName = new TextField(30));
+      fileName.addActionListener(saveFileListener);
+      fileDialog.add(panel, BorderLayout.CENTER);
+      panel = new Panel();
+      panel.add(button = new Button("Cancel"));
+      button.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          fileDialog.setVisible(false);
+        }
+      });
+      panel.add(button = new Button("Save File"));
+      button.addActionListener(saveFileListener);
+      fileDialog.add(panel, BorderLayout.SOUTH);
+      fileDialog.pack();
 
       // set up menu entries
       menu = new Menu("Capture");
@@ -167,6 +200,7 @@ public class Capture extends Plugin
       });
       menu.add(view);
 
+
     } // !personalJava
 
 
@@ -174,20 +208,46 @@ public class Capture extends Plugin
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
         String tmp;
-        int i = 1;
-        while ((tmp = config.getProperty("Capture", id, i+".url")) != null) {
+
+        MenuItem save = new MenuItem("Save As File");
+        menu.add(save);
+
+        if ((tmp = config.getProperty("Capture", id, "file.url")) != null) {
           try {
-            String urlID = "URL."+i;
+            remoteUrlList.put("URL.file", new URL(tmp));
+            if ((tmp = config.getProperty("Capture", id, "file.params")) != null) {
+              remoteUrlList.put("URL.file.params", tmp);
+            }
+
+            save.addActionListener(new ActionListener() {
+              public void actionPerformed(ActionEvent e) {
+                fileDialog.setVisible(true);
+              }
+            });
+            save.addActionListener(Capture.this);
+            save.setActionCommand("URL.file");
+          } catch (MalformedURLException e) {
+            System.err.println("capture url invalid: " + e);
+          }
+
+        } else {
+          save.setEnabled(false);
+        }
+
+        int i = 1;
+        while ((tmp = config.getProperty("Capture", id, i + ".url")) != null) {
+          try {
+            String urlID = "URL." + i;
             URL remoteURL = new URL(tmp);
             remoteUrlList.put(urlID, remoteURL);
-            if((tmp = config.getProperty("Capture", id, i+".params")) != null) {
-              remoteUrlList.put(urlID+".params", tmp);
+            if ((tmp = config.getProperty("Capture", id, i + ".params")) != null) {
+              remoteUrlList.put(urlID + ".params", tmp);
             }
             // use name if applicable or URL
-            if((tmp = config.getProperty("Capture", id, i+".name")) != null) {
-              save = new MenuItem("Save As "+tmp);
+            if ((tmp = config.getProperty("Capture", id, i + ".name")) != null) {
+              save = new MenuItem("Save As " + tmp);
             } else {
-              save = new MenuItem("Save As "+remoteURL.toString());
+              save = new MenuItem("Save As " + remoteURL.toString());
             }
             // enable menu entry
             save.setEnabled(true);
@@ -202,15 +262,22 @@ public class Capture extends Plugin
         }
       }
     });
+
+    if (!personalJava) {
+    }
   }
 
   public void actionPerformed(ActionEvent e) {
     String urlID = e.getActionCommand();
-    URL url = (URL)remoteUrlList.get(urlID);
+    if (debug > 0)
+      System.err.println("Capture: storing text: "
+                         + urlID + ": "
+                         + remoteUrlList.get(urlID));
+    saveFile(urlID);
+  }
 
-    if (debug > 0) System.err.println("Capture: storing text: "
-                                      + urlID+": "
-                                      + remoteUrlList.get(urlID));
+  private void saveFile(String urlID) {
+    URL url = (URL) remoteUrlList.get(urlID);
     try {
       URLConnection urlConnection = url.openConnection();
       DataOutputStream out;
@@ -229,26 +296,30 @@ public class Capture extends Plugin
       // Send POST output.
       // send the data to the url receiver ...
       out = new DataOutputStream(urlConnection.getOutputStream());
-      String content = (String)remoteUrlList.get(urlID+".param");
-      content =  (content == null ? "" : content + "&") + "content=" + URLEncoder.encode(textArea.getText());
-      if(debug > 0) System.err.println("Capture: " + content);
+      String content = (String) remoteUrlList.get(urlID + ".params");
+      content = (content == null ? "" : content + "&") + "content=" + URLEncoder.encode(textArea.getText());
+      if (debug > 0) System.err.println("Capture: " + content);
       out.writeBytes(content);
       out.flush();
       out.close();
 
       // retrieve response from the remote host and display it.
-      if(debug > 0) System.err.println("Capture: reading response");
+      if (debug > 0) System.err.println("Capture: reading response");
       in = new DataInputStream(urlConnection.getInputStream());
       String str;
       while (null != ((str = in.readLine()))) {
-        System.out.println("Capture: "+str);
+        System.out.println("Capture: " + str);
       }
       in.close();
 
     } catch (IOException ioe) {
-      dialog.setVisible(true);
-      System.err.println("Capture: cannot store text on remote server: " + url );
+      System.err.println("Capture: cannot store text on remote server: " + url);
       ioe.printStackTrace();
+      TextArea errorMsg = new TextArea(ioe.toString(), 5, 30);
+      errorMsg.setEditable(false);
+      errorDialog.add(errorMsg, BorderLayout.CENTER);
+      errorDialog.pack();
+      errorDialog.setVisible(true);
     }
     if (debug > 0) System.err.println("Capture: storage complete: " + url);
   }
