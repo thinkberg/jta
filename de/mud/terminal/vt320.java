@@ -412,7 +412,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 
   // X - COLUMNS, Y - ROWS
   int  R,C;
-  int  Sc,Sr,Sa;
+  int  Sc,Sr,Sa,Stm,Sbm;
   int  attributes  = 0;
   int  insertmode  = 0;
   int  statusmode = 0;
@@ -1166,19 +1166,10 @@ public abstract class vt320 extends VDU implements KeyListener {
         lastwaslf = 0;
         break;
       case '\t':
-        if (insertmode == 1) {
-          int  nr,newc;
-
-          newc = C;
-          do {
-            insertChar(C,R,' ',attributes);
-            newc++;
-          } while (newc<columns && Tabs[newc]==0);
-        } else {
-          do {
-            putChar(C++,R,' ',attributes);
-          } while (C<columns && (Tabs[C]==0));
-        }
+        do {
+	  // Don't overwrite or insert! TABS are not destructive, but movement!
+          C++;
+        } while (C<columns && (Tabs[C]==0));
         lastwaslf = 0;
         break;
       case '\r':
@@ -1372,12 +1363,16 @@ public abstract class vt320 extends VDU implements KeyListener {
         Sc = C;
         Sr = R;
         Sa = attributes;
+	Stm = getTopMargin();
+	Sbm = getBottomMargin();
         if (debug>1)
           System.out.println("ESC 7");
         break;
       case '8': /*restore cursor */
         C = Sc;
         R = Sr;
+	setTopMargin(Stm);
+	setBottomMargin(Sbm);
         attributes = Sa;
         if (debug>1)
           System.out.println("ESC 7");
