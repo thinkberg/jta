@@ -280,6 +280,7 @@ public class Applet extends java.applet.Applet {
             ((Frame)appletFrame).pack();
 
 	  ((Frame)appletFrame).show();
+	  pluginLoader.broadcast(new SocketRequest(host,Integer.parseInt(port)));
 	  pluginLoader.broadcast(new ReturnFocusRequest());
 	  close.setLabel(startText != null ? stopText : "Disconnect");
 	} else
