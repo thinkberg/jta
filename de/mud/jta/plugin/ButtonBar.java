@@ -30,6 +30,7 @@ import de.mud.jta.event.TelnetCommandRequest;
 
 import java.util.Properties;
 import java.util.Hashtable;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ import java.net.URL;
 import java.awt.Component;
 import java.awt.Panel;
 import java.awt.Button;
+import java.awt.Choice;
 import java.awt.Label;
 import java.awt.TextField;
 import java.awt.Event;
@@ -55,6 +57,7 @@ import java.awt.Menu;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.awt.event.ActionEvent;
 
 /**
@@ -104,6 +107,13 @@ import java.awt.event.ActionEvent;
  * # The following line send the text in the input field "send" and appends
  * # a newline.
  * input		send	20	"\\@send@\n"	"ls"
+ * #
+ * # To implement an Choice Box specify the choice keyword and repeat
+ * # pairs of labels and values. The values will appear in the dropdown
+ * # down box, the string will be sent if selected. You can use any number
+ * # of choices.
+ * # 
+ * choice		choice1	"sends text1" choice2 	"sends text2"
  * </PRE>
  * Other possible keywords are <TT>break</TT> which does introduce a new
  * line so that buttons and input fields defined next will appear in a new
@@ -115,13 +125,14 @@ import java.awt.event.ActionEvent;
  * @author  Matthias L. Jugel, Marcus Meißner
  */
 public class ButtonBar extends Plugin 
-  implements FilterPlugin, VisualPlugin, ActionListener {
+  implements FilterPlugin, VisualPlugin, ActionListener, ItemListener {
 
   /** the panel that contains the buttons and input fields */
   protected Panel panel = new Panel();
 
   // these tables contain our buttons and fields.
   private Hashtable buttons = null;
+  private Hashtable choices = null;
   private Hashtable fields = null;
 
   // the switch for clearing input fields after enter
@@ -179,6 +190,7 @@ public class ButtonBar extends Plugin
         String line; 
 	fields = new Hashtable();
 	buttons = new Hashtable();
+        choices = new Hashtable();
 	
 	GridBagLayout l = new GridBagLayout();
 	GridBagConstraints c = new GridBagConstraints();
@@ -186,7 +198,8 @@ public class ButtonBar extends Plugin
         c.fill = GridBagConstraints.BOTH;
 
 	int token;
-
+        int ChoiceCount = 0;
+        Choice ch;
         // parse the setup file
         try {
           while((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
@@ -218,6 +231,46 @@ public class ButtonBar extends Plugin
 	            panel.add(b);
 		  } else
 		      ButtonBar.this.error("unexpected end of file");
+                   /* choice - new stuff added APS 07-dec-2001 for Choice
+		    * buttons
+		    * Choice info is held in the choices hash. There are two
+		    * sorts of hash entry:
+                    * 1) for each choices button on the terminal, key=choice
+		    *    object, value=ID ("C1.", "C2.", etc)
+                    * 2) for each item, key=ID+user's text (eg "C1.opt1"),
+		    *    value=user's command
+                    */
+ 
+                 } else if(setup.sval.equals("choice")) {
+                   ChoiceCount++;
+                   String ident = "C"+ChoiceCount+".";
+                   ch = new Choice();
+                   choices.put(ch,ident);
+                   ch.addItemListener(ButtonBar.this);// Choices use ItemListener, not Action
+                   l.setConstraints(ch, constraints(c, setup));
+                   panel.add(ch);
+                   while ((token=setup.nextToken()) != StreamTokenizer.TT_EOF) {
+                     if (isKeyword(setup.sval)) {// Got command ... Back off.
+                       setup.pushBack();
+                       break;
+                     }
+                     String descr = setup.sval;  // This is the hash key.
+                     token = setup.nextToken();
+                     if (token == StreamTokenizer.TT_EOF) {
+                       ButtonBar.this.error("unexpected end of file");
+                     } else {
+                       String value = setup.sval;
+                       if (isKeyword(value)) {   // Missing command - complain but continue
+                         System.err.println(descr+": missing choice command");
+                         setup.pushBack();
+                         break;
+                       }
+                       System.out.println("choice: name='"+descr+"', value='"+value);
+                       ch.addItem(descr);
+ 		       choices.put(ident+descr, value);
+                     }
+                   }
+                   ButtonBar.this.error("choices hash: "+choices);
 	        } else if(setup.sval.equals("input")) {
 	          if((token = setup.nextToken()) != StreamTokenizer.TT_EOF) {
 		    String descr = setup.sval;
@@ -226,20 +279,12 @@ public class ButtonBar extends Plugin
 		      int size = (int)setup.nval;
 		      String init = "", command = "";
 		      token = setup.nextToken();
-		      if(setup.sval.equals("button") || 
-		         setup.sval.equals("label") ||
-		         setup.sval.equals("input") ||
-		         setup.sval.equals("stretch") ||
-		         setup.sval.equals("break"))
+                      if(isKeyword(setup.sval))
 		        setup.pushBack();
 		      else
                         command = setup.sval;
 		      token = setup.nextToken();
-		      if(setup.sval.equals("button") || 
-		         setup.sval.equals("label") ||
-		         setup.sval.equals("input") ||
-		         setup.sval.equals("stretch") ||
-		         setup.sval.equals("break")) {
+                      if(isKeyword(setup.sval)) {
 		        setup.pushBack();
 			init = command;
 		      } else
@@ -283,10 +328,24 @@ public class ButtonBar extends Plugin
     return c;
   }
     
+  public void itemStateChanged(java.awt.event.ItemEvent evt) {
+    String tmp, ident;
+    if((ident = (String)choices.get(evt.getSource())) != null) {
+      // It's a choice - get the text from the selected item
+      Choice ch = (Choice)evt.getSource();
+      tmp = (String)choices.get(ident+ch.getSelectedItem());
+      if (tmp != null) processEvent(tmp);
+    }
+  }
 
   public void actionPerformed(ActionEvent evt) {
     String tmp;
-    if((tmp = (String)buttons.get(evt.getSource())) != null) {
+    if ((tmp = (String)buttons.get(evt.getSource())) != null )
+      processEvent(tmp);
+  }
+
+
+  private void processEvent(String tmp) {
       String cmd = "", function = null;
       int idx = 0, oldidx = 0;
       while((idx = tmp.indexOf('\\', oldidx)) >= 0 && 
@@ -397,7 +456,6 @@ public class ButtonBar extends Plugin
       } catch(IOException e) {
         error("send: "+e);
       }
-    }
   }
 
   public Component getPluginVisual() {
@@ -407,6 +465,7 @@ public class ButtonBar extends Plugin
   public Menu getPluginMenu() {
     return null;
   }
+
 
   FilterPlugin source;
 
@@ -421,5 +480,14 @@ public class ButtonBar extends Plugin
   public void write(byte[] b) throws IOException {
     source.write(b);
   }
+  private static boolean isKeyword (String txt) {
+    return (
+     txt.equals("button")  || 
+     txt.equals("label")   ||
+     txt.equals("input")   ||
+     txt.equals("stretch") ||
+     txt.equals("choice")  ||
+     txt.equals("break")
+    );
+  }
 }
-
