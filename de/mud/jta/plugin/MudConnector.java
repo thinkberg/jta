@@ -38,10 +38,13 @@ import java.net.URL;
 import java.awt.Graphics;
 import java.awt.Panel;
 import java.awt.CardLayout;
+import java.awt.BorderLayout;
 import java.awt.List;
 import java.awt.Component;
 import java.awt.Menu;
 import java.awt.Dimension;
+import java.awt.Button;
+import java.awt.Label;
 
 /**
  * <P>
@@ -50,7 +53,7 @@ import java.awt.Dimension;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class MudConnector extends Plugin implements VisualPlugin {
+public class MudConnector extends Plugin implements VisualPlugin, Runnable {
 
   /** debugging level */
   private final static int debug = 0;
@@ -59,8 +62,14 @@ public class MudConnector extends Plugin implements VisualPlugin {
   protected Hashtable mudList = null;
   protected List mudListSelector = new List();
   protected Panel mudListPanel;
+  protected CardLayout layouter;
   protected ProgressBar progress;
+  protected Label errorLabel;
 
+  /**
+   * Implementation of a progress bar to display the progress of
+   * loading the mud list.
+   */
   class ProgressBar extends Component {
     int max, current;
     Dimension size = new Dimension(250, 20);
@@ -76,8 +85,8 @@ public class MudConnector extends Plugin implements VisualPlugin {
       g.fill3DRect(0, 0, width, getSize().height, true);
       g.setColor(getForeground());
       g.setXORMode(getBackground());
-      g.drawString("Loading mud list: "+(current * 100 / (max>0?max:1))+"%", 
-                   getSize().width/2 - 60, 14);
+      g.drawString(""+(current * 100 / (max>0?max:1))+"%", 
+                   getSize().width/2 - 15, getSize().height / 2 + 7);
     }
 
     public void adjust(int value) {
@@ -90,13 +99,8 @@ public class MudConnector extends Plugin implements VisualPlugin {
       size = new Dimension(width, height);
     }
 
-    public Dimension getPreferredSize() {
-      return size;
-    }
-
-    public Dimension getMinimumSize() {
-      return size;
-    }
+    public Dimension getPreferredSize() { return size; }
+    public Dimension getMinimumSize() { return size; }
   }
       
 
@@ -113,9 +117,13 @@ public class MudConnector extends Plugin implements VisualPlugin {
             listURL = new URL(url);
           } catch(Exception e) {
             System.err.println("MudConnector: "+e);
+	    errorLabel.setText("Error: "+e);
           } 
-        } else
+        } else {
           System.err.println("MudConnector: no listURL specified");
+	  errorLabel.setText("Missing list URL");
+	  layouter.show(mudListPanel, "ERROR");
+	}
       }
     });
 
@@ -123,12 +131,29 @@ public class MudConnector extends Plugin implements VisualPlugin {
       public void connect(String host, int port) { setup(); }
       public void disconnect() { setup(); }
     });
-    mudListPanel = new Panel(new java.awt.BorderLayout());
-    mudListPanel.add("Center", progress = new ProgressBar());
+    mudListPanel = new Panel(layouter = new CardLayout());
+
+    mudListPanel.add("ERROR", errorLabel = new Label("Loading ..."));
+    Panel panel = new Panel(new BorderLayout());
+    panel.add("North", new Label("Loading mud list ... please wait"));
+    panel.add("Center", progress = new ProgressBar());
+    mudListPanel.add("PROGRESS", panel);
+    panel = new Panel(new BorderLayout());
+    panel.add("West", mudListSelector);
+    mudListPanel.add("MUDLIST", panel);
+    panel.add("Center", panel = new Panel(new BorderLayout()));
+    Button connect = new Button("Connect");
+    panel.add("South", connect);
+    layouter.show(mudListPanel, "PROGRESS");
   }
 
   private void setup() {
-    if(mudList == null && listURL != null) try {
+    if(mudList == null && listURL != null)
+      (new Thread(this)).start();
+  }
+
+  public void run() {
+    try {
       mudList = new Hashtable();
       BufferedReader r = 
         new BufferedReader(new InputStreamReader(listURL.openStream()));
@@ -158,12 +183,13 @@ public class MudConnector extends Plugin implements VisualPlugin {
 
         if((token = ts.nextToken()) != ts.TT_EOF) {
 	  if(token == ts.TT_EOL)
-	    System.err.println("MudConnector: "+name+": unexpected EOL for host");
+	    System.err.println("MudConnector: "+name+": unexpected end of line"
+	                      +", missing host and port");
           host = ts.sval;
           port = new Integer(23);
           if((token = ts.nextToken()) != ts.TT_EOF) try {
 	    if(token == ts.TT_EOL)
-	      System.err.println("MudConnector: "+name+": unexpected EOL for port");
+	      System.err.println("MudConnector: "+name+": default port 23");
             port = new Integer(ts.sval);
           } catch(NumberFormatException nfe) {
             System.err.println("MudConnector: port for "+name+": "+nfe);
@@ -177,11 +203,15 @@ public class MudConnector extends Plugin implements VisualPlugin {
 	while(token != ts.TT_EOF && token != ts.TT_EOL)
 	  token = ts.nextToken();
 	progress.adjust(++counter);
+	mudListPanel.repaint();
       }
+      System.out.println("MudConnector: found "+mudList.size()+" entries");
     } catch(Exception e) {
       System.err.println("MudConnector: error: "+e);
+      errorLabel.setText("Error: "+e);
+      layouter.show(mudListPanel, "ERROR");
     }
-    System.out.println("MudConnector: found "+mudList.size()+" entries");
+    layouter.show(mudListPanel, "MUDLIST");
   }
 
   public Component getPluginVisual() {

@@ -23,6 +23,8 @@ import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.event.LocalEchoRequest;
+import de.mud.jta.event.SocketListener;
+import de.mud.jta.event.OnlineStatus;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,20 +46,27 @@ public class Shell extends Plugin implements FilterPlugin {
   protected InputStream in, err;
   protected OutputStream out;
 
-  public Shell(PluginBus bus) {
+  public Shell(final PluginBus bus) {
     super(bus);
-    Runtime rt = Runtime.getRuntime();
 
-    try {
-      Process p = rt.exec("/bin/bash -i"); System.err.println(p);
-      in = p.getInputStream();
-      out = p.getOutputStream();
-      err = p.getErrorStream();
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
-
-    bus.broadcast(new LocalEchoRequest(true));
+    bus.registerPluginListener(new SocketListener() {
+      public void connect(String host, int port) {
+        Runtime rt = Runtime.getRuntime();
+        try {
+          Process p = rt.exec(host);
+          in = p.getInputStream();
+          out = p.getOutputStream();
+          err = p.getErrorStream();
+        } catch(Exception e) {
+          System.err.println("Shell: "+e);
+          e.printStackTrace();
+        }
+        bus.broadcast(new OnlineStatus(true));
+      }
+      public void disconnect() {
+        // ignore
+      }
+    });
   }
 
   public void setFilterSource(FilterPlugin plugin) {
@@ -65,11 +74,13 @@ public class Shell extends Plugin implements FilterPlugin {
   }
 
   public int read(byte[] b) throws IOException {
+    System.err.println("Shell: read()");
     if(err.available() > 0) return err.read(b);
     return in.read(b);
   }
 
   public void write(byte[] b) throws IOException {
+    System.err.println("Shell: write()");
     out.write(b);
     out.flush();
   }
