@@ -2082,7 +2082,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
 	    		 (DCEvars[0] & 2)	|
 	    		((DCEvars[0] & 4) >> 2) ;
-            attributes |= newcolor << COLOR_FG_SHIFT;
+            attributes |= (newcolor+1) << COLOR_FG_SHIFT;
 
 	    break;
 	  }
@@ -2096,7 +2096,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
 	    		 (DCEvars[0] & 2)	|
 	    		((DCEvars[0] & 4) >> 2) ;
-            attributes |= newcolor << COLOR_BG_SHIFT;
+            attributes |= (newcolor+1) << COLOR_BG_SHIFT;
 	    break;
           }
 
