@@ -211,15 +211,14 @@ public abstract class vt320 extends VDU implements KeyListener {
     this(80, 24, new Font("Monospaced", Font.PLAIN, 10));
   }
 
-  private boolean localecho = false;
+  /** we should do localecho (passed from other modules). true is default */
+  private boolean localecho = true;
 
   /**
    * Enable or disable the local echo property of the terminal.
    * @param echo true if the terminal should echo locally
    */
-  public void setLocalEcho(boolean echo) {
-    localecho = echo;
-  }
+  public void setLocalEcho(boolean echo) { localecho = echo; }
 
   /**
    * Enable the VMS mode of the terminal to handle some things differently
@@ -298,11 +297,16 @@ public abstract class vt320 extends VDU implements KeyListener {
    * for sending.
    * @param s the string to be sent
    */
-  private boolean write(String s) {
+  private boolean write(String s,boolean doecho) {
     write(s.getBytes());
+    if (doecho)
+    	putString(s);
     return true;
   }
-
+  private boolean write(String s) {
+  	System.out.println("localecho is "+localecho);
+  	return write(s,localecho);
+  }
 
   // ===================================================================
   // the actual terminal emulation code comes here:
@@ -468,7 +472,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   }
 
   /**
-   * Not used.
+   * main keytyping event handler...
    */
   public void keyTyped(KeyEvent evt) {
     boolean control = evt.isControlDown();
@@ -477,6 +481,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
+
+    if (debug>2) System.out.println("vt320: keyTyped "+evt);
 
     if (keyChar == 0x7f) {
       write(Delete);
@@ -530,8 +536,13 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(keyCode == KeyEvent.VK_ENTER && !control) {
       if(sendcrlf)
 	write("\r\n"); /* YES, see RFC 854 */
-      else
-	write("\r"); /* YES, see RFC 854 */
+      else {
+        byte[] crnul = new byte[2];
+
+	crnul[0] = 13;
+	crnul[1] = 0;
+	write(crnul); /* YES, see RFC 854 */
+      }
     } 
     
     // FIXME: on german PC keyboards you have to use Alt-Ctrl-q to get an @,
@@ -557,39 +568,23 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  write(Remove[0]);        //  VMS delete = remove
       } else if(control)
 	switch(keyChar) {
-	case '0':
-	  write(KP0); return;
-	case '1':
-	  write(KP1); return;
-	case '2':
-	  write(KP2); return;
-	case '3':
-	  write(KP3); return;
-	case '4':
-	  write(KP4); return;
-	case '5':
-	  write(KP5); return;
-	case '6':
-	  write(KP6); return;
-	case '7':
-	  write(KP7); return;
-	case '8':
-	  write(KP8); return;
-	case '9':
-	  write(KP9); return;
-	case '.':
-	  write(KPPeriod); return;
+	case '0': write(KP0); return;
+	case '1': write(KP1); return;
+	case '2': write(KP2); return;
+	case '3': write(KP3); return;
+	case '4': write(KP4); return;
+	case '5': write(KP5); return;
+	case '6': write(KP6); return;
+	case '7': write(KP7); return;
+	case '8': write(KP8); return;
+	case '9': write(KP9); return;
+	case '.': write(KPPeriod); return;
 	case '-':
-	case 31:
-	  write(KPMinus); return;
-	case '+':
-	  write(KPComma); return;
-	case 10:
-	  write(KPEnter); return;
-	case '/':
-	  write(PF2); return;
-	case '*':
-	  write(PF3); return;
+	case 31:  write(KPMinus); return;
+	case '+': write(KPComma); return;
+	case 10:  write(KPEnter); return;
+	case '/': write(PF2); return;
+	case '*': write(PF3); return;
 	}
 	if (shift && keyChar < 32)
 	  write(PF1+(char)(keyChar + 64));
@@ -605,56 +600,37 @@ public abstract class vt320 extends VDU implements KeyListener {
     if(alt) { fmap = FunctionKeyAlt; xind=3; }
 
     switch (keyCode) {
-      case KeyEvent.VK_F1:
-        write(fmap[1]); return;
-      case KeyEvent.VK_F2:
-        write(fmap[2]); return;
-      case KeyEvent.VK_F3:
-        write(fmap[3]); return;
-      case KeyEvent.VK_F4:
-        write(fmap[4]); return;
-      case KeyEvent.VK_F5:
-        write(fmap[5]); return;
-      case KeyEvent.VK_F6:
-        write(fmap[6]); return;
-      case KeyEvent.VK_F7:
-        write(fmap[7]); return;
-      case KeyEvent.VK_F8:
-        write(fmap[8]); return;
-      case KeyEvent.VK_F9:
-        write(fmap[9]); return;
-      case KeyEvent.VK_F10:
-        write(fmap[10]); return;
-      case KeyEvent.VK_F11:
-        write(fmap[11]); return;
-      case KeyEvent.VK_F12:
-        write(fmap[12]); return;
-      case KeyEvent.VK_UP:
-        write(KeyUp); return;
-      case KeyEvent.VK_DOWN:
-        write(KeyDown); return;
-      case KeyEvent.VK_LEFT:
-        write(KeyLeft); return;
-      case KeyEvent.VK_RIGHT:
-        write(KeyRight); return;
-      case KeyEvent.VK_PAGE_DOWN:
-        write(NextScn[xind]); return;
-      case KeyEvent.VK_PAGE_UP:
-        write(PrevScn[xind]); return;
-      case KeyEvent.VK_INSERT:
-        write(Insert[xind]); return;
+      case KeyEvent.VK_F1: write(fmap[1]); break;
+      case KeyEvent.VK_F2: write(fmap[2]); break;
+      case KeyEvent.VK_F3: write(fmap[3]); break;
+      case KeyEvent.VK_F4: write(fmap[4]); break;
+      case KeyEvent.VK_F5: write(fmap[5]); break;
+      case KeyEvent.VK_F6: write(fmap[6]); break;
+      case KeyEvent.VK_F7: write(fmap[7]); break;
+      case KeyEvent.VK_F8: write(fmap[8]); break;
+      case KeyEvent.VK_F9: write(fmap[9]); break;
+      case KeyEvent.VK_F10: write(fmap[10]); break;
+      case KeyEvent.VK_F11: write(fmap[11]); break;
+      case KeyEvent.VK_F12: write(fmap[12]); break;
+      case KeyEvent.VK_UP: write(KeyUp); break;
+      case KeyEvent.VK_DOWN: write(KeyDown); break;
+      case KeyEvent.VK_LEFT: write(KeyLeft); break;
+      case KeyEvent.VK_RIGHT: write(KeyRight); break;
+      case KeyEvent.VK_PAGE_DOWN: write(NextScn[xind]); break;
+      case KeyEvent.VK_PAGE_UP: write(PrevScn[xind]); break;
+      case KeyEvent.VK_INSERT: write(Insert[xind]); break;
       case KeyEvent.VK_HOME:
         if(vms) 
 	  write("" + (char)8);
         else
 	  write(KeyHome[xind]);
-	return;
+	break;
       case KeyEvent.VK_END:
         if(vms)
 	  write("" + (char)5);
         else
 	  write(KeyEnd[xind]);
-	return;
+	break;
       case KeyEvent.VK_NUM_LOCK:
         if(vms && control)
 	  if(pressedKey != keyCode) {
@@ -665,13 +641,14 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    pressedKey = ' ';
 	if(!control)
 	  numlock = !numlock;
-	return;
+	break;
       case KeyEvent.VK_CAPS_LOCK:
       	capslock = !capslock;
-        return;
+        break;
       default:
 	if(debug > 0)
 	  System.out.println("vt320: unknown event: "+evt);
+	break;
     }
   }
 
@@ -985,7 +962,6 @@ public abstract class vt320 extends VDU implements KeyListener {
     int  columns = getColumns();
     int  tm = getTopMargin();
     int  bm = getBottomMargin();
-    String  tosend;
     byte  msg[];
 
     if (debug>4) System.out.println("putChar("+c+" ["+((int)c)+"]) at R="+R+" , C="+C+", columns="+columns+", rows="+rows);
@@ -1481,7 +1457,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         switch (DCEvars[0]) {
         case 15:
           /* printer? no printer. */
-          write(((char)ESC)+"[?13n");
+          write(((char)ESC)+"[?13n",false);
           System.out.println("ESC[5n");
           break;
         default:break;
@@ -1543,7 +1519,7 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 'c':/* send primary device attributes */
         /* send (ESC[?61c) */
-        write(((char)ESC)+"[?1;2c");
+        write(((char)ESC)+"[?1;2c",false);
         term_state = TSTATE_DATA;
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" c");
@@ -1797,12 +1773,12 @@ public abstract class vt320 extends VDU implements KeyListener {
       case 'n':
         switch (DCEvars[0]){
         case 5: /* malfunction? No malfunction. */
-          write(((char)ESC)+"[0n");
+          write(((char)ESC)+"[0n",false);
           if(debug > 1)
             System.out.println("ESC[5n");
           break;
         case 6:
-          write(((char)ESC)+"["+R+";"+C+"R");
+          write(((char)ESC)+"["+R+";"+C+"R",false);
           if(debug > 1)
             System.out.println("ESC[6n");
           break;
