@@ -24,6 +24,7 @@ import de.mud.jta.event.SocketRequest;
 import java.util.Properties;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import java.io.IOException;
 import java.net.URL;
@@ -81,8 +82,17 @@ public class Applet extends java.applet.Applet {
       try {
         options.load(getClass()
 	  .getResourceAsStream("/de/mud/jta/defaults.opt"));
-      } catch(IOException e) {
-        System.err.println("jta: cannot load defaults");
+      } catch(Exception e) {
+        System.err.println("jta: cannot load defaults from classpath");
+        System.err.println("-- This may be due to a security restriction in\n"
+	                  +"-- Netscape. Trying to load alternative ...");
+	try {
+          URL url = new URL(getCodeBase() + "defaults.opt");
+	  System.err.println("-- loading "+url);
+          options.load(url.openStream());
+	} catch(Exception e1) {
+	  System.err.println("jta: alternative defaults file not found");
+        }
       }
 
       String value;
@@ -90,6 +100,8 @@ public class Applet extends java.applet.Applet {
         options.put("plugins", value);
       if((value = getParameter("port")) != null)
         options.put("Socket.port", value);
+      if((value = getParameter("layout")) != null)
+        options.put("layout", value);
 
       // let the terminal resize to the max possible
       options.put("Terminal.resize", "font");
@@ -100,6 +112,7 @@ public class Applet extends java.applet.Applet {
       // set the host to our code base, no other hosts are allowed anyway
       host = getCodeBase().getHost();
       port = options.getProperty("Socket.port");
+      if(port == null) port = "23";
 
       setLayout(new BorderLayout());
 
@@ -108,11 +121,13 @@ public class Applet extends java.applet.Applet {
       while(names.hasMoreElements()) {
         String name = (String)names.nextElement();
         Component c = (Component)componentList.get(name);
-        if(options.getProperty("layout."+name) == null) {
+        if((value = getParameter("layout."+name)) != null ||
+	   (value = options.getProperty("layout."+name)) != null) {
+          add(value, c);
+        } else {
           System.err.println("jta: no layout property set for '"+name+"'");
-	  add("South", c);
-        } else
-          add(options.getProperty("layout."+name), c);
+          System.err.println("jta: ignoring '"+name+"'");
+	}
       }
     }
   }

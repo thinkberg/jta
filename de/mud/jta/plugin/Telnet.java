@@ -53,10 +53,8 @@ public class Telnet extends Plugin implements FilterPlugin {
   /**
    * Create a new telnet plugin.
    */
-  public Telnet(PluginBus pbus) {
-    super(pbus);
-    // this is a jdk 1.1.x hack
-    final PluginBus bus = pbus;
+  public Telnet(final PluginBus bus) {
+    super(bus);
 
     // create a new telnet protocol handler
     handler = new TelnetProtocolHandler() {

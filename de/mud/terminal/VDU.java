@@ -161,6 +161,9 @@ public class VDU extends Canvas {
     // set the display screen size
     setScreenSize(width, height);
 
+    setForeground(Color.white);
+    setBackground(Color.black);
+
     selectBegin = new Point(0,0);
     selectEnd = new Point(0,0);
   }
@@ -171,7 +174,7 @@ public class VDU extends Canvas {
    * @param height the amount of lines on the screen
    */
   public VDU(int width, int height) {
-    this(width, height, new Font("Monospaced", Font.PLAIN, 12));
+    this(width, height, new Font("Monospaced", Font.PLAIN, 11));
   }
 
   /**
@@ -186,7 +189,7 @@ public class VDU extends Canvas {
    * Create a display unit with size 80x24 and Font "Monospaced", size 12.
    */
   public VDU() {
-    this(80, 24, new Font("Monospaced", Font.PLAIN, 12));
+    this(80, 24, new Font("Monospaced", Font.PLAIN, 11));
   }
 
   public void setColorSet(Color[] colorset) {

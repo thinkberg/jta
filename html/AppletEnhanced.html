@@ -49,10 +49,14 @@ Mei&szlig;ner</a></i>
 <center>
 <!-- Here begins the applet code -->
 
-<applet CODEBASE="../" CODE="de.mud.jta.Applet" 
+<applet CODEBASE="../" 
+        ARCHIVE="jar/jta20.jar" 
+        CODE="de.mud.jta.Applet" 
         WIDTH=590 HEIGHT=360>
 
   <PARAM NAME="plugins" VALUE="Status,Socket,Telnet,Terminal">
+  <PARAM NAME="layout.Terminal" VALUE="Center">
+  <PARAM NAME="layout.Status" VALUE="South">
 
 <!-- make sure, non-java-capable browser get a message: -->
 <br><b>Your Browser seems to have no <a href="http://java.sun.com/">Java</a>

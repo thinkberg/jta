@@ -49,9 +49,8 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
   /**
    * Create a new socket plugin.
    */
-  public Socket(PluginBus pbus) {
-    super(pbus);
-    final PluginBus bus = pbus;
+  public Socket(final PluginBus bus) {
+    super(bus);
 
     // register socket listener
     bus.registerPluginListener(this);

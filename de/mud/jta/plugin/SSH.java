@@ -68,10 +68,8 @@ public class SSH extends Plugin implements FilterPlugin {
   /**
    * Create a new ssh plugin.
    */
-  public SSH(PluginBus pbus) {
-    super(pbus);
-    // this is a jdk 1.1.x hack
-    final PluginBus bus = pbus;
+  public SSH(final PluginBus bus) {
+    super(bus);
 
     // create a new telnet protocol handler
     handler = new SshIO() {

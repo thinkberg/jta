@@ -32,6 +32,8 @@ import java.awt.Menu;
 import java.awt.Label;
 import java.awt.Color;
 
+import java.util.Hashtable;
+
 /**
  * A simple plugin showing the current status of the application whether
  * it is online or not.
@@ -49,11 +51,18 @@ public class Status extends Plugin implements VisualPlugin {
   private Label host;
   private Panel sPanel;
 
-  private String address;
-  private int port;
+  private String address, port;
+
+  private Hashtable ports = new Hashtable();
 
   public Status(PluginBus bus) {
     super(bus);
+
+    // fill port hashtable
+    ports.put("22", "ssh");
+    ports.put("23", "telnet");
+    ports.put("25", "smtp");
+   
     sPanel = new Panel(new BorderLayout());
 
     host = new Label("Not connected.", Label.LEFT);
@@ -61,8 +70,13 @@ public class Status extends Plugin implements VisualPlugin {
     bus.registerPluginListener(new SocketListener() {
       public void connect(String addr, int p) {
         address = addr;
-	port = p;
-        host.setText("Trying "+address+(port == 23 ? "" : " "+port)+" ...");
+	if(address == null || address.length() == 0)
+	  address = "<unknwon host>";
+	if(ports.get(""+p) != null)
+	  port = (String)ports.get(""+p);
+	else
+	  port = ""+p;
+        host.setText("Trying "+address+" "+port+" ...");
       }
       public void disconnect() {
         host.setText("Not connected.");
@@ -77,7 +91,7 @@ public class Status extends Plugin implements VisualPlugin {
       public void online() {
         status.setText("online");
 	status.setBackground(Color.green);
-	host.setText("Connected to "+address+(port == 23 ? "" : " "+port));
+	host.setText("Connected to "+address+" "+port);
       }
       public void offline() {
         status.setText("offline");

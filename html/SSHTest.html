@@ -47,13 +47,16 @@ Mei&szlig;ner</a></i>
 <tr NOSAVE>
 <td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
 <center>
-<!-- Here begins the applet code --><applet CODEBASE="../"
-        ARCHIVE="../jar/jta20.jar, ../jar/cryptix.jar"
+<!-- Here begins the applet code -->
+<applet CODEBASE="../"
+        ARCHIVE="jar/jta20.jar, jar/cryptix.jar"
         CODE="de.mud.jta.Applet" 
         WIDTH=590 HEIGHT=360>
 
-  <param NAME="plugins" VALUE="Status,Socket,SSH,Terminal">
-  <param NAME="port"    VALUE="22">
+  <param NAME="plugins"            VALUE="Status,Socket,SSH,Terminal">
+  <param NAME="port"               VALUE="22">
+  <param NAME="layout.Terminal"    VALUE="Center">
+  <param NAME="layout.Status"      VALUE="South">
 
 <!-- make sure, non-java-capable browser get a message: -->
 <br><b>Your Browser seems to have no <a href="http://java.sun.com/">Java</a>
