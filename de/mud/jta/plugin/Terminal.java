@@ -88,8 +88,14 @@ public class Terminal extends Plugin
   
   /** holds the actual terminal emulation */
   protected vt320 terminal;
-  /** the default encoding is ISO 8859-1 (western) */
-  protected String encoding = "ISO8859_1";
+  /** 
+   * The default encoding is ISO 8859-1 (western).
+   * However, as you see the value is set to latin1 which is a value that
+   * is not even documented and thus incorrect, but it forces the default
+   * behaviour for western encodings. The correct value does not work in
+   * most available browsers.
+   */
+  protected String encoding = "latin1"; // "ISO8859_1";
   /** if we have a url to an audioclip use it as ping */
   protected SoundRequest audioBeep = null;
 
