@@ -831,7 +831,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 
     if (((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10))
             && !control) {
-      write("\n", false);
+      write("\r", false);
       if (localecho) putString("\r\n"); // bad hack
       return;
     }
@@ -1653,6 +1653,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
               deleteArea(C, R, columns - C, 1, attributes);
             break;
           case 'M': // RI
+            System.out.println("ESC M : R is "+R+", tm is "+tm+", bm is "+bm);
             if (R > bm) // outside scrolling region
               break;
             if (R > tm) { // just go up 1 line.
@@ -2075,6 +2076,8 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 	  {
 	    int newcolor;
 
+            System.out.print("ESC [ = "+DCEvars[0]+" F");
+
             attributes &= ~COLOR_FG;
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
 	    		 (DCEvars[0] & 2)	|
@@ -2086,6 +2089,8 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
           case 'G': /* SCO ANSI background */
 	  {
 	    int newcolor;
+
+            System.out.print("ESC [ = "+DCEvars[0]+" G");
 
             attributes &= ~COLOR_BG;
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
