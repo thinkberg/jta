@@ -1,6 +1,6 @@
 /* This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Mei\u00dfner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei\u00dfner 1996-2004. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -388,6 +388,8 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
       FunctionKey[15] = "\u001b[a"; FunctionKey[16] = "\u001b[b";
       FunctionKey[17] = "\u001b[c"; FunctionKey[18] = "\u001b[d";
       FunctionKey[19] = "\u001b[e"; FunctionKey[20] = "\u001b[f";
+      PrevScn[0] = PrevScn[1] = PrevScn[2] = PrevScn[3] = "\u001b[I";
+      NextScn[0] = NextScn[1] = NextScn[2] = NextScn[3] = "\u001b[G";
       // more theoretically.
     }
   }
@@ -2076,7 +2078,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 	  {
 	    int newcolor;
 
-            System.out.print("ESC [ = "+DCEvars[0]+" F");
+            System.out.println("ESC [ = "+DCEvars[0]+" F");
 
             attributes &= ~COLOR_FG;
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
@@ -2090,7 +2092,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 	  {
 	    int newcolor;
 
-            System.out.print("ESC [ = "+DCEvars[0]+" G");
+            System.out.println("ESC [ = "+DCEvars[0]+" G");
 
             attributes &= ~COLOR_BG;
 	    newcolor =	((DCEvars[0] & 1) << 2)	|
@@ -2102,7 +2104,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
 
           default:
             System.out.print("Unknown ESC [ = ");
-	    for (int i=0;i<DCEvar;i++)
+	    for (int i=0;i<=DCEvar;i++)
 		System.out.print(DCEvars[i]+",");
 	    System.out.println("" + c);
             break;
