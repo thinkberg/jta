@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2004. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -138,6 +138,9 @@ public abstract class TelnetProtocolHandler {
 
   /** What IAC SB <xx> we are handling right now */
   private byte current_sb;
+  
+  /** current SB negotiation buffer */
+  private byte[] sbbuf;
 
   /** IAC - init sequence for telnet negotiation. */
   private final static byte IAC  = (byte)255;
@@ -206,15 +209,14 @@ public abstract class TelnetProtocolHandler {
    * Handle an incoming IAC SB &lt;type&gt; &lt;bytes&gt; IAC SE
    * @param type type of SB
    * @param sbata byte array as &lt;bytes&gt;
-   * @param sbcount nr of bytes. may be 0 too.
    */
-  private void handle_sb(byte type, byte[] sbdata, int sbcount) 
+  private void handle_sb(byte type, byte[] sbdata) 
     throws IOException {
     if(debug > 1) 
       System.err.println("TelnetIO.handle_sb("+type+")");
     switch (type) {
     case TELOPT_TTYPE:
-      if (sbcount>0 && sbdata[0]==TELQUAL_SEND) {
+      if (sbdata.length>0 && sbdata[0]==TELQUAL_SEND) {
         write(IACSB);write(TELOPT_TTYPE);write(TELQUAL_IS);
         /* FIXME: need more logic here if we use 
          * more than one terminal type
@@ -315,12 +317,10 @@ public abstract class TelnetProtocolHandler {
   public int negotiate(byte nbuf[])
   throws IOException
   {
-    byte sbbuf[] = new byte[tempbuf.length];
     int count = tempbuf.length;
     byte[] buf = tempbuf;
     byte sendbuf[] = new byte[3];
     byte b,reply;
-    int  sbcount = 0;
     int boffset = 0, noffset = 0;
     boolean dobreak = false;
 
@@ -378,7 +378,6 @@ public abstract class TelnetProtocolHandler {
         case SB:
           if(debug > 2) System.err.print("SB ");
           neg_state = STATE_IACSB;
-          sbcount = 0;
           break;
         default:
           if(debug > 2) System.err.print("<UNKNOWN "+b+" > ");
@@ -549,7 +548,7 @@ public abstract class TelnetProtocolHandler {
       case STATE_IACSBIAC:
         if(debug > 2) System.err.println(""+b+" ");
         if (b == IAC) {
-          sbcount = 0;
+	  sbbuf = new byte[0];
           current_sb = b;
           neg_state = STATE_IACSBDATA;
         } else {
@@ -565,7 +564,7 @@ public abstract class TelnetProtocolHandler {
           break;
         default:
           current_sb = b;
-          sbcount = 0;
+	  sbbuf = new byte[0];
           neg_state = STATE_IACSBDATA;
           break;
         }
@@ -577,7 +576,10 @@ public abstract class TelnetProtocolHandler {
           neg_state = STATE_IACSBDATAIAC;
           break;
         default:
-          sbbuf[sbcount++] = b;
+	  byte[] xsb = new byte[sbbuf.length+1];
+          System.arraycopy(sbbuf,0,xsb,0,sbbuf.length);
+	  sbbuf = xsb;
+          sbbuf[sbbuf.length-1] = b;
           break;
         }
         break;
@@ -586,15 +588,18 @@ public abstract class TelnetProtocolHandler {
         switch (b) {
         case IAC:
           neg_state = STATE_IACSBDATA;
-          sbbuf[sbcount++] = IAC;
+	  byte[] xsb = new byte[sbbuf.length+1];
+          System.arraycopy(sbbuf,0,xsb,0,sbbuf.length);
+	  sbbuf = xsb;
+          sbbuf[sbbuf.length-1] = IAC;
           break;
         case SE:
-          handle_sb(current_sb,sbbuf,sbcount);
+          handle_sb(current_sb,sbbuf);
           current_sb = 0;
           neg_state = STATE_DATA;
           break;
         case SB:
-          handle_sb(current_sb,sbbuf,sbcount);
+          handle_sb(current_sb,sbbuf);
           neg_state = STATE_IACSB;
           break;
         default:
