@@ -77,7 +77,7 @@ cont:
 	@echo Compiling contributed software ...
 	@(cd contrib; make)
 
-dist:	all revision changes
+dist:	build all revision changes
 	@echo Creating distribution package ...
 	@if [ "$(CVSROOT)" = "" ]; then echo "Missing CVSROOT!"; exit -1; fi
 	@(cvs -Q -d $(CVSROOT) export -D now -d $(PKGNAME) jta && \
@@ -109,6 +109,9 @@ dist:	all revision changes
 	@echo Created jar/$(PKGNAME)-src.jar
 	@$(JAR) cvMf jar/relay.jar \
 	  tools/relayd tools/mrelayd tools/*.c tools/*.exe
+
+build:
+	@echo "package de.mud.jta; public class Build { public static String DATE=\"$(DATE)\"; }" > de/mud/jta/Build.java
 
 changes:
 	@rcs2log > CHANGES

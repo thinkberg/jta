@@ -56,6 +56,14 @@ public class Common extends PluginLoader {
     System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
     System.out.println("** Copyright (c) 1996-2000 Matthias L. Jugel, "
                       +"Marcus Meissner");
+    try {
+      Class build = Class.forName("de.mud.jta.Build");
+      System.out.println("** Build: "+build.getDeclaredField("DATE").get(null));
+    } catch(Exception e) {
+      System.out.println("** Build: patched or selfmade, no date");
+      e.printStackTrace();
+      System.err.println(e);
+    }
 
     plugins = new Hashtable();
     components = new Hashtable();
