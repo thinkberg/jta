@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -19,13 +19,13 @@
 
 package de.mud.jta;
 
-import de.mud.jta.plugin.Terminal;
-
-import java.util.Properties;
-import java.util.Vector;
-import java.util.Enumeration;
-
 import java.lang.reflect.Constructor;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The plugin loader tries to load the plugin by name and returns a
@@ -47,7 +47,9 @@ public class PluginLoader implements PluginBus {
   private Vector PATH = null;
 
   /** holds all the filters */
-  private Vector filter = new Vector();
+  private List filter = new ArrayList();
+
+  private Map plugins;
 
   /**
    * Create new plugin loader and set up with default plugin path.
@@ -61,9 +63,10 @@ public class PluginLoader implements PluginBus {
    * @param path the default search path for plugins
    */
   public PluginLoader(Vector path) {
-    if(path == null) {
+    plugins = new HashMap();
+    if (path == null) {
       PATH = new Vector();
-      PATH.addElement("de.mud.jta.plugin"); 
+      PATH.addElement("de.mud.jta.plugin");
     } else
       PATH = path;
   }
@@ -77,34 +80,83 @@ public class PluginLoader implements PluginBus {
    * @return the newly created plugin or null in case of an error
    */
   public Plugin addPlugin(String name, String id) {
-    Plugin plugin = null;
-
-    // cycle through the PATH to load plugin
-    Enumeration path = PATH.elements();
-    while(plugin == null && path.hasMoreElements())
-      plugin = loadPlugin((String)path.nextElement(), name, id);
+    Plugin plugin = loadPlugin(name, id);
 
     // if it was not found, try without a path as a last resort
-    if(plugin == null)
+    if (plugin == null)
       plugin = loadPlugin(null, name, id);
 
     // nothing found, tell the user
-    if(plugin == null) {
-      System.err.println("plugin loader: plugin '"+name+"' was not found!");
+    if (plugin == null) {
+      System.err.println("plugin loader: plugin '" + name + "' was not found!");
       return null;
     }
 
     // configure the filter plugins
-    if(plugin instanceof FilterPlugin) {
-      if(filter.size() > 0)
-        ((FilterPlugin)plugin)
-          .setFilterSource((FilterPlugin)filter.lastElement());
-      filter.addElement(plugin);
+    if (plugin instanceof FilterPlugin) {
+      if (filter.size() > 0)
+        ((FilterPlugin) plugin)
+                .setFilterSource((FilterPlugin) filter.get(filter.size() - 1));
+      filter.add(plugin);
     }
 
+    plugins.put(name+(id == null ? "" : "(" + id + ")"), plugin);
     return plugin;
   }
 
+  /**
+   * Replace a plugin with a new one, actually reloads the plugin.
+   * @param name name of plugin to be replaced
+   * @param id unique id
+   * @return the newly loaded plugin
+   */
+  public Plugin replacePlugin(String name, String id) {
+    Plugin plugin = loadPlugin(name, id);
+
+    if(plugin != null) {
+      Plugin oldPlugin = (Plugin)plugins.get(name + (id == null ? "" : "(" + id + ")"));
+
+      if(filter.contains(oldPlugin)) {
+        int index = filter.indexOf(oldPlugin);
+        filter.set(index, plugin);
+        ((FilterPlugin)plugin).setFilterSource(((FilterPlugin)oldPlugin).getFilterSource());
+        if(index < filter.size() - 1) {
+          ((FilterPlugin)filter.get(index + 1)).setFilterSource((FilterPlugin)plugin);
+        }
+      }
+    }
+    return plugin;
+  }
+
+  /**
+   * Load a plugin by cycling through the plugin path.
+   * @param name the class name of the plugin
+   * @param id an id in case of multiple plugins of the same name
+   * @return the loaded plugin or null if none was found
+   */
+  private Plugin loadPlugin(String name, String id) {
+    Plugin plugin = null;
+
+    // cycle through the PATH to load plugin
+    Enumeration pathList = PATH.elements();
+    while (pathList.hasMoreElements()) {
+      String path = (String) pathList.nextElement();
+      plugin = loadPlugin(path, name, id);
+      if (plugin != null) {
+        return plugin;
+      }
+    }
+    plugin = loadPlugin(null, name, id);
+    return plugin;
+  }
+
+  /**
+   * Load a plugin using the specified path name and id.
+   * @param path the package where the plugin can be found
+   * @param name the class name of the plugin
+   * @param id an id for multiple plugins of the same name
+   * @return a loaded plugin or null if none was found
+   */
   private Plugin loadPlugin(String path, String name, String id) {
     Plugin plugin = null;
     String fullClassName = (path == null) ? name : path + "." + name;
@@ -112,18 +164,20 @@ public class PluginLoader implements PluginBus {
     // load the plugin by name and instantiate it
     try {
       Class c = Class.forName(fullClassName);
-      Constructor cc = c.getConstructor(new Class[] { PluginBus.class, 
-                                                      String.class });
-      plugin = (Plugin)cc.newInstance(new Object[] { this, id });
+      Constructor cc = c.getConstructor(new Class[]{PluginBus.class,
+                                                    String.class});
+      plugin = (Plugin) cc.newInstance(new Object[]{this, id});
       return plugin;
-    } catch(ClassNotFoundException ce) {
-      if(debug > 0)
-        System.err.println("plugin loader: plugin not found: "+fullClassName);
-    } catch(Exception e) {
-      System.err.println("plugin loader: can't load plugin: "+fullClassName);
+    } catch (ClassNotFoundException ce) {
+      if (debug > 0)
+        System.err.println("plugin loader: plugin not found: " + fullClassName);
+    } catch (Exception e) {
+      System.err.println("plugin loader: can't load plugin: " + fullClassName);
       e.printStackTrace();
     }
+
     return null;
+
   }
 
   /** holds the plugin listener we serve */
@@ -144,14 +198,19 @@ public class PluginLoader implements PluginBus {
    * @return the answer to the sent message
    */
   public Object broadcast(PluginMessage message) {
-    if(debug>0) System.err.println("broadcast("+message+")");
-    if(message == null || listener == null)
+    if (debug > 0) System.err.println("broadcast(" + message + ")");
+    if (message == null || listener == null)
       return null;
     Enumeration e = listener.elements();
     Object res = null;
-    while(res == null && e.hasMoreElements())
-      res = message.firePluginMessage((PluginListener)e.nextElement());
+    while (res == null && e.hasMoreElements())
+      res = message.firePluginMessage((PluginListener) e.nextElement());
     return res;
   }
+
+  public Map getPlugins() {
+    return plugins;
+  }
+
 }
 

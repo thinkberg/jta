@@ -40,6 +40,8 @@ public interface FilterPlugin {
   public void setFilterSource(FilterPlugin source) 
     throws IllegalArgumentException;
 
+  public FilterPlugin getFilterSource();
+
   /**
    * Read a block of data from the back end.
    * @param b the buffer to read the data into

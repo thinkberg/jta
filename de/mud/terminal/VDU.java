@@ -19,6 +19,7 @@
 
 package de.mud.terminal;
 
+import javax.swing.JScrollBar;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -86,20 +87,13 @@ public class VDU extends Component
   private Point selectBegin, selectEnd;          /* selection coordinates */
   private String selection;                 /* contains the selected text */
 
-  private Scrollbar scrollBar;
+  private JScrollBar scrollBar;
   private SoftFont sf = new SoftFont();
 
   private boolean update[];        /* contains the lines that need update */
   private boolean colorPrinting = false;	/* print display in color */
 
   private Image backingStore = null;
-
-  /**
-   * Create a color representation that is brighter than the standard
-   * color but not what we would like to use for bold characters.
-   * @param clr the standard color
-   * @return the new brighter color
-   */
 
   private double max(double f1, double f2) {
     return (f1 < f2)?f2:f1;
@@ -108,7 +102,12 @@ public class VDU extends Component
   private double min(double f1, double f2) {
     return (f1 < f2)?f1:f2;
   }
-
+  /**
+   * Create a color representation that is brighter than the standard
+   * color but not what we would like to use for bold characters.
+   * @param clr the standard color
+   * @return the new brighter color
+   */
   private Color brighten(Color clr) {
     int r,g,b;
 
@@ -628,7 +627,7 @@ public class VDU extends Component
    * @param curAttr attribute to fill
    * @see #deleteChar
    * @see #deleteLine
-   * @see redraw
+   * @see #redraw
    */
   public void deleteArea(int c, int l, int w, int h, int curAttr) {
     c = checkBounds(c, 0, size.width - 1);
@@ -654,7 +653,7 @@ public class VDU extends Component
    * @param h height of the area in characters
    * @see #deleteChar
    * @see #deleteLine
-   * @see redraw
+   * @see #redraw
    */
   public void deleteArea(int c, int l, int w, int h) {
     c = checkBounds(c, 0, size.width - 1);
@@ -791,8 +790,8 @@ public class VDU extends Component
   /**
    * Set the current window base. This allows to view the scrollback buffer.
    * @param line the line where the screen window starts
-   * @see setBufferSize
-   * @see getBufferSize
+   * @see #setBufferSize
+   * @see #getBufferSize
    */
   public void setWindowBase(int line) {
     if(line > screenBase)
@@ -805,7 +804,7 @@ public class VDU extends Component
 
   /**
    * Get the current window base.
-   * @see setWindowBase
+   * @see #setWindowBase
    */
   public int getWindowBase() {
     return windowBase;
@@ -830,8 +829,8 @@ public class VDU extends Component
   /**
    * Change the size of the screen. This will include adjustment of the
    * scrollback buffer.
-   * @param columns width of the screen
-   * @param columns height of the screen
+   * @param width of the screen
+   * @param height of the screen
    */
   public void setScreenSize(int width, int height) {
     char cbuf[][];
@@ -932,7 +931,7 @@ public class VDU extends Component
    * using a property change listener.
    * @param scrollBar the scroll bar
    */
-  public void setScrollbar(Scrollbar scrollBar) {
+  public void setScrollbar(JScrollBar scrollBar) {
     if(scrollBar == null) return;
     this.scrollBar = scrollBar;
     this.scrollBar.setValues(windowBase, size.height, 0, bufSize - size.height);
@@ -1193,7 +1192,7 @@ public class VDU extends Component
   /**
    * Set default for printing black&amp;white or colorized as displayed on
    * screen.
-   * @param name colorPrint true = print in full color, default b&amp;w only
+   * @param colorPrint true = print in full color, default b&amp;w only
    */
   public void setColorPrinting(boolean colorPrint) {
     colorPrinting = colorPrint;
@@ -1239,7 +1238,7 @@ public class VDU extends Component
 
   /**
    * Convert Mouse Event coordinates into character cell coordinates
-   * @param the mouse point to be converted
+   * @param  evtpt the mouse point to be converted
    * @return Character cell coordinate of passed point
    */
   public Point mouseGetPos(Point evtpt) {
@@ -1381,7 +1380,7 @@ public class VDU extends Component
    * Return the preferred Size of the character display.
    * This turns out to be the actual size.
    * @return Dimension dimension of the display
-   * @see size
+   * @see #size
    */
   public Dimension getPreferredSize() {
     return getSize();

@@ -91,6 +91,10 @@ public class Shell extends Plugin implements FilterPlugin {
     // we do not have a source other than our socket
   }
 
+  public FilterPlugin getFilterSource() {
+    return null;
+  }
+
   public int read(byte[] b) throws IOException {
     if(pty == null) return 0;
     int ret = pty.read(b);

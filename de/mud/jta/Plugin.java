@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -18,7 +18,6 @@
  */
 package de.mud.jta;
 
-import java.io.IOException;
 
 /**
  * Plugin base class for the Java Telnet Application. A plugin is a component
@@ -34,7 +33,7 @@ import java.io.IOException;
 public class Plugin {
   /** holds the plugin bus used for communication between plugins */
   protected PluginBus bus;
-  /** 
+  /**
    * in case we have several plugins of the same type this contains their
    * unique id
    */
@@ -53,13 +52,21 @@ public class Plugin {
   }
 
   /**
+   * Return identifier for this plugin.
+   * @return id string
+   */
+  public String getId() {
+    return id;
+  }
+
+  /**
    * Print an error message to stderr prepending the plugin name. This method
    * is public due to compatibility with Java 1.1
    * @param msg the error message
    */
   public void error(String msg) {
     String name = getClass().toString();
-    name = name.substring(name.lastIndexOf('.')+1);
-    System.err.println(name + (id != null ? "("+id+")" : "") +": "+msg);
+    name = name.substring(name.lastIndexOf('.') + 1);
+    System.err.println(name + (id != null ? "(" + id + ")" : "") + ": " + msg);
   }
 }

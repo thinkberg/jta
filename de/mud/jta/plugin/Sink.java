@@ -106,7 +106,7 @@ public class Sink extends Plugin
   }
 
   /**
-   * Continuously read from our back end and display the data on screen.
+   * Continuously read from our back end and drop the data.
    */
   public void run() {
     byte[] t, b = new byte[256];
@@ -125,6 +125,10 @@ public class Sink extends Plugin
   public void setFilterSource(FilterPlugin source) {
     if(debug > 0) System.err.println("Terminal: connected to: "+source);
     this.source = source;
+  }
+
+  public FilterPlugin getFilterSource() {
+    return source;
   }
 
   public int read(byte[] b) throws IOException {

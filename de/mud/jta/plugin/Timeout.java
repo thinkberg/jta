@@ -150,6 +150,10 @@ public class Timeout extends Plugin
     source = plugin;
   }
 
+  public FilterPlugin getFilterSource() {
+    return source;
+  }
+
   public int read(byte[] b) throws IOException {
     int n = source.read(b);
     if(n > 0 && timeoutThread != null) timeoutThread.interrupt();

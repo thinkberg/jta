@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -18,8 +18,7 @@
  */
 package de.mud.jta;
 
-import java.awt.Component;
-import java.awt.Menu;
+import javax.swing.*;
 
 /**
  * To show data on-screen a plugin may have a visible component. That component
@@ -30,16 +29,16 @@ import java.awt.Menu;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public interface VisualPlugin  {
+public interface VisualPlugin {
   /**
    * Get the visible components from the plugin.
    * @return a component that represents the plugin
    */
-  public Component getPluginVisual();
+  public JComponent getPluginVisual();
 
   /**
    * Get the menu entry for this component.
    * @return a menu that can be used to change the plugin state
    */
-  public Menu getPluginMenu();
+  public JMenu getPluginMenu();
 }

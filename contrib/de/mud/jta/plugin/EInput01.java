@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -19,23 +19,19 @@
 
 package de.mud.jta.plugin;
 
-import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
+import de.mud.jta.Plugin;
 import de.mud.jta.PluginBus;
-import de.mud.jta.PluginConfig;
 import de.mud.jta.VisualPlugin;
-import de.mud.jta.event.ConfigurationListener;
 
-import java.awt.Component;
-import java.awt.Menu;
-import java.awt.Panel;
-import java.awt.Button;
-import java.awt.TextArea;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import java.awt.BorderLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.io.IOException;
 
 /**
@@ -50,18 +46,18 @@ import java.io.IOException;
  */
 
 public class EInput01 extends Plugin
-  implements FilterPlugin, VisualPlugin {
+        implements FilterPlugin, VisualPlugin {
 
-  protected TextArea input;
-  protected Button send;
-  protected Panel panel;
+  protected JTextArea input;
+  protected JButton send;
+  protected JPanel panel;
 
   public EInput01(PluginBus bus, final String id) {
     super(bus, id);
 
     // create text field and send button
-    input = new TextArea(10, 30);
-    send = new Button("Send Text");
+    input = new JTextArea(10, 30);
+    send = new JButton("Send Text");
 
     // add action listener to send the text
     send.addActionListener(new ActionListener() {
@@ -69,25 +65,29 @@ public class EInput01 extends Plugin
         try {
           // calls the write from FilterPlugin interface
           write(input.getText().getBytes());
-        } catch(Exception e) {
-          System.err.println("EInput01: error sending text: "+e);
+        } catch (Exception e) {
+          System.err.println("EInput01: error sending text: " + e);
           e.printStackTrace();
         }
       }
     });
 
     // create a panel and put text field and button into it.
-    panel = new Panel(new BorderLayout());
+    panel = new JPanel(new BorderLayout());
     panel.add("Center", input);
     panel.add("South", send);
   }
 
-  
+
   /** the source where we get data from */
   protected FilterPlugin source = null;
 
   public void setFilterSource(FilterPlugin plugin) {
     source = plugin;
+  }
+
+  public FilterPlugin getFilterSource() {
+    return source;
   }
 
   /**
@@ -114,7 +114,7 @@ public class EInput01 extends Plugin
    * file.
    * @return a visual Component
    */
-  public Component getPluginVisual() {
+  public JComponent getPluginVisual() {
     return panel;
   }
 
@@ -122,7 +122,7 @@ public class EInput01 extends Plugin
    * If you want to have a menu configure it and return it here.
    * @return the plugin menu
    */
-  public Menu getPluginMenu() {
+  public JMenu getPluginMenu() {
     return null;
   }
 }

@@ -123,6 +123,10 @@ public class Script extends Plugin implements FilterPlugin {
     source = plugin;
   }
 
+  public FilterPlugin getFilterSource() {
+    return source;
+  }
+
   /**
    * Read an array of bytes from the back end and put it through the
    * script parser to see if it matches. It will send the answer 

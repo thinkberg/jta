@@ -71,21 +71,20 @@ public class PluginConfig extends Properties {
    * @param key the property key
    * @param value the new value
    */
-/*
+
   public void setProperty(String plugin, String id, String key, String value) {
     if(id == null) id = ""; else id = "("+id+")";
     setProperty(plugin+id, key, value);
   }
-*/
+
   /**
    * Set the property value for a certain plugin.
    * @param plugin the name of the plugin
    * @param key the property key
    * @param value the new value
    */
-/*
   public void setProperty(String plugin, String key, String value) {
     setProperty(plugin+"."+key, value);
   }
-*/
+
 }

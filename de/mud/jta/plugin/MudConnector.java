@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -20,40 +20,37 @@
 package de.mud.jta.plugin;
 
 import de.mud.jta.Plugin;
-import de.mud.jta.VisualPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
+import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketListener;
 import de.mud.jta.event.SocketRequest;
 
-import java.io.IOException;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
-
-import java.util.Hashtable;
-
 import java.net.URL;
-
-import java.awt.Graphics;
-import java.awt.Panel;
-import java.awt.CardLayout;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.List;
-import java.awt.Component;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.Dimension;
-import java.awt.Button;
-import java.awt.Label;
-import java.awt.TextField;
-import java.awt.Image;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
+import java.util.Hashtable;
 
 /**
  * The MudConnector (http://www.mudconnector.com) plugin. The plugin will
@@ -67,9 +64,9 @@ import java.awt.event.ItemEvent;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class MudConnector 
-  extends Plugin 
-  implements VisualPlugin, Runnable, ActionListener {
+public class MudConnector
+        extends Plugin
+        implements VisualPlugin, Runnable, ActionListener {
 
   /** debugging level */
   private final static int debug = 0;
@@ -77,60 +74,64 @@ public class MudConnector
   protected URL listURL = null;
   protected int step;
   protected Hashtable mudList = null;
-  protected List mudListSelector = new List();
-  protected TextField mudName, mudAddr, mudPort;
-  protected Button connect;
-  protected Panel mudListPanel;
+  protected JList mudListSelector = new JList();
+  protected JTextField mudName, mudAddr, mudPort;
+  protected JButton connect;
+  protected JPanel mudListPanel;
   protected CardLayout layouter;
   protected ProgressBar progress;
-  protected Label errorLabel;
-  protected Menu MCMenu;
+  protected JLabel errorLabel;
+  protected JMenu MCMenu;
 
   /**
    * Implementation of a progress bar to display the progress of
    * loading the mud list.
    */
-  class ProgressBar extends Component {
+  class ProgressBar extends JComponent {
     int max, current;
     String text;
     Dimension size = new Dimension(250, 20);
     Image backingStore;
 
-    public void setMax(int max) { this.max = max; }
+    public void setMax(int max) {
+      this.max = max;
+    }
 
-    public void update(Graphics g) { paint(g); }
+    public void update(Graphics g) {
+      paint(g);
+    }
 
     public void paint(Graphics g) {
-      if(backingStore == null) {
+      if (backingStore == null) {
         backingStore = createImage(getSize().width, getSize().height);
-	redraw();
-      } 
+        redraw();
+      }
       g.drawImage(backingStore, 0, 0, this);
     }
 
     private void redraw() {
-      if(backingStore == null || text == null) return;
+      if (backingStore == null || text == null) return;
       Graphics g = backingStore.getGraphics();
-      int width = (int) (((float)current/(float)max) * getSize().width);
+      int width = (int) (((float) current / (float) max) * getSize().width);
       g.fill3DRect(0, 0, getSize().width, getSize().height, false);
       g.setColor(getBackground());
       g.fill3DRect(0, 0, width, getSize().height, true);
       g.setColor(getForeground());
       g.setXORMode(getBackground());
-      g.drawString(""+(current * 100 / (max>0?max:1))+"%", 
-                   getSize().width/2 - 15, getSize().height / 2);
+      g.drawString("" + (current * 100 / (max > 0?max:1)) + "%",
+                   getSize().width / 2 - 15, getSize().height / 2);
       g.drawString(text,
-                   getSize().width/2 - 
-		     getFontMetrics(getFont()).stringWidth(text) / 2, 
-		   getSize().height / 2 + 12);
+                   getSize().width / 2 -
+                   getFontMetrics(getFont()).stringWidth(text) / 2,
+                   getSize().height / 2 + 12);
       paint(getGraphics());
     }
 
     public void adjust(int value, String name) {
-      if((current = value) > max)
+      if ((current = value) > max)
         current = max;
       text = name;
-      if(((float)current / (float)step) == (int)(current / step))
+      if (((float) current / (float) step) == (int) (current / step))
         redraw();
     }
 
@@ -138,10 +139,15 @@ public class MudConnector
       size = new Dimension(width, height);
     }
 
-    public Dimension getPreferredSize() { return size; }
-    public Dimension getMinimumSize() { return size; }
+    public Dimension getPreferredSize() {
+      return size;
+    }
+
+    public Dimension getMinimumSize() {
+      return size;
+    }
   }
-      
+
 
   /**
    * Create the list plugin and get the url to the actual list.
@@ -151,91 +157,88 @@ public class MudConnector
 
     bus.registerPluginListener(new ConfigurationListener() {
       public void setConfiguration(PluginConfig config) {
-        String url = 
-	  config.getProperty("MudConnector", id, "listURL");
-        if(url != null) {
+        String url =
+                config.getProperty("MudConnector", id, "listURL");
+        if (url != null) {
           try {
             listURL = new URL(url);
-          } catch(Exception e) {
-            MudConnector.this.error(""+e);
-	    errorLabel.setText("Error: "+e);
-          } 
+          } catch (Exception e) {
+            MudConnector.this.error("" + e);
+            errorLabel.setText("Error: " + e);
+          }
         } else {
           MudConnector.this.error("no listURL specified");
-	  errorLabel.setText("Missing list URL");
-	  layouter.show(mudListPanel, "ERROR");
-	}
+          errorLabel.setText("Missing list URL");
+          layouter.show(mudListPanel, "ERROR");
+        }
 
-	String sstep = config.getProperty("MudConnector",id,"step");
+        String sstep = config.getProperty("MudConnector", id, "step");
 
-	try {
-	  step = Integer.parseInt(sstep);
-	} catch(Exception e) {
-	  if(sstep != null)
-	    MudConnector.this.error("warning: "+sstep+" is not a number");
-	  step = 10;
-	}
+        try {
+          step = Integer.parseInt(sstep);
+        } catch (Exception e) {
+          if (sstep != null)
+            MudConnector.this.error("warning: " + sstep + " is not a number");
+          step = 10;
+        }
       }
     });
 
     bus.registerPluginListener(new SocketListener() {
-      public void connect(String host, int port) { setup(); }
-      public void disconnect() { setup(); }
+      public void connect(String host, int port) {
+        setup();
+      }
+
+      public void disconnect() {
+        setup();
+      }
     });
-    mudListPanel = new Panel(layouter = new CardLayout()) {
-      public void update(java.awt.Graphics g) { 
+    mudListPanel = new JPanel(layouter = new CardLayout()) {
+      public void update(java.awt.Graphics g) {
         paint(g);
       }
     };
 
-    mudListPanel.add("ERROR", errorLabel = new Label("Loading ..."));
-    Panel panel = new Panel(new BorderLayout());
-    panel.add("North", new Label("Loading mud list ... please wait"));
+    mudListPanel.add("ERROR", errorLabel = new JLabel("Loading ..."));
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add("North", new JLabel("Loading mud list ... please wait"));
     panel.add("Center", progress = new ProgressBar());
     mudListPanel.add("PROGRESS", panel);
-    panel = new Panel(new BorderLayout());
+    panel = new JPanel(new BorderLayout());
     panel.add("Center", mudListSelector);
     mudListPanel.add("MUDLIST", panel);
-    panel.add("East", panel = new Panel(new GridLayout(3, 1)));
-    panel.add(mudName = new TextField(20));
+    panel.add("East", panel = new JPanel(new GridLayout(3, 1)));
+    panel.add(mudName = new JTextField(20));
     mudName.setEditable(false);
-    Panel apanel = new Panel(new BorderLayout());
-    apanel.add("Center", mudAddr = new TextField(20));
+    JPanel apanel = new JPanel(new BorderLayout());
+    apanel.add("Center", mudAddr = new JTextField(20));
     mudAddr.setEditable(false);
-    apanel.add("East", mudPort = new TextField(6));
+    apanel.add("East", mudPort = new JTextField(6));
     mudPort.setEditable(false);
     panel.add(apanel);
-    panel.add(connect = new Button("Connect"));
+    panel.add(connect = new JButton("Connect"));
 
     connect.addActionListener(this);
-    mudListSelector.addActionListener(this);
 
-    mudListSelector.addItemListener(new ItemListener() {
-      public void itemStateChanged(ItemEvent evt) {
-        switch(evt.getStateChange()) {
-	  case ItemEvent.SELECTED:
-	    String item = (String)mudListSelector.getSelectedItem();
-	    mudName.setText(item);
-	    Object mud[] = (Object[])mudList.get(item);
-	    mudAddr.setText((String)mud[0]);
-	    mudPort.setText(((Integer)mud[1]).toString());
-	    break;
-	  case ItemEvent.DESELECTED:
-	    mudName.setText("");
-	    mudAddr.setText("");
-	    mudPort.setText("");
-	    break;
-	}
+    mudListSelector.setVisibleRowCount(3);
+    mudListSelector.addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent evt) {
+        JList list = (JList) evt.getSource();
+        String item = (String) list.getSelectedValue();
+        mudName.setText(item);
+        Object mud[] = (Object[]) mudList.get(item);
+        mudAddr.setText((String) mud[0]);
+        mudPort.setText(((Integer) mud[1]).toString());
       }
     });
 
     layouter.show(mudListPanel, "PROGRESS");
 
-    MCMenu = new Menu("MudConnector");
+    MCMenu = new JMenu("MudConnector");
   }
 
   private void setup() {
-    if(mudList == null && listURL != null)
+    if (mudList == null && listURL != null)
       (new Thread(this)).start();
   }
 
@@ -245,17 +248,17 @@ public class MudConnector
       Hashtable menuList = new Hashtable();
 
       mudList = new Hashtable();
-      BufferedReader r = 
-        new BufferedReader(new InputStreamReader(listURL.openStream()));
+      BufferedReader r =
+              new BufferedReader(new InputStreamReader(listURL.openStream()));
 
       String line = r.readLine();
       int mudCount = 0;
       try {
         mudCount = Integer.parseInt(line);
-      } catch(NumberFormatException nfe) {
-        error("number of muds: "+nfe);
+      } catch (NumberFormatException nfe) {
+        error("number of muds: " + nfe);
       }
-      System.out.println("MudConnector: expecting "+mudCount+" mud entries");
+      System.out.println("MudConnector: expecting " + mudCount + " mud entries");
       progress.setMax(mudCount);
 
       StreamTokenizer ts = new StreamTokenizer(r);
@@ -268,79 +271,79 @@ public class MudConnector
       Integer port;
       int token, counter = 0, idx = 0;
 
-      while((token = ts.nextToken()) != ts.TT_EOF) {
-        name = ts.sval; 
+      while ((token = ts.nextToken()) != ts.TT_EOF) {
+        name = ts.sval;
 
-        if((token = ts.nextToken()) != ts.TT_EOF) {
-	  if(token == ts.TT_EOL)
-	    error(name+": unexpected end of line"
-	                      +", missing host and port");
+        if ((token = ts.nextToken()) != ts.TT_EOF) {
+          if (token == ts.TT_EOL)
+            error(name + ": unexpected end of line"
+                  + ", missing host and port");
           host = ts.sval;
           port = new Integer(23);
-          if((token = ts.nextToken()) != ts.TT_EOF) try {
-	    if(token == ts.TT_EOL)
-	      error(name+": default port 23");
-            port = new Integer(ts.sval);
-          } catch(NumberFormatException nfe) {
-            error("port for "+name+": "+nfe);
+          if ((token = ts.nextToken()) != ts.TT_EOF)
+            try {
+              if (token == ts.TT_EOL)
+                error(name + ": default port 23");
+              port = new Integer(ts.sval);
+            } catch (NumberFormatException nfe) {
+              error("port for " + name + ": " + nfe);
+            }
+
+          if (debug > 0)
+            error(name + " [" + host + "," + port + "]");
+          mudList.put(name, new Object[]{host, port, new Integer(idx++)});
+          mudListSelector.add(name, new JLabel(name));
+          progress.adjust(++counter, name);
+          mudListPanel.repaint();
+
+          JMenu subMenu = (JMenu) menuList.get(name.charAt(0) + "");
+          if (subMenu == null) {
+            subMenu = new JMenu(name.charAt(0) + "");
+            MCMenu.add(subMenu);
+            menuList.put(name.charAt(0) + "", subMenu);
           }
-
-          if(debug > 0) 
-            error(name+" ["+host+","+port+"]");
-          mudList.put(name, new Object[] { host, port, new Integer(idx++) });
-          mudListSelector.add(name);
-	  progress.adjust(++counter, name);
-	  mudListPanel.repaint();
-
-          Menu subMenu = (Menu)menuList.get(name.charAt(0)+"");
-	  if(subMenu == null) {
-	    subMenu = new Menu(name.charAt(0)+"");
-	    MCMenu.add(subMenu);
-            menuList.put(name.charAt(0)+"", subMenu);
-	  }
-	  MenuItem item = new MenuItem(name);
-	  item.addActionListener(MudConnector.this);
-	  subMenu.add(item);
+          JMenuItem item = new JMenuItem(name);
+          item.addActionListener(MudConnector.this);
+          subMenu.add(item);
         }
-	while(token != ts.TT_EOF && token != ts.TT_EOL)
-	  token = ts.nextToken();
+        while (token != ts.TT_EOF && token != ts.TT_EOL)
+          token = ts.nextToken();
       }
-      System.out.println("MudConnector: found "+mudList.size()+" entries");
-    } catch(Exception e) {
-      error("error: "+e);
-      errorLabel.setText("Error: "+e);
+      System.out.println("MudConnector: found " + mudList.size() + " entries");
+    } catch (Exception e) {
+      error("error: " + e);
+      errorLabel.setText("Error: " + e);
       layouter.show(mudListPanel, "ERROR");
     }
     layouter.show(mudListPanel, "MUDLIST");
   }
 
   public void actionPerformed(ActionEvent evt) {
-    if(evt.getSource() instanceof MenuItem) {
+    if (evt.getSource() instanceof MenuItem) {
       String item = evt.getActionCommand();
-      int idx = ((Integer)((Object[])mudList.get(item))[2]).intValue();
-      mudListSelector.select(idx);
-      mudListSelector.makeVisible(idx);
+      int idx = ((Integer) ((Object[]) mudList.get(item))[2]).intValue();
+      mudListSelector.setSelectedIndex(idx);
       mudName.setText(item);
-      Object mud[] = (Object[])mudList.get(item);
-      mudAddr.setText((String)mud[0]);
-      mudPort.setText(((Integer)mud[1]).toString());
-    } 
+      Object mud[] = (Object[]) mudList.get(item);
+      mudAddr.setText((String) mud[0]);
+      mudPort.setText(((Integer) mud[1]).toString());
+    }
 
     String addr = mudAddr.getText();
     String port = mudPort.getText();
-    if(addr != null) {
+    if (addr != null) {
       bus.broadcast(new SocketRequest());
-      if(port == null || port.length() <= 0)
+      if (port == null || port.length() <= 0)
         port = "23";
       bus.broadcast(new SocketRequest(addr, Integer.parseInt(port)));
     }
   }
 
-  public Component getPluginVisual() {
+  public JComponent getPluginVisual() {
     return mudListPanel;
   }
 
-  public Menu getPluginMenu() {
+  public JMenu getPluginMenu() {
     return MCMenu;
   }
 }

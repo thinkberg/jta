@@ -128,6 +128,10 @@ public class Telnet extends Plugin implements FilterPlugin {
     this.source = source;
   }
 
+  public FilterPlugin getFilterSource() {
+    return source;
+  }
+
   public int read(byte[] b) throws IOException {
     // We just don't pass read() down, since negotiate() might call other
     // functions and we need transaction points.

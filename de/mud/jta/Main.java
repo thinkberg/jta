@@ -23,7 +23,15 @@ import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.ReturnFocusRequest;
 import de.mud.jta.event.SocketRequest;
 
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+import java.awt.PrintJob;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,8 +41,8 @@ import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -68,7 +76,8 @@ public class Main {
 
   /** holds the system clipboard or our own */
   private static Clipboard clipboard;
-  private static HelpFrame helpFrame;
+
+  private static String host, port;
 
   public static void main(String args[]) {
     final Properties options = new Properties();
@@ -99,10 +108,10 @@ public class Main {
         }
       }
 
-    final String host = options.getProperty("Socket.host");
-    final String port = options.getProperty("Socket.port");
+    host = options.getProperty("Socket.host");
+    port = options.getProperty("Socket.port");
 
-    final Frame frame = new Frame("jta: " + host + (port.equals("23")?"":" " + port));
+    final JFrame frame = new JFrame("jta: " + host + (port.equals("23")?"":" " + port));
 
     // set up the clipboard
     try {
@@ -141,16 +150,16 @@ public class Main {
       }
     });
 
-    Hashtable componentList = setup.getComponents();
-    Enumeration names = componentList.keys();
-    while (names.hasMoreElements()) {
-      String name = (String) names.nextElement();
-      Component c = (Component) componentList.get(name);
+    Map componentList = setup.getComponents();
+    Iterator names = componentList.keySet().iterator();
+    while (names.hasNext()) {
+      String name = (String) names.next();
+      JComponent c = (JComponent) componentList.get(name);
       if (options.getProperty("layout." + name) == null) {
         System.err.println("jta: no layout property set for '" + name + "'");
         frame.add("South", c);
       } else
-        frame.add(options.getProperty("layout." + name), c);
+        frame.getContentPane().add(options.getProperty("layout." + name), c);
     }
 
     if (!personalJava) {
@@ -165,24 +174,41 @@ public class Main {
       });
 
       // add a menu bar
-      MenuBar mb = new MenuBar();
-      Menu file = new Menu("File");
-      file.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
-      MenuItem tmp;
-      file.add(tmp = new MenuItem("Connect"));
+      JMenuBar mb = new JMenuBar();
+      JMenu file = new JMenu("File");
+      file.setMnemonic(KeyEvent.VK_F);
+      JMenuItem tmp;
+      file.add(tmp = new JMenuItem("Connect"));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
-          setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+          String destination =
+                  JOptionPane.showInputDialog(frame,
+                                              new JLabel("Enter your destination host (host:port)"),
+                                              host + ":" + port
+                  );
+          if (destination != null) {
+            int sep = 0;
+            if ((sep = destination.indexOf(' ')) > 0 || (sep = destination.indexOf(':')) > 0) {
+              host = destination.substring(0, sep);
+              port = destination.substring(sep + 1);
+            } else {
+              host = destination;
+            }
+            setup.broadcast(new SocketRequest());
+            setup.broadcast(new SocketRequest(host, Integer.parseInt(port)));
+          }
         }
       });
-      file.add(tmp = new MenuItem("Disconnect"));
+      file.add(tmp = new JMenuItem("Disconnect"));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           setup.broadcast(new SocketRequest());
         }
       });
-      file.add(new MenuItem("-"));
-      file.add(tmp = new MenuItem("Print"));
+      file.addSeparator();
+      file.add(tmp = new JMenuItem("Print"));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (setup.getComponents().get("Terminal") != null) {
@@ -190,14 +216,14 @@ public class Main {
                     frame.getToolkit().getPrintJob(frame, "JTA Terminal", null);
             // return if the user clicked cancel
             if (printJob == null) return;
-            ((Component) setup.getComponents().get("Terminal"))
+            ((JComponent) setup.getComponents().get("Terminal"))
                     .print(printJob.getGraphics());
             printJob.end();
           }
         }
       });
-      file.add(new MenuItem("-"));
-      file.add(tmp = new MenuItem("Exit"));
+      file.addSeparator();
+      file.add(tmp = new JMenuItem("Exit"));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           frame.dispose();
@@ -206,16 +232,17 @@ public class Main {
       });
       mb.add(file);
 
-      Menu edit = new Menu("Edit");
-      edit.setShortcut(new MenuShortcut(KeyEvent.VK_H, true));
-      edit.add(tmp = new MenuItem("Copy"));
+      JMenu edit = new JMenu("Edit");
+      edit.add(tmp = new JMenuItem("Copy"));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (focussedPlugin instanceof VisualTransferPlugin)
             ((VisualTransferPlugin) focussedPlugin).copy(clipboard);
         }
       });
-      edit.add(tmp = new MenuItem("Paste"));
+      edit.add(tmp = new JMenuItem("Paste"));
+      tmp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
           if (focussedPlugin instanceof VisualTransferPlugin)
@@ -224,27 +251,24 @@ public class Main {
       });
       mb.add(edit);
 
-      Hashtable menuList = setup.getMenus();
-      names = menuList.keys();
-      while (names.hasMoreElements()) {
-        String name = (String) names.nextElement();
-        mb.add((Menu) menuList.get(name));
+      Map menuList = setup.getMenus();
+      names = menuList.keySet().iterator();
+      while (names.hasNext()) {
+        String name = (String) names.next();
+        mb.add((JMenu) menuList.get(name));
       }
 
-      Menu help = new Menu("Help");
-      help.setShortcut(new MenuShortcut(KeyEvent.VK_HELP, true));
-      help.add(tmp = new MenuItem("General"));
+      JMenu help = new JMenu("Help");
+      help.setMnemonic(KeyEvent.VK_HELP);
+      help.add(tmp = new JMenuItem("General"));
       tmp.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          if (helpFrame == null) {
-            helpFrame = new HelpFrame(options.getProperty("Help.url"));
-          }
-          helpFrame.setVisible(true);
+          Help.show(frame, options.getProperty("Help.url"));
         }
       });
-      mb.setHelpMenu(help);
+      mb.add(help);
 
-      frame.setMenuBar(mb);
+      frame.setJMenuBar(mb);
 
     } // !personalJava
 

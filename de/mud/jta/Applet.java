@@ -25,7 +25,16 @@ import de.mud.jta.event.ReturnFocusRequest;
 import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.SoundListener;
 
-import java.awt.*;
+import javax.swing.JApplet;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Component;
+import java.awt.Frame;
+import java.awt.PrintJob;
+import java.awt.MenuBar;
+import java.awt.Menu;
+import java.awt.MenuShortcut;
+import java.awt.MenuItem;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +45,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -57,7 +67,7 @@ import java.util.Vector;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public class Applet extends java.applet.Applet {
+public class Applet extends JApplet {
 
   private final static int debug = 0;
 
@@ -83,8 +93,6 @@ public class Applet extends java.applet.Applet {
   private Plugin focussedPlugin;
   private Clipboard clipboard;
   private boolean online = false;
-
-  private HelpFrame helpFrame = null;
 
   /**
    * Read all parameters from the applet configuration and
@@ -184,10 +192,10 @@ public class Applet extends java.applet.Applet {
 
       appletFrame.setLayout(new BorderLayout());
 
-      Hashtable componentList = pluginLoader.getComponents();
-      Enumeration names = componentList.keys();
-      while (names.hasMoreElements()) {
-        String name = (String) names.nextElement();
+      Map componentList = pluginLoader.getComponents();
+      Iterator names = componentList.keySet().iterator();
+      while (names.hasNext()) {
+        String name = (String) names.next();
         Component c = (Component) componentList.get(name);
         if ((value = options.getProperty("layout." + name)) != null) {
           appletFrame.add(value, c);
@@ -362,10 +370,10 @@ public class Applet extends java.applet.Applet {
         });
         mb.add(edit);
 
-        Hashtable menuList = pluginLoader.getMenus();
-        names = menuList.keys();
-        while (names.hasMoreElements()) {
-          String name = (String) names.nextElement();
+        Map menuList = pluginLoader.getMenus();
+        names = menuList.keySet().iterator();
+        while (names.hasNext()) {
+          String name = (String) names.next();
           mb.add((Menu) menuList.get(name));
         }
 
@@ -374,10 +382,7 @@ public class Applet extends java.applet.Applet {
         help.add(tmp = new MenuItem("General"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
-            if(helpFrame == null) {
-              helpFrame = new HelpFrame(options.getProperty("Help.url"));
-            }
-            helpFrame.setVisible(true);
+            Help.show(appletFrame, options.getProperty("Help.url"));
           }
         });
         mb.setHelpMenu(help);

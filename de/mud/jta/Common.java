@@ -20,9 +20,12 @@ package de.mud.jta;
 
 import de.mud.jta.event.ConfigurationRequest;
 
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -38,8 +41,6 @@ import java.util.Vector;
  */
 public class Common extends PluginLoader {
 
-  private Hashtable plugins, components, menus;
-
   public final static String DEFAULT_PATH = "de.mud.jta.plugin";
 
   public Common(Properties config) {
@@ -49,7 +50,7 @@ public class Common extends PluginLoader {
     System.out.println("** The Java(tm) Telnet Application");
     System.out.println("** Version 2.0 for Java 1.1.x and Java 2");
     System.out.println("** Copyright (c) 1996-2000 Matthias L. Jugel, "
-                       + "Marcus Meissner");
+                       + "Marcus Meiﬂner");
 
     try {
       Version build =
@@ -59,10 +60,6 @@ public class Common extends PluginLoader {
       System.out.println("** Build: patched or selfmade, no date");
       System.err.println(e);
     }
-
-    plugins = new Hashtable();
-    components = new Hashtable();
-    menus = new Hashtable();
 
     Vector names = split(config.getProperty("plugins"), ',');
     if (names == null) {
@@ -92,30 +89,51 @@ public class Common extends PluginLoader {
                               ", ID: '" + id + "'" : ""));
         continue;
       }
-      plugins.put(name, plugin);
-      if (plugin instanceof VisualPlugin) {
-        Component c = ((VisualPlugin) plugin).getPluginVisual();
-        if (c != null) components.put(name + (id != null ? "(" + id + ")" : ""), c);
-        Menu menu = ((VisualPlugin) plugin).getPluginMenu();
-        if (menu != null) menus.put(name + (id != null ? "(" + id + ")" : ""), menu);
-      }
     }
 
     broadcast(new ConfigurationRequest(new PluginConfig(config)));
   }
 
-  public Hashtable getPlugins() {
-    return plugins;
-  }
+  /**
+   * Get the list of visual components currently registered.
+   * @return a map of components
+   */
 
-  public Hashtable getComponents() {
+  public Map getComponents() {
+    Map plugins = getPlugins();
+    Iterator pluginIt = plugins.keySet().iterator();
+    Map components = new HashMap();
+    while (pluginIt.hasNext()) {
+      String name = (String) pluginIt.next();
+      Plugin plugin = (Plugin) plugins.get(name);
+      if (plugin instanceof VisualPlugin) {
+        JComponent c = ((VisualPlugin) plugin).getPluginVisual();
+        if (c != null) {
+          String id = plugin.getId();
+          components.put(name + (id != null ? "(" + id + ")" : ""), c);
+        }
+      }
+    }
     return components;
   }
 
-  public Hashtable getMenus() {
+  public Map getMenus() {
+    Map plugins = getPlugins();
+    Iterator pluginIt = plugins.keySet().iterator();
+    Map menus = new HashMap();
+    while (pluginIt.hasNext()) {
+      String name = (String) pluginIt.next();
+      Plugin plugin = (Plugin) plugins.get(name);
+      if (plugin instanceof VisualPlugin) {
+        JMenu menu = ((VisualPlugin) plugin).getPluginMenu();
+        if (menu != null) {
+          String id = plugin.getId();
+          menus.put(name + (id != null ? "(" + id + ")" : ""), menu);
+        }
+      }
+    }
     return menus;
   }
-
 
   /**
    * Convert the plugin path from a separated string list to a Vector.
@@ -125,14 +143,6 @@ public class Common extends PluginLoader {
   private static Vector getPluginPath(String path) {
     if (path == null)
       path = DEFAULT_PATH;
-
-// I am not sure that this is desirable, as the applet administrator
-// might use UNIX and thus ':' but the applet user might have a Windows
-// system and thus uses ';' and thus the whole thing will collapse.
-// String separator = System.getProperty("path.separator");
-// if(separator == null)
-//  separator = ":";
-
     return split(path, ':');
   }
 

@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -18,11 +18,10 @@
  */
 package de.mud.jta.event;
 
-import de.mud.jta.PluginMessage;
 import de.mud.jta.PluginListener;
-import de.mud.jta.event.AppletListener;
+import de.mud.jta.PluginMessage;
 
-import java.applet.Applet;
+import javax.swing.JApplet;
 
 
 /**
@@ -34,9 +33,9 @@ import java.applet.Applet;
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
 public class AppletRequest implements PluginMessage {
-  protected Applet applet;
+  protected JApplet applet;
 
-  public AppletRequest(Applet applet) {
+  public AppletRequest(JApplet applet) {
     this.applet = applet;
   }
 
@@ -45,8 +44,8 @@ public class AppletRequest implements PluginMessage {
    * @param pl the list of plugin message listeners
    */
   public Object firePluginMessage(PluginListener pl) {
-    if(pl instanceof AppletListener) {
-      ((AppletListener)pl).setApplet(applet);
+    if (pl instanceof AppletListener) {
+      ((AppletListener) pl).setApplet(applet);
     }
     return null;
   }

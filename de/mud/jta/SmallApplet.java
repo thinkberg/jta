@@ -6,11 +6,11 @@
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * "The Java Telnet Application" is distributed in the hope that it will be 
+ * "The Java Telnet Application" is distributed in the hope that it will be
  * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -115,6 +115,8 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
     };
   }
 
+  boolean running = false;
+
   /**
    * Start the applet. Connect to the remote host.
    */
@@ -131,6 +133,7 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
       os = socket.getOutputStream();
 
       reader = new Thread(this);
+      running = true;
       reader.start();
 
     } catch(Exception e) {
@@ -154,9 +157,9 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
       }
       socket = null;
       try {
-        reader.stop();
+        running = false;
       } catch(Exception e) {
-        // ignore 
+        // ignore
       }
       reader = null;
     }
@@ -170,13 +173,13 @@ public class SmallApplet extends java.applet.Applet implements Runnable {
       System.err.println("jta: run()");
     byte[] t, b = new byte[256];
     int n = 0;
-    while(n >= 0) try {
+    while(running && n >= 0) try {
       do {
 	  n=telnet.negotiate(b);
-	  if(debug > 0 && n > 0) 
+	  if(debug > 0 && n > 0)
 	    System.err.println("jta: \""+(new String(b, 0, n))+"\"");
           if(n > 0) terminal.putString(new String(b, 0, n));
-      } while (n>0);
+      } while (running && n>0);
       n = is.read(b);
       telnet.inputfeed(b,n);
     } catch(IOException e) {

@@ -23,6 +23,7 @@ import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
+import de.mud.jta.VisualPlugin;
 
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatusListener;
@@ -32,14 +33,8 @@ import de.mud.jta.event.LocalEchoRequest;
 
 import de.mud.ssh.SshIO;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Dialog;
-import java.awt.Panel;
-import java.awt.Button;
-import java.awt.Label;
-import java.awt.TextField;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -59,7 +54,7 @@ import java.io.IOException;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public class SSH extends Plugin implements FilterPlugin {
+public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
 
   protected FilterPlugin source;
   protected SshIO handler;
@@ -176,6 +171,10 @@ public class SSH extends Plugin implements FilterPlugin {
     this.source = source;
   }
 
+  public FilterPlugin getFilterSource() {
+    return source;
+  }
+
   private byte buffer[];
   private int pos;
 
@@ -248,5 +247,13 @@ public class SSH extends Plugin implements FilterPlugin {
 	}
     }
     handler.sendData(new String(b));
+  }
+
+  public JComponent getPluginVisual() {
+    return null;
+  }
+
+  public JMenu getPluginMenu() {
+    return null;
   }
 }

@@ -26,14 +26,26 @@ import de.mud.jta.PluginConfig;
 import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.ConfigurationListener;
 
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -72,18 +84,19 @@ public class Capture extends Plugin
   protected Hashtable remoteUrlList = new Hashtable();
 
   /** The plugin menu */
-  protected Menu menu;
-  protected Dialog errorDialog;
-  protected Dialog fileDialog;
+  protected JMenu menu;
+  protected JDialog errorDialog;
+  protected JDialog fileDialog;
+  protected JDialog doneDialog;
 
   /** Whether the capture is currently enabled or not */
   protected boolean captureEnabled = false;
 
   // menu entries and the viewing frame/textarea
-  private MenuItem start, stop, clear, save;
-  private Frame frame;
-  private TextArea textArea;
-  private TextField fileName;
+  private JMenuItem start, stop, clear;
+  private JFrame frame;
+  private JTextArea textArea;
+  private JTextField fileName;
 
   /**
    * Initialize the Capture plugin. This sets up the menu entries
@@ -95,9 +108,9 @@ public class Capture extends Plugin
     if (!personalJava) {
 
       // set up viewing frame
-      frame = new Frame("Java Telnet Applet: Captured Text");
-      frame.setLayout(new BorderLayout());
-      frame.add(textArea = new TextArea(24, 80), BorderLayout.CENTER);
+      frame = new JFrame("Java Telnet Applet: Captured Text");
+      frame.getContentPane().setLayout(new BorderLayout());
+      frame.getContentPane().add(textArea = new JTextArea(24, 80), BorderLayout.CENTER);
       textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
       frame.addWindowListener(new WindowAdapter() {
         public void windowClosing(WindowEvent e) {
@@ -107,13 +120,27 @@ public class Capture extends Plugin
       frame.pack();
 
       // an error dialogue, in case the upload fails
-      errorDialog = new Dialog(frame, "Error", true);
-      errorDialog.setLayout(new BorderLayout());
-      errorDialog.add(new Label("Cannot store data on remote server!"), BorderLayout.NORTH);
-      Panel panel = new Panel();
-      Button button = new Button("Close Dialog");
+      errorDialog = new JDialog(frame, "Error", true);
+      errorDialog.getContentPane().setLayout(new BorderLayout());
+      errorDialog.getContentPane().add(new JLabel("Cannot store data on remote server!"), BorderLayout.NORTH);
+      JPanel panel = new JPanel();
+      JButton button = new JButton("Close Dialog");
       panel.add(button);
-      errorDialog.add(panel, BorderLayout.SOUTH);
+      errorDialog.getContentPane().add(panel, BorderLayout.SOUTH);
+      button.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          errorDialog.setVisible(false);
+        }
+      });
+
+      // an error dialogue, in case the upload fails
+      doneDialog = new JDialog(frame, "Success", true);
+      doneDialog.getContentPane().setLayout(new BorderLayout());
+      doneDialog.getContentPane().add(new JLabel("Successfully saved data!"), BorderLayout.NORTH);
+      panel = new JPanel();
+      button = new JButton("Close Dialog");
+      panel.add(button);
+      doneDialog.getContentPane().add(panel, BorderLayout.SOUTH);
       button.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           errorDialog.setVisible(false);
@@ -121,37 +148,37 @@ public class Capture extends Plugin
       });
 
 
-      fileDialog = new Dialog(frame, "Enter File Name", true);
-      fileDialog.setLayout(new BorderLayout());
+      fileDialog = new JDialog(frame, "Enter File Name", true);
+      fileDialog.getContentPane().setLayout(new BorderLayout());
       ActionListener saveFileListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          String params = (String) remoteUrlList.get("URL.file.params");
+          String params = (String) remoteUrlList.get("URL.file.params.orig");
           params = params == null ? "" : params + "&";
-          remoteUrlList.put("URL.file.params", params + "file="+URLEncoder.encode(fileName.getText()));
+          remoteUrlList.put("URL.file.params", params + "file=" + URLEncoder.encode(fileName.getText()));
           saveFile("URL.file");
           fileDialog.setVisible(false);
         }
       };
-      panel = new Panel();
-      panel.add(new Label("File Name: "));
-      panel.add(fileName = new TextField(30));
+      panel = new JPanel();
+      panel.add(new JLabel("File Name: "));
+      panel.add(fileName = new JTextField(30));
       fileName.addActionListener(saveFileListener);
-      fileDialog.add(panel, BorderLayout.CENTER);
-      panel = new Panel();
-      panel.add(button = new Button("Cancel"));
+      fileDialog.getContentPane().add(panel, BorderLayout.CENTER);
+      panel = new JPanel();
+      panel.add(button = new JButton("Cancel"));
       button.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           fileDialog.setVisible(false);
         }
       });
-      panel.add(button = new Button("Save File"));
+      panel.add(button = new JButton("Save File"));
       button.addActionListener(saveFileListener);
-      fileDialog.add(panel, BorderLayout.SOUTH);
+      fileDialog.getContentPane().add(panel, BorderLayout.SOUTH);
       fileDialog.pack();
 
       // set up menu entries
-      menu = new Menu("Capture");
-      start = new MenuItem("Start");
+      menu = new JMenu("Capture");
+      start = new JMenuItem("Start");
       start.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (debug > 0) System.out.println("Capture: start capturing");
@@ -162,7 +189,7 @@ public class Capture extends Plugin
       });
       menu.add(start);
 
-      stop = new MenuItem("Stop");
+      stop = new JMenuItem("Stop");
       stop.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (debug > 0) System.out.println("Capture: stop capturing");
@@ -175,7 +202,7 @@ public class Capture extends Plugin
       stop.setEnabled(false);
       menu.add(stop);
 
-      clear = new MenuItem("Clear");
+      clear = new JMenuItem("Clear");
       clear.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (debug > 0) System.out.println("Capture: cleared captured text");
@@ -185,7 +212,7 @@ public class Capture extends Plugin
       menu.add(clear);
       menu.addSeparator();
 
-      MenuItem view = new MenuItem("View/Hide Text");
+      JMenuItem view = new JMenuItem("View/Hide Text");
       view.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           if (debug > 0) System.out.println("view/hide text: " + frame.isVisible());
@@ -209,14 +236,14 @@ public class Capture extends Plugin
       public void setConfiguration(PluginConfig config) {
         String tmp;
 
-        MenuItem save = new MenuItem("Save As File");
+        JMenuItem save = new JMenuItem("Save As File");
         menu.add(save);
 
         if ((tmp = config.getProperty("Capture", id, "file.url")) != null) {
           try {
             remoteUrlList.put("URL.file", new URL(tmp));
             if ((tmp = config.getProperty("Capture", id, "file.params")) != null) {
-              remoteUrlList.put("URL.file.params", tmp);
+              remoteUrlList.put("URL.file.params.orig", tmp);
             }
 
             save.addActionListener(new ActionListener() {
@@ -224,7 +251,6 @@ public class Capture extends Plugin
                 fileDialog.setVisible(true);
               }
             });
-            save.addActionListener(Capture.this);
             save.setActionCommand("URL.file");
           } catch (MalformedURLException e) {
             System.err.println("capture url invalid: " + e);
@@ -245,9 +271,9 @@ public class Capture extends Plugin
             }
             // use name if applicable or URL
             if ((tmp = config.getProperty("Capture", id, i + ".name")) != null) {
-              save = new MenuItem("Save As " + tmp);
+              save = new JMenuItem("Save As " + tmp);
             } else {
-              save = new MenuItem("Save As " + remoteURL.toString());
+              save = new JMenuItem("Save As " + remoteURL.toString());
             }
             // enable menu entry
             save.setEnabled(true);
@@ -281,7 +307,7 @@ public class Capture extends Plugin
     try {
       URLConnection urlConnection = url.openConnection();
       DataOutputStream out;
-      DataInputStream in;
+      BufferedReader in;
 
       // Let the RTS know that we want to do output.
       urlConnection.setDoInput(true);
@@ -305,17 +331,20 @@ public class Capture extends Plugin
 
       // retrieve response from the remote host and display it.
       if (debug > 0) System.err.println("Capture: reading response");
-      in = new DataInputStream(urlConnection.getInputStream());
+      in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
       String str;
       while (null != ((str = in.readLine()))) {
         System.out.println("Capture: " + str);
       }
       in.close();
 
+      doneDialog.pack();
+      doneDialog.setVisible(true);
+
     } catch (IOException ioe) {
       System.err.println("Capture: cannot store text on remote server: " + url);
       ioe.printStackTrace();
-      TextArea errorMsg = new TextArea(ioe.toString(), 5, 30);
+      JTextArea errorMsg = new JTextArea(ioe.toString(), 5, 30);
       errorMsg.setEditable(false);
       errorDialog.add(errorMsg, BorderLayout.CENTER);
       errorDialog.pack();
@@ -335,6 +364,10 @@ public class Capture extends Plugin
   public void setFilterSource(FilterPlugin source) {
     if (debug > 0) System.err.println("Capture: connected to: " + source);
     this.source = source;
+  }
+
+  public FilterPlugin getFilterSource() {
+    return source;
   }
 
   /**
@@ -367,7 +400,7 @@ public class Capture extends Plugin
    * the JTA main frame, so this returns null.
    * @return always null
    */
-  public Component getPluginVisual() {
+  public JComponent getPluginVisual() {
     return null;
   }
 
@@ -375,7 +408,7 @@ public class Capture extends Plugin
    * The Capture menu for the menu bar as configured in the constructor.
    * @return the drop down menu
    */
-  public Menu getPluginMenu() {
+  public JMenu getPluginMenu() {
     return menu;
   }
 
