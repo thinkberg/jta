@@ -154,6 +154,9 @@ public class SSH extends Plugin implements FilterPlugin {
 	                    frame.getSize().width/2, 
 	                    frame.getToolkit().getScreenSize().height/2 -
 	                    frame.getSize().height/2);
+	  if(user != null) {
+	    passw.requestFocus();
+	  }
 	} else {
 	  error(user+":"+pass);
 	  handler.setLogin(user);
