@@ -78,6 +78,7 @@ public class Applet extends java.applet.Applet {
 
   private final static int debug = 0;
 
+  private String frameTitle = null;
   private java.awt.Container appletFrame;
 
   /** holds the defaults */
@@ -91,6 +92,8 @@ public class Applet extends java.applet.Applet {
 
   /** disconnect on leave, this is to force applets to break the connection */
   private boolean disconnect = true;
+  /** connect on startup, this is to force applets to connect on detach */
+  private boolean connect = false;
   /** close the window (if it exists) after the connection is lost */
   private boolean disconnectCloseWindow = true;
 
@@ -164,7 +167,9 @@ public class Applet extends java.applet.Applet {
       if(port == null)
         port = "23";
 
-
+    if((new Boolean(options.getProperty("Applet.connect"))
+       .booleanValue()))
+      connect = true;
     if(!(new Boolean(options.getProperty("Applet.disconnect"))
        .booleanValue()))
       disconnect = false;
@@ -173,9 +178,13 @@ public class Applet extends java.applet.Applet {
             .booleanValue()))
        disconnectCloseWindow = false;
 
+    frameTitle = options.getProperty("Applet.detach.title");
 
     if((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
-       appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
+       if(frameTitle == null)
+         appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
+       else
+         appletFrame = new Frame(frameTitle);
      } else
        appletFrame = this;
 
@@ -210,10 +219,17 @@ public class Applet extends java.applet.Applet {
           System.err.println("Applet: copy & paste only within the JTA");
           clipboard = new Clipboard("de.mud.jta.Main");
         }
+
 	  
 	if((new Boolean(options.getProperty("Applet.detach.immediately"))
 	     .booleanValue())) {
-          ((Frame)appletFrame).pack();
+	  if((new Boolean(options.getProperty("Applet.detach.fullscreen"))
+	     .booleanValue()))
+	    ((Frame)appletFrame)
+	      .setSize(appletFrame.getToolkit().getScreenSize());
+	  else
+            ((Frame)appletFrame).pack();
+
 	  ((Frame)appletFrame).show();
 	  pluginLoader.broadcast(new ReturnFocusRequest());
 	  close.setLabel(startText != null ? stopText : "Disconnect");
@@ -227,7 +243,15 @@ public class Applet extends java.applet.Applet {
 	      ((Frame)appletFrame).setVisible(false);
 	      close.setLabel(startText != null ? startText : "Connect");
 	    } else {
-	      ((Frame)appletFrame).pack();
+	      if(frameTitle == null)
+              ((Frame)appletFrame)
+	        .setTitle("jta: "+host+(port.equals("23")?"":" "+port));
+	      if((new Boolean(options.getProperty("Applet.detach.fullscreen"))
+	         .booleanValue()))
+	        ((Frame)appletFrame)
+	          .setSize(appletFrame.getToolkit().getScreenSize());
+	      else
+	        ((Frame)appletFrame).pack();
               ((Frame)appletFrame).show();
               getAppletContext().showStatus("Trying "+host+" "+port+" ...");
               pluginLoader.broadcast(new SocketRequest(host, 
@@ -384,7 +408,7 @@ public class Applet extends java.applet.Applet {
    * Start the applet. Connect to the remote host.
    */
   public void start() {
-    if(!online && appletFrame == this) {
+    if(!online && (appletFrame == this || connect)) {
       if(debug > 0) System.err.println("start("+host+", "+port+")");
       getAppletContext().showStatus("Trying "+host+" "+port+" ...");
       pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));

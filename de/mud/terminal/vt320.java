@@ -60,11 +60,14 @@ public abstract class vt320 extends VDU implements KeyListener {
    */
   public void putString(String s) {
     int  i,len=s.length();
+    // System.err.println("'"+s+"'");
 
     if(len > 0) {
       markLine(R,1);
-      for (i=0;i<len;i++)
+      for (i=0;i<len;i++) {
+        // System.err.print(s.charAt(i)+"("+(int)s.charAt(i)+")");
         putChar(s.charAt(i),false);
+      }
       setCursorPosition(C, R);
       redraw();
     }
@@ -1006,9 +1009,10 @@ public abstract class vt320 extends VDU implements KeyListener {
     markLine(R,1);
     if (c>255) {
       if (debug>0)
-        System.out.println("char > 255:"+((int)c));
+        System.out.println("char > 255:"+(int)c);
       return;
     }
+
     switch (term_state) {
     case TSTATE_DATA:
       /* FIXME: we shouldn't use chars with bit 8 set if ibmcharset.
@@ -1156,6 +1160,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           }
 	  }
 	*/
+	if (debug>4) System.out.println("output "+c+" at "+C+","+R);
         if (useibmcharset)
           c = map_cp850_unicode(c);
 

@@ -125,13 +125,13 @@ public class Terminal extends Plugin
     ActionListener fgl = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         terminal.setForeground((Color)colors.get(e.getActionCommand()));
-	terminal.repaint();
+	tPanel.repaint();
       }
     };
     ActionListener bgl = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         terminal.setBackground((Color)colors.get(e.getActionCommand()));
-	terminal.repaint();
+	tPanel.repaint();
       }
     };
     while(cols.hasMoreElements()) {
@@ -432,8 +432,9 @@ public class Terminal extends Plugin
     while(n >= 0) try {
       n = read(b);
       if(debug > 0 && n > 0) 
-        System.err.println("Terminal: \""+(new String(b, 0, n))+"\"");
-      if(n > 0) terminal.putString(new String(b, 0, n));
+        System.err.println("Terminal: \""+(new String(b, 0, n, "latin1"))+"\"");
+      if(n > 0) terminal.putString(new String(b, 0, n, "latin1"));
+      tPanel.repaint();
     } catch(IOException e) {
       reader = null;
       break;
