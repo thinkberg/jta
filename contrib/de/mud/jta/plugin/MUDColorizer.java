@@ -105,10 +105,9 @@ public class MUDColorizer extends Plugin
 				int ex=0;
 				while(names.hasMoreElements()) {
 					String exp = (String)names.nextElement();
-					exp=(String)regexpSet.get(exp);
 					RE re = null;
 					try {
-						re = new RE(exp.substring(0,exp.indexOf("=")));
+						re = new RE(exp);
 					}
 					catch (Exception e) {
 						System.err.println("Something wrong with regexp: "+
@@ -116,8 +115,8 @@ public class MUDColorizer extends Plugin
 						System.err.println(e);
 					}
 					exps[ex++]=re;
-					exps[ex++]=colors.get(exp.substring(exp.indexOf("=")+1,
-														exp.length()));
+					exps[ex++]=colors.get(regexpSet.get(exp));
+					System.out.println("MUDColorizer: loaded: "+exp+" with "+regexpSet.get(exp));
 				}		
 			}
 		}
