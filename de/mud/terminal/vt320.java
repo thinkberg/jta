@@ -496,10 +496,12 @@ public abstract class vt320 extends VDU implements KeyListener {
       write(""+((char)(keyChar|0x80)));
       return;
     }
+    /*
     if(capslock && !shift) {
       write((""+keyChar).toUpperCase());
       return;
     }
+    */
     if(!(keyChar == '\r' || keyChar == '\n') || control)
       write(""+keyChar);
   }
