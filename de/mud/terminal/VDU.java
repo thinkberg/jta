@@ -1320,7 +1320,9 @@ public class VDU extends Component
   }
 
   public void mouseDragged(MouseEvent evt) {
-    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
+    if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK) ||
+       // Windows NT/95 etc: returns 0, which is a bug
+       evt.getModifiers() == 0) {
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
       int yoffset = (super.getSize().height - size.height * charHeight) / 2;
       int x = (evt.getX() - xoffset) / charWidth;
