@@ -1,4 +1,5 @@
 #! /usr/bin/perl
+exit(0);
 
 # collect all the information from the database
 open(USERDB, "sort html/users.db|");
@@ -7,7 +8,7 @@ while(<USERDB>) {
   ($service, $name, $url, $telnet, $description) = split /[|]/;
   if(length $url) {
     print STDERR "Checking $url ... ";
-    if(length $url && !system("wget --timeout=5 --quiet --spider $url")) {
+    if(length $url && !system("wget --tries=0 --timeout=5 --quiet --spider $url")) {
       print STDERR "OK\n";
       $OUT{$service} .= "<LI><A HREF=\"$url\">$name</A>";
     } else {
@@ -17,7 +18,7 @@ while(<USERDB>) {
   }
   if(length $telnet) {
     print STDERR "Checking $telnet ... ";
-    if(length $telnet &&!system("wget --timeout=10 --quiet --spider $telnet")) {
+    if(length $telnet &&!system("wget --tries=0 --timeout=5 --quiet --spider $telnet")) {
       print STDERR "OK\n";
       $OUT{$service} .= "(<I><A HREF=\"$telnet\">telnet</A></I>)\n";
     } else {
