@@ -690,7 +690,16 @@ public abstract class vt320 extends VDU implements KeyListener {
       case KeyEvent.VK_PAGE_UP: writeSpecial(PrevScn[xind]); break;
       case KeyEvent.VK_INSERT: writeSpecial(Insert[xind]); break;
       case KeyEvent.VK_DELETE: writeSpecial(Remove[xind]); break;
-      case KeyEvent.VK_BACK_SPACE: writeSpecial(BackSpace[xind]); break;
+      case KeyEvent.VK_BACK_SPACE:
+        writeSpecial(BackSpace[xind]);
+        if (localecho) {
+          if (BackSpace[xind] == "\b") {
+            putString("\b \b"); // make the last char 'deleted'
+          } else {
+            putString(BackSpace[xind]); // echo it
+          }
+        }
+	break;
       case KeyEvent.VK_HOME: writeSpecial(KeyHome[xind]); break;
       case KeyEvent.VK_END: writeSpecial(KeyEnd[xind]); break;
       case KeyEvent.VK_NUM_LOCK:
