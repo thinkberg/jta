@@ -7,11 +7,21 @@
     <property name="version" value="25b"/>
     <property name="target.dir" value="jar"/>
     <property name="debug" value="true"/>
+    <tstamp>
+      <format property="BUILD" pattern="yyyyMMdd-hhmm" locale="en"/>
+    </tstamp>
   </target>
 
   <target name="all" depends="build,doc,bin-jar,src-jar"/>
 
-  <target name="build" depends="compile,compile-contrib" description="build binaries">
+  <target name="dist" depends="version,all" description="builds a distribution"/>
+
+  <target name="build" depends="compile,compile-contrib" description="build binaries"/>
+
+  <target name="version" depends="init">
+    <filter token="date" value="${BUILD}"/>
+    <delete file="de/mud/jta/Build.java"/>
+    <copy file="de/mud/jta/Build.java.tmpl" tofile="de/mud/jta/Build.java" filtering="true"/>
   </target>
 
   <target name="compile">

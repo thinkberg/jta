@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -32,15 +32,16 @@ import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.SoundListener;
 
 import javax.swing.JApplet;
+import javax.swing.JFrame;
+import javax.swing.RootPaneContainer;
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Component;
-import java.awt.Frame;
-import java.awt.PrintJob;
-import java.awt.MenuBar;
 import java.awt.Menu;
-import java.awt.MenuShortcut;
+import java.awt.MenuBar;
 import java.awt.MenuItem;
+import java.awt.MenuShortcut;
+import java.awt.PrintJob;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -78,7 +79,7 @@ public class Applet extends JApplet {
   private final static int debug = 0;
 
   private String frameTitle = null;
-  private java.awt.Container appletFrame;
+  private RootPaneContainer appletFrame;
 
   /** holds the defaults */
   private Properties options = new Properties();
@@ -189,14 +190,15 @@ public class Applet extends JApplet {
       frameTitle = options.getProperty("Applet.detach.title");
 
       if ((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
-        if (frameTitle == null)
-          appletFrame = new Frame("jta: " + host + (port.equals("23")?"":" " + port));
-        else
-          appletFrame = new Frame(frameTitle);
-      } else
+        if (frameTitle == null) {
+          appletFrame = new JFrame("jta: " + host + (port.equals("23")?"":" " + port));
+        } else {
+          appletFrame = new JFrame(frameTitle);
+        }
+      } else {
         appletFrame = this;
-
-      appletFrame.setLayout(new BorderLayout());
+      }
+      appletFrame.getContentPane().setLayout(new BorderLayout());
 
       Map componentList = pluginLoader.getComponents();
       Iterator names = componentList.keySet().iterator();
@@ -204,7 +206,7 @@ public class Applet extends JApplet {
         String name = (String) names.next();
         Component c = (Component) componentList.get(name);
         if ((value = options.getProperty("layout." + name)) != null) {
-          appletFrame.add(value, c);
+          appletFrame.getContentPane().add(value, c);
         } else {
           System.err.println("jta: no layout property set for '" + name + "'");
           System.err.println("jta: ignoring '" + name + "'");
@@ -252,7 +254,7 @@ public class Applet extends JApplet {
 
         // set up the clipboard
         try {
-          clipboard = appletFrame.getToolkit().getSystemClipboard();
+          clipboard = appletFrame.getContentPane().getToolkit().getSystemClipboard();
           System.err.println("Applet: acquired system clipboard: " + clipboard);
         } catch (Exception e) {
           System.err.println("Applet: system clipboard access denied: " +
@@ -270,12 +272,12 @@ public class Applet extends JApplet {
                 .booleanValue())) {
           if ((new Boolean(options.getProperty("Applet.detach.fullscreen"))
                   .booleanValue()))
-            ((Frame) appletFrame)
-                    .setSize(appletFrame.getToolkit().getScreenSize());
+            ((JFrame) appletFrame)
+                    .setSize(appletFrame.getContentPane().getToolkit().getScreenSize());
           else
-            ((Frame) appletFrame).pack();
+            ((JFrame) appletFrame).pack();
 
-          ((Frame) appletFrame).show();
+          ((JFrame) appletFrame).show();
           pluginLoader.broadcast(new SocketRequest(host, Integer.parseInt(port)));
           pluginLoader.broadcast(new ReturnFocusRequest());
           close.setLabel(startText != null ? stopText : "Disconnect");
@@ -284,21 +286,21 @@ public class Applet extends JApplet {
 
         close.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
-            if (((Frame) appletFrame).isVisible()) {
+            if (((JFrame) appletFrame).isVisible()) {
               pluginLoader.broadcast(new SocketRequest());
-              ((Frame) appletFrame).setVisible(false);
+              ((JFrame) appletFrame).setVisible(false);
               close.setLabel(startText != null ? startText : "Connect");
             } else {
               if (frameTitle == null)
-                ((Frame) appletFrame)
+                ((JFrame) appletFrame)
                         .setTitle("jta: " + host + (port.equals("23")?"":" " + port));
               if ((new Boolean(options.getProperty("Applet.detach.fullscreen"))
                       .booleanValue()))
-                ((Frame) appletFrame)
-                        .setSize(appletFrame.getToolkit().getScreenSize());
+                ((JFrame) appletFrame)
+                        .setSize(appletFrame.getContentPane().getToolkit().getScreenSize());
               else
-                ((Frame) appletFrame).pack();
-              ((Frame) appletFrame).show();
+                ((JFrame) appletFrame).pack();
+              ((JFrame) appletFrame).show();
               getAppletContext().showStatus("Trying " + host + " " + port + " ...");
               pluginLoader.broadcast(new SocketRequest(host,
                                                        Integer.parseInt(port)));
@@ -335,8 +337,8 @@ public class Applet extends JApplet {
           public void actionPerformed(ActionEvent evt) {
             if (pluginLoader.getComponents().get("Terminal") != null) {
               PrintJob printJob =
-                      appletFrame.getToolkit()
-                      .getPrintJob((Frame) appletFrame, "JTA Terminal", null);
+                      appletFrame.getContentPane().getToolkit()
+                      .getPrintJob((JFrame) appletFrame, "JTA Terminal", null);
               ((Component) pluginLoader.getComponents().get("Terminal"))
                       .print(printJob.getGraphics());
               printJob.end();
@@ -347,7 +349,7 @@ public class Applet extends JApplet {
         file.add(tmp = new MenuItem("Exit"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
-            ((Frame) appletFrame).setVisible(false);
+            ((JFrame) appletFrame).setVisible(false);
             pluginLoader.broadcast(new SocketRequest());
             close.setLabel(startText != null ? startText : "Connect");
           }
@@ -388,7 +390,7 @@ public class Applet extends JApplet {
         help.add(tmp = new MenuItem("General"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
-            Help.show(appletFrame, options.getProperty("Help.url"));
+            Help.show(appletFrame.getContentPane(), options.getProperty("Help.url"));
           }
         });
         mb.setHelpMenu(help);
@@ -396,14 +398,14 @@ public class Applet extends JApplet {
         // only add the menubar if the property is true
         if ((new Boolean(options.getProperty("Applet.detach.menuBar"))
                 .booleanValue()))
-          ((Frame) appletFrame).setMenuBar(mb);
+          ((JFrame) appletFrame).setMenuBar(mb);
 
         // add window closing event handler
         try {
-          ((Frame) appletFrame).addWindowListener(new WindowAdapter() {
+          ((JFrame) appletFrame).addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
               pluginLoader.broadcast(new SocketRequest());
-              ((Frame) appletFrame).setVisible(false);
+              ((JFrame) appletFrame).setVisible(false);
               close.setLabel(startText != null ? startText : "Connect");
             }
           });
@@ -416,15 +418,15 @@ public class Applet extends JApplet {
           public void online() {
             if (debug > 0) System.err.println("Terminal: online");
             online = true;
-            if (((Frame) appletFrame).isVisible() == false)
-              ((Frame) appletFrame).setVisible(true);
+            if (((JFrame) appletFrame).isVisible() == false)
+              ((JFrame) appletFrame).setVisible(true);
           }
 
           public void offline() {
             if (debug > 0) System.err.println("Terminal: offline");
             online = false;
             if (disconnectCloseWindow) {
-              ((Frame) appletFrame).setVisible(false);
+              ((JFrame) appletFrame).setVisible(false);
               close.setLabel(startText != null ? startText : "Connect");
             }
           }

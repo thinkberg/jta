@@ -1293,6 +1293,11 @@ public class VDU extends Component
 
     super.setBounds(x, y, w, h);
 
+    // ignore zero bounds
+    if(x == 00 && y == 0 && w == 0 && h == 0) {
+      return;
+    }
+
     int xborder = 0, yborder = 0;
 
     if(insets != null) {
