@@ -641,7 +641,8 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  System.out.println("vt320: unknown event: "+evt);
     }
 
-    if(keyChar == 0) return;
+    // blend out undefined keys that would show up as '?' in Java 2
+    if(keyChar == KeyEvent.CHAR_UNDEFINED) return;
 
     // Hmmm. Outside the VMS case?
     if(shift && (keyChar == '\t')) 
