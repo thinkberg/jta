@@ -50,7 +50,7 @@ class SshMisc {
       + d3;
     String str = ""; //new String(byteArray,0);
     for (int i=0;i<length;i++) {
-	if (byteArray[offset]>0)
+	if (byteArray[offset]>=0)
 	    str += (char)(byteArray[offset++]);
 	else
 	    str += (char)(256+byteArray[offset++]);
