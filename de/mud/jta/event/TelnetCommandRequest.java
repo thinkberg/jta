@@ -33,7 +33,7 @@ import de.mud.jta.event.TelnetCommandListener;
 public class TelnetCommandRequest implements PluginMessage {
   /** Create a new telnet command request with the specified value. */
   byte cmd;
-  public TelnetCommandReuqest(byte command ) { cmd = command; }
+  public TelnetCommandRequest(byte command ) { cmd = command; }
 
   /**
    * Notify all listeners about the end of record message

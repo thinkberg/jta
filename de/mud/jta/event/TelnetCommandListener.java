@@ -19,6 +19,7 @@
 package de.mud.jta.event;
 
 import de.mud.jta.PluginListener;
+import java.io.IOException;
 
 /**
  * This interface should be used by plugins who would like to be notified
@@ -33,5 +34,5 @@ public interface TelnetCommandListener extends PluginListener {
   /** Called by code in the terminal interface or somewhere for sending
    * telnet commands
    */
-  public void telnetSendCommand(byte command);
+  public void sendTelnetCommand(byte command) throws IOException;
 }
