@@ -1,7 +1,7 @@
 /*
  * This file is part of "The Java Telnet Application".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meissner 1996-2003. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -43,7 +43,7 @@ import java.util.Vector;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus Meissner
  */
 public class Common extends PluginLoader {
 
@@ -55,8 +55,8 @@ public class Common extends PluginLoader {
 
     System.out.println("** The Java(tm) Telnet Application");
     System.out.println("** Version 2.5 for Java 2");
-    System.out.println("** Copyright (c) 1996-2002 Matthias L. Jugel, "
-                       + "Marcus Meiﬂner");
+    System.out.println("** Copyright (c) 1996-2003 Matthias L. Jugel, "
+                       + "Marcus Meissner");
 
     try {
       Version build =
