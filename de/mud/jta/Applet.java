@@ -102,7 +102,7 @@ public class Applet extends java.applet.Applet {
     if(debug > 0) System.err.println("Applet: init()");
     if(pluginLoader == null) {
       try {
-        options.load(getClass()
+        options.load(Applet.class
 	  .getResourceAsStream("/de/mud/jta/default.conf"));
       } catch(Exception e) {
 	try {

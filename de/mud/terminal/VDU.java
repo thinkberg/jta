@@ -1298,7 +1298,6 @@ public class VDU extends Component
 
   public void mouseClicked(MouseEvent evt) {
     /* nothing yet we do here */
-    requestFocus();
   }
 
   public void mouseEntered(MouseEvent evt) {
@@ -1315,6 +1314,7 @@ public class VDU extends Component
    * @see java.awt.event.MouseEvent
    */
   public void mousePressed(MouseEvent evt) {
+    requestFocus();
     // looks like we get no modifiers here ...
     //if(buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
       int xoffset = (super.getSize().width - size.width * charWidth) / 2;
