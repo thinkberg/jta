@@ -836,6 +836,8 @@ public class VDU extends Component
     bottomMargin = height - 1;
     update = new boolean[height + 1];
     update[0] = true;
+    if(resizeStrategy == RESIZE_FONT)
+      setBounds(getBounds());
   }
 
   /**
