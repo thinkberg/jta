@@ -761,7 +761,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     }
 
     if(	((keyCode == KeyEvent.VK_ENTER) || (keyChar == 10)) && !control) {
-      write("\n",false);
+      write("\r",false);
       if (localecho) putString("\r\n"); // bad hack
     }
 
