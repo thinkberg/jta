@@ -139,21 +139,42 @@ public class TelnetWrapper extends TelnetProtocolHandler {
    * @param match the string to look for
    * @return skipped characters
    */
-  public String waitfor(String match) throws IOException {
-    scriptHandler.setup(match);
+
+  public String waitfor( String[] searchElements ) throws IOException {
+    ScriptHandler[] handlers = new ScriptHandler[searchElements.length];
+    for ( int i = 0; i < searchElements.length; i++ ) {
+      // initialize the handlers
+      handlers[i] = new ScriptHandler();
+      handlers[i].setup( searchElements[i] );
+    }
+
     byte[] b = new byte[256];
     int n = 0;
-    String ret = "";
+    StringBuffer ret = new StringBuffer();
+    String current;
+
     while(n >= 0) {
       n = read(b);
       if(n > 0) {
-        if(debug > 0) System.err.print(new String(b, 0, n));
-        ret += new String(b, 0, n);
-        if(scriptHandler.match(b, n))
-        return ret;
-      }
-    }
+	current = new String( b, 0, n );
+	if (debug > 0)
+	  System.err.print( current );
+	ret.append( current );
+	for ( int i = 0; i < handlers.length ; i++ ) {
+	  if ( handlers[i].match( b, n ) ) {
+	    return ret.toString();
+	  } // if
+	} // for
+      } // if
+    } // while
     return null; // should never happen
+  }
+
+  public String waitfor(String match) throws IOException {
+    String[] matches = new String[1];
+
+    matches[0] = match;
+    return waitfor(matches);
   }
 
   /**
