@@ -78,9 +78,9 @@ public class Main extends Frame {
     setup.registerPluginListener(new OnlineStatusListener() {
       public void online() { /* nothing to do */ }
       public void offline() {
-/*        frame.dispose();
+        frame.dispose();
         System.exit(0);
-*/      }
+      }
     });
 
     Hashtable componentList = setup.getComponents();

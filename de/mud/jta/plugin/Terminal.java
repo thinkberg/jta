@@ -131,7 +131,7 @@ public class Terminal extends Plugin
 	else if(key.equals("Terminal.background"))
 	  terminal.setBackground(Color.decode(config.getProperty(key)));
 	else if(key.equals("Terminal.colorSet"))
-	  System.err.println("Terminal.colorSet not implemented yet");
+	  System.out.println("Terminal.colorSet not implemented yet");
 	else if(key.equals("Terminal.borderRaised")) 
 	  /* do nothing */ ;
 	else if(key.equals("Terminal.border")) {
@@ -143,13 +143,13 @@ public class Terminal extends Plugin
         } else if(key.equals("Terminal.borderColor"))
 	  terminal.setBackground(Color.decode(config.getProperty(key)));
 	else if(key.equals("Terminal.scrollBar"))
-	  System.err.println("Terminal.scrollBar not implemented yet");
+	  System.out.println("Terminal.scrollBar not implemented yet");
 	else if(key.equals("Terminal.id"))
 	  terminal.setTerminalID(config.getProperty(key));
 	else if(key.equals("Terminal.buffer"))
 	  terminal.setBufferSize(Integer.parseInt(config.getProperty(key)));
 	else if(key.equals("Terminal.size"))
-	  System.err.println("Terminal.size not implemented yet");
+	  System.out.println("Terminal.size not implemented yet");
 	else if(key.equals("Terminal.resize")) {
 	  String resize = config.getProperty("Terminal.resize");
 	  if(resize.equals("font"))
@@ -172,10 +172,9 @@ public class Terminal extends Plugin
 	    style = Font.BOLD;
 	  else if(fontStyle.equals("italic"))
 	    style = Font.ITALIC;
-	  System.err.println(new Font(config.getProperty(key), style, fsize));
 	  terminal.setFont(new Font(config.getProperty(key), style, fsize));
 	} else if(key.equals("Terminal.keyCodes")) 
-	  System.err.println("Terminal.keyCodes not implemented yet");
+	  System.out.println("Terminal.keyCodes not implemented yet");
 	else if(key.equals("Terminal.VMS"))
 	  terminal.setVMS(Boolean.getBoolean(config.getProperty(key)));
 	else if(key.equals("Terminal.IBM"))

@@ -47,8 +47,8 @@ public class Common extends PluginLoader {
   private Hashtable plugins, components, menus;
 
   public Common(Properties config) {
-    System.err.println("** The Java(tm) Telnet Application");
-    System.err.println("** Copyright (c) 1996-1999 Matthias L. Jugel, "
+    System.out.println("** The Java(tm) Telnet Application");
+    System.out.println("** Copyright (c) 1996-1999 Matthias L. Jugel, "
                       +"Marcus Meiﬂner");
 
     plugins = new Hashtable();
@@ -59,7 +59,7 @@ public class Common extends PluginLoader {
     Enumeration e = names.elements();
     while(e.hasMoreElements()) {
       String name = (String)e.nextElement();
-      System.err.println("jta: loading plugin '"+name+"' ...");
+      System.out.println("jta: loading plugin '"+name+"' ...");
       Plugin plugin = addPlugin(name);
       if(plugin instanceof VisualPlugin) {
         Component c = ((VisualPlugin)plugin).getPluginVisual();
