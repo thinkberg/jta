@@ -78,6 +78,8 @@ public abstract class vt320 extends VDU implements KeyListener {
     }
   }
 
+  protected void sendTelnetCommand(byte cmd) { }
+
   /**
    * Create a new vt320 terminal and intialize it with useful settings.
    * @param width the width of the character screen
@@ -613,7 +615,6 @@ public abstract class vt320 extends VDU implements KeyListener {
     int keyCode = evt.getKeyCode();
     char keyChar = evt.getKeyChar();
 
-
     /*
     if(pressedKey == KeyEvent.VK_ENTER && 
         (keyCode == KeyEvent.VK_ENTER || keyChar == 10)
@@ -698,6 +699,10 @@ public abstract class vt320 extends VDU implements KeyListener {
     }
 
     switch (keyCode) {
+      case KeyEvent.VK_PAUSE:
+        if (shift || control)
+	   sendTelnetCommand((byte)243); // BREAK
+	break;
       case KeyEvent.VK_F1: write(fmap[1],false); break;
       case KeyEvent.VK_F2: write(fmap[2],false); break;
       case KeyEvent.VK_F3: write(fmap[3],false); break;

@@ -36,6 +36,7 @@ import de.mud.jta.event.FocusStatus;
 import de.mud.jta.event.ReturnFocusListener;
 import de.mud.jta.event.AppletListener;
 import de.mud.jta.event.SoundRequest;
+import de.mud.jta.event.TelnetCommandRequest;
 
 import java.awt.Component;
 import java.awt.Panel;
@@ -224,6 +225,10 @@ public class Terminal extends Plugin
       // provide audio feedback if that is configured
       public void beep() {
 	if(audioBeep != null) bus.broadcast(audioBeep);
+      }
+
+      public void sendTelnetCommand(byte cmd) {
+	bus.broadcast(new TelnetCommandRequest(cmd));
       }
     };
 
