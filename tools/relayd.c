@@ -248,6 +248,14 @@ char  **argv;
     outfd[i]=infd[i]=-1;
   }
 
+#ifdef SO_REUSEADDR
+  {
+    int reuseit=1;
+    if (-1==setsockopt(acfd,SOL_SOCKET,SO_REUSEADDR,(char*)&reuseit,sizeof(reuseit)))
+	perror("setsockopt SOL_SOCKET SO_REUSEADDR");
+  }
+#endif
+
   acsa.sin_family=AF_INET;
   acsa.sin_port=htons(port);
   acsa.sin_addr.s_addr=INADDR_ANY;
