@@ -221,7 +221,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	java.awt.Point pos = mouseGetPos(evt.getPoint());
 	byte b[] = new byte[6];
 
-	b[0] = 27; b[1] = '['; b[2] = 'M';
+	b[0] = 27; b[1] = (byte)'['; b[2] = (byte)'M';
 	b[3] = (byte)mousecode;
 	b[4] = (byte) (0x20 + pos.x + 1);
 	b[5] = (byte) (0x20 + pos.y + 1);
@@ -249,7 +249,7 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    mousecode = '#';
 
 	byte b[] = new byte[6];
-	b[0] = 27; b[1] = '['; b[2] = 'M';
+	b[0] = 27; b[1] = (byte)'['; b[2] = (byte)'M';
 	b[3] = (byte)mousecode;
 	b[4] = (byte) (0x20 + pos.x + 1);
 	b[5] = (byte) (0x20 + pos.y + 1);
@@ -2077,13 +2077,13 @@ public abstract class vt320 extends VDU implements KeyListener {
       term_state = TSTATE_DATA;
       break;
     }
-  if (C > columns) C = columns;
-  if (R > rows)  R = rows;
-  if (C < 0)  C = 0;
-  if (R < 0)  R = 0;
-  if (doshowcursor)
-    setCursorPosition(C, R);
-  markLine(R,1);
+    if (C > columns) C = columns;
+    if (R > rows)  R = rows;
+    if (C < 0)  C = 0;
+    if (R < 0)  R = 0;
+    if (doshowcursor)
+      setCursorPosition(C, R);
+    markLine(R,1);
   }
 
   /* hard reset the terminal */
