@@ -117,6 +117,7 @@ public abstract class vt320 extends VDU implements KeyListener {
     PrevScn = new String[4];
     Escape = new String[4];
     BackSpace = new String[4];
+    TabKey = new String[4];
     Insert[0]  = Insert[1]  = Insert[2]  = Insert[3]  = "\u001b[2~";
     Remove[0]  = Remove[1]  = Remove[2]  = Remove[3]  = "\u001b[3~";
     PrevScn[0] = PrevScn[1] = PrevScn[2] = PrevScn[3] = "\u001b[5~";
@@ -169,8 +170,10 @@ public abstract class vt320 extends VDU implements KeyListener {
     FunctionKeyShift[16] = Select;
 
 
-    KeyTab     = "\u0009";
-    KeyBacktab = "\u001bOP\u0009";
+    TabKey[0]  = "\u0009";
+    TabKey[1]  = "\u001bOP\u0009";
+    TabKey[2]  = TabKey[3] = "";
+
     KeyUp      = new String[4];
     KeyUp[0]   = "\u001b[A";
     KeyDown    = new String[4];
@@ -360,6 +363,8 @@ public abstract class vt320 extends VDU implements KeyListener {
       if (res!=null) Escape[i]=unEscape(res);
       res = codes.getProperty(prefixes[i]+"BACKSPACE");
       if (res!=null) BackSpace[i]=unEscape(res);
+      res = codes.getProperty(prefixes[i]+"TAB");
+      if (res!=null) TabKey[i]=unEscape(res);
     }
 
   }
@@ -505,6 +510,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   private String FunctionKeyShift[];
   private String FunctionKeyCtrl[];
   private String FunctionKeyAlt[];
+  private String TabKey[];
   private String KeyUp[],KeyDown[],KeyLeft[],KeyRight[];
   private String KeyTab,KeyBacktab;
   private String KPMinus, KPComma, KPPeriod,KPEnter;
