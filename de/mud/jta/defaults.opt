@@ -18,7 +18,7 @@
 # =======================================================================
 # common program defaults
 # =======================================================================
-plugins			=	Status,Socket,Telnet,Timeout,Terminal
+plugins			=	Status,Socket,Telnet,Terminal
 layout			=	BorderLayout
 layout.Terminal		=	Center
 layout.Status		=	South
