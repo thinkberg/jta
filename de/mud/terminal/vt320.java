@@ -1828,7 +1828,12 @@ public abstract class vt320 extends VDU implements KeyListener {
         break;
       case 'c':/* send primary device attributes */
         /* send (ESC[?61c) */
-        write(((char)ESC)+"[?1;2c",false);
+
+	String subcode = "";
+	if (terminalID.equals("vt320")) subcode = "63;";
+	if (terminalID.equals("vt220")) subcode = "62;";
+	if (terminalID.equals("vt100")) subcode = "61;";
+        write(((char)ESC)+"[?"+subcode+"1;2c",false);
         if (debug>1)
           System.out.println("ESC [ "+DCEvars[0]+" c");
         break;
