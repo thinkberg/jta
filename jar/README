@@ -1,17 +1,5 @@
 This is the directory for distribution packages.
 
 Each package name is constructed out of the package name "jta", the
-version "20" and the date of its creation. Each of the compiled class
-file package names then additionally contains the name of the jdk
-that was used to compile the java sources.
-
-Examples:
-
-A jar binary package compiled with the JDK 1.1.7B (Linux)
-	jta20-19990911-1.1.7B.jar
-
-The same binary package created with the JDK 1.2 (Linux)
-	jta20-19990911-1.2.jar
-
-The appended -src indicated a source package (no compiled files!)
-	jta20-19990911-src.jar
+version "20". The date of the compilation is contained in the archive
+as an empty file whose name indicates the date of creation.
