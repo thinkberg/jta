@@ -88,7 +88,12 @@ import java.awt.event.ActionEvent;
  * # will be shown last in the row. Order is significant for the order in 
  * # which the buttons and fields appear.
  * #
- * button		Disconnect	"\$disconnect()"
+ * button		Disconnect	"\\$disconnect()" break
+ * #
+ * # To implement an input line that is cleared and sends text use this:
+ * # The following line send the text in the input field "send" and appends
+ * # a newline.
+ * input		send	20	"\\@send@\n"	"ls"
  * </PRE>
  * Other possible keywords are <TT>break</TT> which does introduce a new
  * line so that buttons and input fields defined next will appear in a new
@@ -178,7 +183,7 @@ public class ButtonBar extends Plugin
 		    String descr = setup.sval;
 		    if((token = setup.nextToken()) == setup.TT_NUMBER) {
 		      int size = (int)setup.nval;
-		      String init = "";
+		      String init = "", command = "";
 		      token = setup.nextToken();
 		      if(setup.sval.equals("button") || 
 		         setup.sval.equals("input") ||
@@ -186,11 +191,22 @@ public class ButtonBar extends Plugin
 		         setup.sval.equals("break"))
 		        setup.pushBack();
 		      else
+                        command = setup.sval;
+		      token = setup.nextToken();
+		      if(setup.sval.equals("button") || 
+		         setup.sval.equals("input") ||
+		         setup.sval.equals("stretch") ||
+		         setup.sval.equals("break")) {
+		        setup.pushBack();
+			init = command;
+		      } else
                         init = setup.sval;
                       TextField t = new TextField(init, size);
-	              buttons.put(t, init);
+	              if(!init.equals(command)) {
+		        buttons.put(t, command);
+	                t.addActionListener(ButtonBar.this);
+	              }
 	              fields.put(descr, t);
-	              t.addActionListener(ButtonBar.this);
 	              l.setConstraints(t, constraints(c, setup));
 	              panel.add(t);
 		    } else
