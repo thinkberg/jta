@@ -4,7 +4,7 @@
 
   <target name="init">
     <property name="name" value="jta"/>
-    <property name="version" value="20"/>
+    <property name="version" value="25b"/>
     <property name="target.dir" value="jar"/>
     <property name="debug" value="true"/>
   </target>
@@ -52,17 +52,19 @@
     </jar>
   </target>
 
-  <target name="src-jar" depends="init" description="package the sources">
+  <target name="src-jar" depends="init,clean" description="package the sources">
     <mkdir dir="${name}${version}"/>
     <!-- copy sources -->
     <copy todir="${name}${version}">
       <fileset dir=".">
-        <include name="de/**/*.java"/>
-        <include name="de/**/*.conf"/>
-        <include name="tools/**"/>
+        <exclude name="**/*.class"/>
         <exclude name="**/CVS"/>
+        <exclude name="${name}${version}"/>
       </fileset>
     </copy>
+    <!-- copy changes, ignore errors -->
+    <exec executable="rcs2log" failonerror="false" 
+          output="${name}${version}/CHANGES"/>
     <!-- package sources -->
     <jar basedir="." includes="${name}${version}/**" jarfile="${target.dir}/jta${version}-src.jar"/>
     <delete dir="${name}${version}"/>
