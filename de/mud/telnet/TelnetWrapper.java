@@ -120,7 +120,9 @@ public class TelnetWrapper extends TelnetProtocolHandler {
    * @return output of the command or null if no prompt is set
    */
   public String send(String cmd) throws IOException {
-    write((cmd+"\n").getBytes());
+    byte arr[]; 
+    arr = (cmd+"\n").getBytes();
+    transpose(arr);
     if(prompt != null)
       return waitfor(prompt);
     return null;
