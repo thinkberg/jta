@@ -429,6 +429,7 @@ public abstract class vt320 extends VDU implements KeyListener {
   int  vt52mode  = 0;
   int  normalcursor  = 0;
   boolean moveoutsidemargins = true;
+  boolean wraparound = true;
   boolean sendcrlf = true;
   boolean capslock = false;
   boolean numlock = false;
@@ -1223,13 +1224,20 @@ public abstract class vt320 extends VDU implements KeyListener {
             if (debug>0)
               System.out.println("TSTATE_DATA char: "+((int)c));
           /*break; some BBS really want those characters, like hearst etc. */
+	  if (c==0) /* print 0 ... you bet */
+	   break;
         }
         if(C >= columns) {
-          if(R < rows - 1)
-            R++;
-          else
-            insertLine(R,1,SCROLL_UP);
-          C = 0;
+	  if (wraparound) {
+	    if(R < rows - 1)
+	      R++;
+	    else
+	      insertLine(R,1,SCROLL_UP);
+	    C = 0;
+	  } else {
+	    // cursor stays on last character.
+	    C = columns-1;
+	  }
         }
 
         // Mapping if DEC Special is chosen charset
@@ -1357,7 +1365,7 @@ public abstract class vt320 extends VDU implements KeyListener {
           insertLine(R,1,SCROLL_DOWN);
 	}
 	/* else do nothing ; */
-        if (debug>1)
+        if (debug>2)
           System.out.println("ESC M ");
         break;
       case 'H':
@@ -1528,6 +1536,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  case 6: /* DECOM (Origin Mode) move inside margins. */
 	    moveoutsidemargins = true;
 	    break;
+	  case 7: /* DECAWM: Autowrap Mode */
+	    wraparound = false;
+	    break;
 	  case 12:/* local echo off */
 	    break;
 	  case    9: 	/* X10 mouse */
@@ -1561,6 +1572,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  case 6: /* DECOM: move inside margins. */
 	    moveoutsidemargins = false;
 	    break;
+	  case 7: /* DECAWM: Autowrap Mode */
+	    wraparound = true;
+	    break;
 	  case 25: /* turn cursor on */
 	    showCursor(true);
 	    redraw();
@@ -1576,7 +1590,6 @@ public abstract class vt320 extends VDU implements KeyListener {
 	  /* unimplemented stuff, fall through */
 	  /* 4  - scrolling mode, smooth */
 	  /* 5  - light background */
-	  /* 7  - DECAWM - wrap around mode */
 	  /* 12 - local echo off */
 	  /* 18 - DECPFF - Printer Form Feed Mode -> On */
 	  /* 19 - DECPEX - Printer Extent Mode -> Screen */
@@ -1624,6 +1637,9 @@ public abstract class vt320 extends VDU implements KeyListener {
 	    break;
 	  case 6: /* DECOM: move outside margins. */
 	    moveoutsidemargins = true;
+	    break;
+	  case 7: /* DECAWM: Autowrap Mode OFF */
+	    wraparound = false;
 	    break;
 	  case 25: /* turn cursor off */
 	    showCursor(false);
