@@ -18,7 +18,7 @@
 # =======================================================================
 # common program defaults
 # =======================================================================
-plugins			=	Status,Socket,Telnet,Terminal
+plugins			=	Status,Socket,Telnet,Timeout,Terminal
 layout			=	BorderLayout
 layout.Terminal		=	Center
 layout.Status		=	South
@@ -28,6 +28,12 @@ layout.Status		=	South
 # =======================================================================
 #Socket.host		=	www-server
 Socket.port		=	23
+
+# =======================================================================
+# Timeout settings
+# =======================================================================
+Timeout.seconds		=	60
+Timeout.command		=	exit\n
 
 # =======================================================================
 # Terminal defaults

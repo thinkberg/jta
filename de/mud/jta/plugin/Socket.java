@@ -49,7 +49,8 @@ import java.awt.event.ActionListener;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public class Socket extends Plugin implements FilterPlugin, SocketListener {
+public class Socket extends Plugin 
+  implements FilterPlugin, SocketListener {
 
   private final static int debug = 0;
  
@@ -77,7 +78,7 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
 	  } catch(NumberFormatException e) {
 	    System.err.println("Socket: relayPort is not a number");
 	  }
-      }
+       }
     });
   }
 
@@ -116,7 +117,6 @@ public class Socket extends Plugin implements FilterPlugin, SocketListener {
       Button close = new Button("Close Window");
       close.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-	  frame.hide();
 	  frame.dispose();
 	}
       });

@@ -169,7 +169,6 @@ public class Applet extends java.applet.Applet {
         ((Frame)appletFrame).addWindowListener(new WindowAdapter() {
 	  public void windowClosing(WindowEvent evt) {
 	    Applet.this.stop();
-            ((Frame)appletFrame).hide();
             ((Frame)appletFrame).dispose();
 	  }
 	});
