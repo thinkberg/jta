@@ -742,6 +742,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
         break;
       case KeyEvent.VK_BACK_SPACE:
         writeSpecial(BackSpace[xind]);
+	if (localecho) putString(BackSpace[xind]); // echo it
         break;
       case KeyEvent.VK_HOME:
         writeSpecial(KeyHome[xind]);
