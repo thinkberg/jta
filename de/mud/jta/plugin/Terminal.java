@@ -413,7 +413,10 @@ public class Terminal extends Plugin
   }
 
   public void copy(Clipboard clipboard) {
-    StringSelection selection = new StringSelection(terminal.getSelection());
+    String data = terminal.getSelection();
+    // check due to a bug in the hotspot vm
+    if(data == null) return;
+    StringSelection selection = new StringSelection(data);
     clipboard.setContents(selection, this);
   }
 
