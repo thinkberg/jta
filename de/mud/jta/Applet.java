@@ -81,6 +81,8 @@ public class Applet extends java.applet.Applet {
 
   /** disconnect on leave, this is to force applets to break the connection */
   private boolean disconnect = true;
+  /** close the window (if it exists) after the connection is lost */
+  private boolean disconnectCloseWindow = true;
 
   private Plugin focussedPlugin;
   private Clipboard clipboard;
@@ -155,6 +157,10 @@ public class Applet extends java.applet.Applet {
       if(!(new Boolean(options.getProperty("Applet.disconnect"))
             .booleanValue()))
         disconnect = false;
+
+      if(!(new Boolean(options.getProperty("Applet.disconnect.closeWindow"))
+            .booleanValue()))
+        disconnectCloseWindow = false;
 
       if((new Boolean(options.getProperty("Applet.detach"))).booleanValue())
         appletFrame = new Frame("jta: "+host+(port.equals("23")?"":" "+port));
@@ -277,6 +283,16 @@ public class Applet extends java.applet.Applet {
 	  System.err.println("Applet: could not set up Window event listener");
 	  System.err.println("Applet: you will not be able to close it");
 	}
+
+	pluginLoader.registerPluginListener(new OnlineStatusListener() {
+	  public void online() {
+	    // we don't want to know
+	  }
+	  public void offline() {
+	    ((Frame)appletFrame).setVisible(false);
+	    close.setLabel(startText != null ? startText : "Connect");
+	  }
+	});
       }
 
     }
