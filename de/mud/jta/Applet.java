@@ -96,12 +96,34 @@ public class Applet extends java.applet.Applet {
       }
 
       String value;
-      if((value = getParameter("plugins")) != null)
+
+      // try to load the local configuration and merge it with the defaults
+      if((value = getParameter("config")) != null) {
+        Properties appletParams = new Properties();
+	try {
+	  appletParams.load((new URL(getCodeBase() + value)).openStream());
+	  Enumeration ape = appletParams.keys();
+	  while(ape.hasMoreElements()) {
+	    String key = (String)ape.nextElement();
+	    options.put(key, appletParams.getProperty(key));
+	  }
+	} catch(Exception e) {
+	  System.err.println("jta: could not load config file: "+e);
+	}
+      }
+
+      if((value = getParameter("plugins")) != null) {
+        System.err.println("jta: 'plugins' is deprecated, use config!");
         options.put("plugins", value);
-      if((value = getParameter("port")) != null)
+      }
+      if((value = getParameter("port")) != null) {
+        System.err.println("jta: 'Socket.port' is deprecated, use config!");
         options.put("Socket.port", value);
-      if((value = getParameter("layout")) != null)
+      }
+      if((value = getParameter("layout")) != null) {
+        System.err.println("jta: 'layout' is deprecated, use config!");
         options.put("layout", value);
+      }
 
       // let the terminal resize to the max possible
       options.put("Terminal.resize", "font");
@@ -121,6 +143,8 @@ public class Applet extends java.applet.Applet {
       while(names.hasMoreElements()) {
         String name = (String)names.nextElement();
         Component c = (Component)componentList.get(name);
+	if(getParameter("layout."+name) != null)
+	  System.err.println("jta: 'layout.*' is deprecated use config!");
         if((value = getParameter("layout."+name)) != null ||
 	   (value = options.getProperty("layout."+name)) != null) {
           add(value, c);
