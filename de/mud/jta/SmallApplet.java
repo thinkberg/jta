@@ -23,6 +23,7 @@ import de.mud.terminal.vt320;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,7 +39,7 @@ import java.net.Socket;
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meißner
  */
-public class SmallApplet extends java.applet.Applet {
+public class SmallApplet extends java.applet.Applet implements Runnable {
 
   private final static int debug = 0;
 
@@ -49,6 +50,8 @@ public class SmallApplet extends java.applet.Applet {
   private Socket socket;
   private InputStream is;
   private OutputStream os;
+
+  private Thread reader;
 
   /** the terminal */
   private vt320 terminal;
@@ -63,7 +66,7 @@ public class SmallApplet extends java.applet.Applet {
    * do initializations for the plugins and the applet.
    */
   public void init() {
-    if(debug > 0) System.err.println("Applet: init()");
+    if(debug > 0) System.err.println("jta: init()");
 
     host = getParameter("host");
     port = getParameter("port");
@@ -116,6 +119,8 @@ public class SmallApplet extends java.applet.Applet {
    * Start the applet. Connect to the remote host.
    */
   public void start() {
+    if(debug > 0)
+      System.err.println("jta: start()");
     // disconnect if we are already connected
     if(socket != null) stop();
 
@@ -124,6 +129,10 @@ public class SmallApplet extends java.applet.Applet {
       socket = new Socket(host, Integer.parseInt(port));
       is = socket.getInputStream();
       os = socket.getOutputStream();
+
+      reader = new Thread(this);
+      reader.start();
+
     } catch(Exception e) {
       System.err.println("jta: error connecting: "+e);
       stop();
@@ -134,14 +143,22 @@ public class SmallApplet extends java.applet.Applet {
    * Stop the applet and disconnect.
    */
   public void stop() {
+    if(debug > 0)
+      System.err.println("jta: stop()");
     // when applet stops, disconnect
     if(socket != null) {
       try {
         socket.close();
-      } catch(IOException e) {
+      } catch(Exception e) {
         System.err.println("jta: could not cleanly disconnect: "+e);
       }
       socket = null;
+      try {
+        reader.stop();
+      } catch(Exception e) {
+        // ignore 
+      }
+      reader = null;
     }
   }
 
@@ -149,10 +166,13 @@ public class SmallApplet extends java.applet.Applet {
    * Continuously read from remote host and display the data on screen.
    */
   public void run() {
+    if(debug > 0)
+      System.err.println("jta: run()");
     byte[] t, b = new byte[256];
     int n = 0;
     while(n >= 0) try {
       n = is.read(b);
+      n = telnet.negotiate(b, n);
       if(debug > 0 && n > 0) 
         System.err.println("jta: \""+(new String(b, 0, n))+"\"");
       if(n > 0) terminal.putString(new String(b, 0, n));
@@ -160,5 +180,9 @@ public class SmallApplet extends java.applet.Applet {
       stop();
       break;
     }
+  }
+
+  public void update(Graphics g) {
+    paint(g);
   }
 }
