@@ -41,14 +41,15 @@ public class VDUBuffer {
   /** Enable debug messages. */
   public final static int debug = 0;
 
-  protected int height, width;                          /* rows and columns */
-  protected boolean[] update;        /* contains the lines that need update */
-  protected char[][] charArray;                  /* contains the characters */
-  protected int[][] charAttributes;             /* contains character attrs */
-  protected int bufSize;
-  protected int maxBufSize;                                 /* buffer sizes */
-  protected int screenBase;                      /* the actual screen start */
-  protected int windowBase;                   /* where the start displaying */
+  public int height, width;                          /* rows and columns */
+  public boolean[] update;        /* contains the lines that need update */
+  public char[][] charArray;                  /* contains the characters */
+  public int[][] charAttributes;             /* contains character attrs */
+  public int bufSize;
+  public int maxBufSize;                                 /* buffer sizes */
+  public int screenBase;                      /* the actual screen start */
+  public int windowBase;                   /* where the start displaying */
+  public int scrollMarker;               /* marks the last line inserted */
 
   private int topMargin;                               /* top scroll margin */
   private int bottomMargin;                         /* bottom scroll margin */
@@ -73,9 +74,9 @@ public class VDUBuffer {
   /** Lower intensity character. */
   public final static int LOW = 0x08;
 
-  protected int COLOR = 0xff0;
-  protected int COLOR_FG = 0xf0;
-  protected int COLOR_BG = 0xf00;
+  public final static int COLOR = 0xff0;
+  public final static int COLOR_FG = 0xf0;
+  public final static int COLOR_BG = 0xf00;
 
   /**
    * Create a new video display buffer with the passed width and height in
@@ -334,20 +335,23 @@ public class VDUBuffer {
                        bottom - l - (n - 1));
       cbuf = charArray;
       abuf = charAttributes;
-    } else
+    } else {
       try {
         if (n > (bottom - top) + 1) n = (bottom - top) + 1;
         if (bufSize < maxBufSize) {
           if (bufSize + n > maxBufSize) {
             offset = n - (maxBufSize - bufSize);
+            scrollMarker += offset;
             bufSize = maxBufSize;
             screenBase = maxBufSize - height - 1;
             windowBase = screenBase;
           } else {
+            scrollMarker += n;
             screenBase += n;
             windowBase += n;
             bufSize += n;
           }
+
           cbuf = new char[bufSize][width];
           abuf = new int[bufSize][width];
         } else {
@@ -421,6 +425,11 @@ public class VDUBuffer {
         System.err.println("abuf.length=" + abuf.length + ", cbuf.length=" + cbuf.length);
         System.err.println("*** done dumping debug information");
       }
+    }
+
+    // this is a little helper to mark the scrolling
+    scrollMarker -= n;
+
 
     for (int i = 0; i < n; i++) {
       cbuf[(screenBase + l) + (scrollDown ? i : -i)] = new char[width];

@@ -22,10 +22,9 @@
  * --LICENSE NOTICE--
  *
  */
-package de.mud.jta;
+package de.mud.flash;
 
 import de.mud.telnet.TelnetProtocolHandler;
-import de.mud.terminal.FlashTerminal;
 import de.mud.terminal.vt320;
 
 import java.awt.Dimension;
@@ -33,28 +32,50 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.ServerSocket;
 
 /**
- * <B>Small Telnet Applet implementation</B><P>
+ * <B>Flash Terminal Server implementation</B><P>
  * <P>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
  * @author Matthias L. Jugel, Marcus Meiﬂner
  */
-public class FlashTest implements Runnable {
+public class FlashTerminalServer implements Runnable {
 
   private final static int debug = 3;
 
-  /** hold the host and port for our connection */
-  private String host, port;
+  /**
+   * Read all parameters from the applet configuration and
+   * do initializations for the plugins and the applet.
+   */
+  public static void main(String args[]) {
+    System.out.println("FlashTerminalServer (c) 2002 Matthias L. Jugel, Marcus Meiﬂner");
+    if(args.length < 2) {
+      System.err.println("usage: FlashTerminalServer host port");
+      System.exit(0);
+    }
+    if (debug > 0)
+      System.err.println("FlashTerminalServer: main(" + args[0] + ", "+args[1] + ")");
+    try {
+      ServerSocket serverSocket = new ServerSocket(9999);
+      // create a new
+      while(true) {
+        System.out.println("FlashTerminalServer: waiting for connection ...");
+        Socket flashClientSocket = serverSocket.accept();
+        new FlashTerminalServer(args[0], args[1], flashClientSocket);
+      }
+    } catch (IOException e) {
+      System.err.println("FlashTerminalServer: error opening server socket: "+e);
+    }
+  }
 
   /** hold the socket */
   private Socket socket;
   private InputStream is;
   private OutputStream os;
-
-  private Thread reader;
+  private boolean running;
 
   /** the terminal */
   private vt320 emulation;
@@ -65,20 +86,8 @@ public class FlashTest implements Runnable {
 
   private boolean localecho = true;
 
-  /**
-   * Read all parameters from the applet configuration and
-   * do initializations for the plugins and the applet.
-   */
-  public static void main(String args[]) {
-    if (debug > 0) System.err.println("FlashTest: main(" + args + ")");
-    new FlashTest(args[0], args[1]);
-  }
 
-  public FlashTest(String host, String port) {
-    this.host = host;
-    this.port = port;
-
-    final boolean test = true;
+  public FlashTerminalServer(String host, String port, Socket flashSocket) {
 
     // we now create a new terminal that is used for the system
     // if you want to configure it please refer to the api docs
@@ -91,13 +100,10 @@ public class FlashTest implements Runnable {
           }
           telnet.transpose(b);
         } catch (IOException e) {
-          System.err.println("FlashTest: error sending data: " + e);
+          System.err.println("FlashTerminalServer: error sending data: " + e);
         }
       }
     };
-
-    terminal = new FlashTerminal();
-    terminal.setVDUBuffer(emulation);
 
     // then we create the actual telnet protocol handler that will negotiate
     // incoming data and transpose outgoing (see above)
@@ -120,72 +126,43 @@ public class FlashTest implements Runnable {
       /** notify about EOR end of record */
       public void notifyEndOfRecord() {
         // only used when EOR needed, like for line mode
-        System.err.println("FlashTest: EOR");
+        if(debug > 0)
+          System.err.println("FlashTerminalServer: EOR");
         terminal.redraw();
       }
 
       /** write data to our back end */
       public void write(byte[] b) throws IOException {
-        System.err.println("FlashTest: writing " + Integer.toHexString(b[0]) + " " + new String(b));
+        if(debug > 0)
+          System.err.println("FlashTerminalServer: writing " + Integer.toHexString(b[0]) + " " + new String(b));
         os.write(b);
       }
     };
 
-    while (true) {
-      try {
-        if(!"-t".equals(host)) {
-	    System.err.println("FlashTest: trying to connect " + host + " " + port);
-	    // open new socket and get streams
-	    socket = new Socket(host, Integer.parseInt(port));
-	    is = socket.getInputStream();
-	    os = socket.getOutputStream();
+    try {
+      // open new socket and get streams
+      socket = new Socket(host, Integer.parseInt(port));
+      is = socket.getInputStream();
+      os = socket.getOutputStream();
 
-	    reader = new Thread(this);
-	    running = true;
-	    reader.start();
-	  }
-	} catch (Exception e) {
-	  System.err.println("FlashTest: error connecting: " + e);
-	  e.printStackTrace();
-	  stop();
-	}
+      (new Thread(this)).start();
 
-      System.err.println("FlashTest: Terminal restarted ...");
-      terminal.start();
-      stop();
+      terminal = new FlashTerminal(flashSocket) {
+        public void disconnect() {
+          running = false;
+        }
+      };
+      terminal.setVDUBuffer(emulation);
+    } catch (IOException e) {
+      System.err.println("FlashTerminalServer: error connecting to remote host: "+e);
+    } catch (NumberFormatException e) {
+      System.err.println("FlashTerminalServer: "+port+" is not a correct number");
     }
   }
 
-  boolean running = false;
-
-  /**
-   * Stop the applet and disconnect.
-   */
-  public void stop() {
-    if (debug > 0)
-      System.err.println("FlashTest: stop()");
-    // when applet stops, disconnect
-    if (socket != null) {
-      try {
-        socket.close();
-      } catch (Exception e) {
-        System.err.println("FlashTest: could not cleanly disconnect: " + e);
-      }
-      socket = null;
-      try {
-        running = false;
-      } catch (Exception e) {
-        // ignore
-      }
-      reader = null;
-    }
-  }
-
-  /**
-   * Continuously read from remote host and display the data on screen.
-   */
   public void run() {
-    if (debug > 0) System.err.println("FlashTest: run()");
+    if (debug > 0) System.err.println("FlashTerminalServer: run()");
+    running = true;
 
     byte[] b = new byte[4096];
     int n = 0;
@@ -197,7 +174,7 @@ public class FlashTest implements Runnable {
 
         while (true) {
           n = is.read(b);
-          System.err.println("FlashTest: got " + n + " bytes");
+          System.err.println("FlashTerminalServer: got " + n + " bytes");
           if (n <= 0)
             emulation.putString(new String(b, 0, n));
 
@@ -213,10 +190,10 @@ public class FlashTest implements Runnable {
         }
       } catch (IOException e) {
         e.printStackTrace();
-        stop();
         break;
       }
     }
-    System.err.println("FlashTest: finished reading from remote host");
+    System.err.println("FlashTerminalServer: finished reading from remote host");
+
   }
 }
