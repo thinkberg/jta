@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meissner 1996-2003. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -36,7 +36,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 /**
- * The common part of the <B>The Java<SUP>tm</SUP> Telnet Application</B>
+ * The common part of the <B>JTA - Telnet/SSH for the JAVA(tm) platform</B>
  * is handled here. Mainly this includes the loading of the plugins and
  * the screen setup of the visual plugins.
  * <P>
@@ -53,9 +53,9 @@ public class Common extends PluginLoader {
     // configure the plugin path
     super(getPluginPath(config.getProperty("pluginPath")));
 
-    System.out.println("** The Java(tm) Telnet Application");
-    System.out.println("** Version 2.5 for Java 2");
-    System.out.println("** Copyright (c) 1996-2003 Matthias L. Jugel, "
+    System.out.println("** JTA - Telnet/SSH for the JAVA(tm) platform");
+    System.out.println("** Version 2.6 for Java 2+");
+    System.out.println("** Copyright (c) 1996-2005 Matthias L. Jugel, "
                        + "Marcus Meissner");
 
     try {

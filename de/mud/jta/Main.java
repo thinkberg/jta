@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * <B>The Java Telnet Application</B><P>
+ * <B>JTA - Telnet/SSH for the JAVA(tm) platform</B><P>
  * This is the implementation of whole set of applications. It's modular
  * structure allows to configure the software to act either as a sophisticated
  * terminal emulation and/or, adding the network backend, as telnet

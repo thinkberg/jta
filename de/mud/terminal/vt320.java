@@ -1,6 +1,7 @@
-/* This file is part of "The Java Telnet Application".
+/*
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Mei\u00dfner 1996-2004. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *

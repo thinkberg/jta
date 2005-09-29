@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei√üner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -26,7 +26,7 @@ package de.mud.jta;
 
 
 /**
- * Plugin base class for the Java Telnet Application. A plugin is a component
+ * Plugin base class for the JTA. A plugin is a component
  * for the PluginBus and may occur several times. If we have more than one
  * plugin of the same type the protected value id contains the unique plugin
  * id as configured in the configuration.
@@ -34,7 +34,7 @@ package de.mud.jta;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus MeiÔøΩner
  */
 public class Plugin {
   /** holds the plugin bus used for communication between plugins */

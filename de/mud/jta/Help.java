@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2004. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei√üner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -47,7 +47,7 @@ import java.net.URL;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus MeiÔøΩner
  */
 public class Help {
 
@@ -66,7 +66,7 @@ public class Help {
       catch (Exception ee)
       {
         System.err.println("unable to load help");
-        JOptionPane.showMessageDialog(parent, "The Java Telnet Applet/Application\r\n(c) 1996-2004 Matthias L. Jugel, Marcus Meiﬂner\r\n\r\n",
+        JOptionPane.showMessageDialog(parent, "JTA - Telnet/SSH for the JAVA(tm) platform\r\n(c) 1996-2005 Matthias L. Jugel, Marcus Mei√üner\r\n\r\n",
                 "jta", JOptionPane.INFORMATION_MESSAGE);
         return;
       }

@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meiﬂner 1996-2004. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Mei√üner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -61,7 +61,7 @@ import de.mud.jta.Wrapper;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meiﬂner
+ * @author Matthias L. Jugel, Marcus MeiÔøΩner
  */
 public class TelnetWrapper extends Wrapper {
   protected TelnetProtocolHandler handler;

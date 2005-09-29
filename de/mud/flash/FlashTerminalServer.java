@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meißner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus MeiÃŸner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -40,7 +40,7 @@ import java.net.ServerSocket;
  * <B>Maintainer:</B> Matthias L. Jugel
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Meißner
+ * @author Matthias L. Jugel, Marcus Meiï¿½ner
  */
 public class FlashTerminalServer implements Runnable {
 
@@ -51,7 +51,7 @@ public class FlashTerminalServer implements Runnable {
    * do initializations for the plugins and the applet.
    */
   public static void main(String args[]) {
-    System.out.println("FlashTerminalServer (c) 2002 Matthias L. Jugel, Marcus Meißner");
+    System.out.println("FlashTerminalServer (c) 2002 Matthias L. Jugel, Marcus Meiï¿½ner");
     if(args.length < 2) {
       System.err.println("usage: FlashTerminalServer host port");
       System.exit(0);

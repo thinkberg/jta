@@ -1,7 +1,7 @@
 /*
- * This file is part of "The Java Telnet Application".
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
  *
- * (c) Matthias L. Jugel, Marcus Meissner 1996-2002. All Rights Reserved.
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2005. All Rights Reserved.
  *
  * Please visit http://javatelnet.org/ for updates and contact.
  *
@@ -58,7 +58,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 /**
- * <B>The Java Telnet Applet</B><P>
+ * <B>JTA - Telnet/SSH for the JAVA(tm) platform: Applet</B><P>
  * This is the implementation of whole set of applications. It's modular
  * structure allows to configure the software to act either as a sophisticated
  * terminal emulation and/or, adding the network backend, as telnet
