@@ -95,7 +95,7 @@ public class VDUBuffer {
    */
   public VDUBuffer(int width, int height) {
     // set the display screen size
-    setScreenSize(width, height);
+    setScreenSize(width, height, false);
   }
 
   /**
@@ -690,7 +690,7 @@ public class VDUBuffer {
    * @param w of the screen
    * @param h of the screen
    */
-  public void setScreenSize(int w, int h) {
+  public void setScreenSize(int w, int h, boolean broadcast) {
     char cbuf[][];
     int abuf[][];
     int bsize = bufSize;

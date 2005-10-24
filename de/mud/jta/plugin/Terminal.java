@@ -37,6 +37,7 @@ import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.ReturnFocusListener;
 import de.mud.jta.event.SoundRequest;
 import de.mud.jta.event.TelnetCommandRequest;
+import de.mud.jta.event.SetWindowSizeRequest;
 import de.mud.jta.event.TerminalTypeListener;
 import de.mud.jta.event.WindowSizeListener;
 import de.mud.terminal.vt320;
@@ -151,6 +152,10 @@ public class Terminal extends Plugin
 
       public void sendTelnetCommand(byte cmd) {
         bus.broadcast(new TelnetCommandRequest(cmd));
+      }
+
+      public void setWindowSize(int c, int r) {
+        bus.broadcast(new SetWindowSizeRequest(c,r));
       }
     };
 
@@ -453,7 +458,7 @@ public class Terminal extends Plugin
         int idx = tmp.indexOf(',');
         int width = Integer.parseInt(tmp.substring(1, idx).trim());
         int height = Integer.parseInt(tmp.substring(idx + 1, tmp.length() - 1).trim());
-        emulation.setScreenSize(width, height);
+        emulation.setScreenSize(width, height, false);
       } catch (Exception e) {
         error("screen size is wrong: " + tmp);
         error("error: " + e);

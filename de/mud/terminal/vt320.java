@@ -81,6 +81,22 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   protected void sendTelnetCommand(byte cmd) {
   }
 
+  /** 
+   * Sent the changed window size from the terminal to all listeners.
+   */
+  protected void setWindowSize(int c, int r) {
+    /* To be overridden by Terminal.java */
+  }
+
+  public void setScreenSize(int c, int r, boolean broadcast) {
+	System.err.println("setscreensize ("+c+","+r+","+broadcast+")");
+	super.setScreenSize(c,r,false);
+	if (broadcast) {
+	  setWindowSize(c, r); /* broadcast up */
+	}
+  }
+
+
   /**
    * Create a new vt320 terminal and intialize it with useful settings.
    */
@@ -1863,7 +1879,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             for (int i = 0; i <= DCEvar; i++) {
               switch (DCEvars[i]) {
                 case 3: /* 80 columns*/
-                  setScreenSize(80, getRows());
+                  setScreenSize(80, getRows(), true);
                   break;
                 case 4: /* scrolling mode, smooth */
                   break;
@@ -1905,7 +1921,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                   vt52mode = false;
                   break;
                 case 3: /* 132 columns*/
-                  setScreenSize(132, getRows());
+                  setScreenSize(132, getRows(), true);
                   break;
                 case 6: /* DECOM: move inside margins. */
                   moveoutsidemargins = false;
@@ -1972,7 +1988,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
                   vt52mode = true;
                   break;
                 case 3: /* 80 columns*/
-                  setScreenSize(80, getRows());
+                  setScreenSize(80, getRows(), true);
                   break;
                 case 6: /* DECOM: move outside margins. */
                   moveoutsidemargins = true;

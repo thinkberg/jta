@@ -33,6 +33,7 @@ import de.mud.jta.PluginBus;
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.TelnetCommandListener;
+import de.mud.jta.event.SetWindowSizeListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
@@ -105,6 +106,16 @@ public class Telnet extends Plugin implements FilterPlugin {
       public void offline() {
         handler.reset();
         bus.broadcast(new LocalEchoRequest(true));
+      }
+    });
+
+    bus.registerPluginListener(new SetWindowSizeListener() {
+      public void setWindowSize(int columns, int rows) {
+        try {
+	  handler.setWindowSize(columns,rows);
+        } catch (java.io.IOException e) {
+          System.err.println("IO Exception in set window size");
+        }
       }
     });
 

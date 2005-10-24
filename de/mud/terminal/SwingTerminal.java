@@ -655,7 +655,7 @@ public class SwingTerminal extends Component
 
     switch (resizeStrategy) {
       case RESIZE_SCREEN:
-        buffer.setScreenSize(w / charWidth, buffer.height = h / charHeight);
+        buffer.setScreenSize(w / charWidth, buffer.height = h / charHeight, true);
         break;
       case RESIZE_FONT:
         int height = h / buffer.height;

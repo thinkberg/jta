@@ -204,6 +204,25 @@ public abstract class TelnetProtocolHandler {
     write(b);
   }
 
+  /**
+   * Send the new Window Size (via NAWS)
+   */
+  public void setWindowSize(int columns,int rows)
+    throws IOException {
+    if(debug > 2) System.err.println("sending NAWS");
+
+    if (receivedDX[TELOPT_NAWS] != DO) {
+    	System.err.println("not allowed to send NAWS? (DONT NAWS)");
+	return;
+    }
+    write(IAC);write(SB);write(TELOPT_NAWS);
+    write((byte) (columns >> 8));
+    write((byte) (columns & 0xff));
+    write((byte) (rows >> 8));
+    write((byte) (rows & 0xff));
+    write(IAC);write(SE);
+  }
+
 
   /**
    * Handle an incoming IAC SB &lt;type&gt; &lt;bytes&gt; IAC SE
