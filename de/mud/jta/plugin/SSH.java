@@ -32,6 +32,7 @@ import de.mud.jta.PluginConfig;
 import de.mud.jta.VisualPlugin;
 
 import de.mud.jta.event.ConfigurationListener;
+import de.mud.jta.event.SetWindowSizeListener;
 import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
@@ -102,6 +103,17 @@ public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
 	pass = config.getProperty("SSH", id, "password");
       }
     });
+
+    bus.registerPluginListener(new SetWindowSizeListener() {
+      public void setWindowSize(int columns, int rows) {
+        try {
+          handler.setWindowSize(columns,rows);
+        } catch (java.io.IOException e) {
+          System.err.println("IO Exception in set window size");
+        }
+      }
+    });
+
 
     // reset the protocol handler just in case :-)
     bus.registerPluginListener(new OnlineStatusListener() {

@@ -104,6 +104,7 @@ public abstract class SshIO {
   private final byte SSH_CMSG_USER = 4;
   private final byte SSH_CMSG_AUTH_PASSWORD = 9;
   private final byte SSH_CMSG_REQUEST_PTY = 10;
+  private final byte SSH_CMSG_WINDOW_SIZE = 11;
   private final byte SSH_CMSG_EXEC_SHELL = 12;
   private final byte SSH_SMSG_SUCCESS = 14;
   private final byte SSH_SMSG_FAILURE = 15;
@@ -197,6 +198,14 @@ public abstract class SshIO {
     crypto = null;
   }
 
+  public void setWindowSize(int columns,int rows)
+    throws IOException {
+    if (phase == PHASE_INIT) {
+	System.err.println("sshio:setWindowSize(), sizing in init phase not supported.\n");
+    }
+    System.err.println("SSHIO:setWindowSize("+columns+","+rows+")");
+    Send_SSH_CMSG_WINDOW_SIZE(columns,rows);
+  }
 
   synchronized public void sendData(String str) throws IOException {
     if (debug > 1) System.out.println("SshIO.send(" + str + ")");
@@ -603,6 +612,7 @@ public abstract class SshIO {
         break;
 
       case SSH_SMSG_FAILURE:
+        if (debug > 1) System.err.println("SSH_SMSG_FAILURE");
         if (lastPacketSentType == SSH_CMSG_AUTH_PASSWORD) {// password incorrect ???
           System.out.println("failed to log in");
           Send_SSH_MSG_DISCONNECT("Failed to log in.");
@@ -857,6 +867,24 @@ public abstract class SshIO {
     SshPacket1 packet = new SshPacket1(SSH_CMSG_STDIN_DATA);
     packet.putString(str);
     sendPacket1(packet);
+    return "";
+  }
+
+  /**
+   * Send_SSH_CMSG_WINDOW_SIZE
+   *   string       TERM environment variable value (e.g. vt100)
+   *   32-bit int   terminal height, rows (e.g., 24)
+   *   32-bit int   terminal width, columns (e.g., 80)
+   *   32-bit int   terminal width, pixels (0 if no graphics) (e.g., 480)
+   */
+  private String Send_SSH_CMSG_WINDOW_SIZE(int c, int r) throws IOException {
+    SshPacket1 p = new SshPacket1(SSH_CMSG_WINDOW_SIZE);
+
+    p.putInt32(r);		// Int32	rows
+    p.putInt32(c);		// Int32	columns
+    p.putInt32(0);		// Int32	x pixels
+    p.putInt32(0);		// Int32	y pixels
+    sendPacket1(p);
     return "";
   }
 
