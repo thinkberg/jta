@@ -70,6 +70,9 @@ public class SwingTerminal extends Component
 
   /** the VDU buffer */
   private VDUBuffer buffer;
+  
+  /** the VDU input handler */
+  private VDUInput input;
 
   /** lightweight component definitions */
   private final static long VDU_EVENTS = AWTEvent.KEY_EVENT_MASK
@@ -225,6 +228,14 @@ public class SwingTerminal extends Component
     this.buffer = buffer;
     buffer.setDisplay(this);
   }
+  
+  /**
+  * Set a new terminal (VDU) input handler.
+  * @param input new input handler
+  */
+  public void setVDUInput(VDUInput input) {
+    this.input = input;  
+  }
 
   /**
    * Return the currently associated VDUBuffer.
@@ -234,6 +245,14 @@ public class SwingTerminal extends Component
     return buffer;
   }
 
+  /**
+   * Return the currently associated VDUInput.
+   * @return the current input handler
+   */
+  public VDUInput getVDUInput() {
+    return input;
+  }
+  
   /**
    * Set new color set for the display.
    * @param colorset new color set
@@ -810,8 +829,8 @@ public class SwingTerminal extends Component
     int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
     int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
 
-    if (buffer instanceof VDUInput) {
-      ((VDUInput) buffer).mousePressed(xoffset, yoffset, evt.getModifiers());
+    if (input != null) {
+      input.mousePressed(xoffset, yoffset, evt.getModifiers());
     }
 
     // looks like we get no modifiers here ... ... We do? -Marcus
@@ -831,8 +850,8 @@ public class SwingTerminal extends Component
     int xoffset = (super.getSize().width - buffer.width * charWidth) / 2;
     int yoffset = (super.getSize().height - buffer.height * charHeight) / 2;
 
-    if (buffer instanceof VDUInput) {
-      ((VDUInput) buffer).mousePressed(xoffset, yoffset, evt.getModifiers());
+    if (input != null) {
+      input.mousePressed(xoffset, yoffset, evt.getModifiers());
     }
 
     if (buttonCheck(evt.getModifiers(), MouseEvent.BUTTON1_MASK)) {
@@ -885,13 +904,13 @@ public class SwingTerminal extends Component
   }
 
   public void keyTyped(KeyEvent e) {
-    if (buffer != null && buffer instanceof VDUInput)
-      ((VDUInput) buffer).keyTyped(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
+    if (input != null)
+      input.keyTyped(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
   }
 
   public void keyPressed(KeyEvent e) {
-    if (buffer != null && buffer instanceof VDUInput)
-      ((VDUInput) buffer).keyPressed(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
+    if (input != null)
+      input.keyPressed(e.getKeyCode(), e.getKeyChar(), getModifiers(e));
   }
 
   public void keyReleased(KeyEvent e) {
