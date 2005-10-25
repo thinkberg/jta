@@ -89,11 +89,20 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
   }
 
   public void setScreenSize(int c, int r, boolean broadcast) {
-	System.err.println("setscreensize ("+c+","+r+","+broadcast+")");
-	super.setScreenSize(c,r,false);
-	if (broadcast) {
-	  setWindowSize(c, r); /* broadcast up */
-	}
+    int oldrows = getRows(), oldcols = getColumns();
+
+    if (debug>2) System.err.println("setscreensize ("+c+","+r+","+broadcast+")");
+
+    super.setScreenSize(c,r,false);
+
+    /* Tricky, since the VDUBuffer works strangely. */
+    if (r > oldrows) {
+      setCursorPosition(C, R + (r-oldrows)); 
+      redraw();
+    }
+    if (broadcast) {
+      setWindowSize(c, r); /* broadcast up */
+    }
   }
 
 
