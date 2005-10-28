@@ -64,6 +64,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -114,6 +116,9 @@ public class Terminal extends Plugin
   private Hashtable colors = new Hashtable();
 
   private boolean localecho_overridden = false;
+
+  /** Access to the system clipboard */
+  private Clipboard clipboard = null;
 
   private Color codeToColor(String code) {
     if (colors.get(code) != null)
@@ -297,6 +302,47 @@ public class Terminal extends Plugin
         terminal.setCursor(Cursor.getDefaultCursor());
         bus.broadcast(new FocusStatus(Terminal.this, evt));
       }
+    });
+
+    // get a reference to the system clipboard.  
+    try {
+      clipboard = tPanel.getToolkit().getSystemClipboard();
+      System.out.println("Got the clipboard reference ok - copy & paste enabled");
+    } catch(Exception ex) {
+      System.out.println("Failed to get clipboard - copy and paste will not work");
+      /* ex.printStackTrace(); */
+    }
+    
+    //*******************************
+    //code to handle copy and paste
+    //from embeded terminal
+    //*******************************
+    terminal.addMouseListener(new MouseListener() {
+      public void mouseClicked(MouseEvent me) {
+        //make sure it only does the paste on button2(right mouse)
+        if (me.getButton() == me.BUTTON3 && clipboard != null) {
+          paste(clipboard);
+        }
+      }
+      public void mouseExited(MouseEvent arg0) {}
+      public void mousePressed(MouseEvent arg0) {
+        // System.out.println(">>>>MOUSE pressed");
+      }
+      public void mouseReleased(MouseEvent me) {
+        //make sure it only does the copy on button 1 (left mouse)
+        //System.out.println(">>>>MOUSE RELEASED");
+        if (me.getButton() == me.BUTTON1 && clipboard != null) {
+          String selection = terminal.getSelection();
+          // System.out.println(">>>>SELECTION = " + selection);
+          if (selection != null && selection.trim().length() > 0){
+            copy(clipboard);
+          }
+        } else {
+          //not left mouse
+          // System.out.println("NOT BUTTON 1(left mouse): " + me.getButton());
+        }
+      }
+      public void mouseEntered(MouseEvent arg0) {}
     });
 
     // register an online status listener
