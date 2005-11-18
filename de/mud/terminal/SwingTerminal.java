@@ -177,7 +177,10 @@ public class SwingTerminal extends Component
 
     /* we have to make sure the tab key stays within the component */
     String version = System.getProperty("java.version");
-    if (version.startsWith("1.4")) {
+    String versionStart = version.substring(0,3);
+    double ver = Double.parseDouble(versionStart);
+    if (ver >= 1.4) {
+    //if (version.startsWith("1.5")) {
       try {
         Class params[] = new Class[]{boolean.class};
         SwingTerminal.class.getMethod("setFocusable", params).invoke(this, new Object[]{new Boolean(true)});
