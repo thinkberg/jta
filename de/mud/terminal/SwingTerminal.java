@@ -855,16 +855,14 @@ public class SwingTerminal extends Component
       if (selectEnd.x > buffer.charArray[0].length)
         selectEnd.x = buffer.charArray[0].length;
 
-      // Initial buffer space for selectEnd - selectBegin + 1 lines
       // NOTE: Selection includes invisible text as spaces!
       // (also leaves invisible non-whitespace selection ending as spaces)
-      StringBuffer selectionBuf =
-        new StringBuffer(buffer.charArray[0].length * (selectEnd.y - selectBegin.y + 1));
 
       for (int l = selectBegin.y; l <= selectEnd.y; l++) {
-        int start, end;
-        start = (l == selectBegin.y ? start = selectBegin.x : 0);
-        end = (l == selectEnd.y ? end = selectEnd.x : buffer.charArray[l].length);
+	/* reinitialize buffer every loop */
+        StringBuffer selectionBuf = new StringBuffer(buffer.charArray[0].length);
+        int start = (l == selectBegin.y ? start = selectBegin.x : 0);
+        int end = (l == selectEnd.y ? end = selectEnd.x : buffer.charArray[l].length);
 
         boolean newlineFound = false;
         char ch = ' ';
