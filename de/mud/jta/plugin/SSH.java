@@ -37,6 +37,7 @@ import de.mud.jta.event.OnlineStatusListener;
 import de.mud.jta.event.TerminalTypeRequest;
 import de.mud.jta.event.WindowSizeRequest;
 import de.mud.jta.event.LocalEchoRequest;
+import de.mud.jta.event.SocketRequest;
 
 import de.mud.ssh.SshIO;
 
@@ -177,6 +178,7 @@ public class SSH extends Plugin implements FilterPlugin, VisualPlugin {
       public void offline() {
         handler.disconnect();
 	auth=false;
+        bus.broadcast(new SocketRequest());
       }
     });
   }
