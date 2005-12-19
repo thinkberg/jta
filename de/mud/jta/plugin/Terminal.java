@@ -130,7 +130,13 @@ public class Terminal extends Plugin
         else
           return Color.decode(code);
       } catch (Exception e) {
-        System.err.println("Ignoring unknown color code: " + code);
+	try {
+          // try one last time
+	  return Color.decode(code);
+        } catch(Exception ex) {
+	  // ignore
+        }
+        error("ignoring unknown color code: " + code);
       }
     return null;
   }
