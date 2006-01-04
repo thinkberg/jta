@@ -107,7 +107,10 @@ public class Wrapper {
    * @param pwd the password
    */
   public void login(String user, String pwd) throws IOException {
-    waitfor("login:");		// throw output away
+    String[] loginstrings = new String[2];
+    loginstrings[0] = "login:";
+    loginstrings[1] = "username:";
+    waitfor(loginstrings);		// throw output away
     send(user);
     waitfor("Password:");	// throw output away
     send(pwd);
