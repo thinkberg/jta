@@ -202,6 +202,7 @@ public abstract class SshIO {
     throws IOException {
     if (phase == PHASE_INIT) {
       System.err.println("sshio:setWindowSize(), sizing in init phase not supported.\n");
+      return;
     }
     if (debug>1) System.err.println("SSHIO:setWindowSize("+columns+","+rows+")");
     Send_SSH_CMSG_WINDOW_SIZE(columns,rows);
