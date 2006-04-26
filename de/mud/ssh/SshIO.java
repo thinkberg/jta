@@ -267,6 +267,8 @@ public abstract class SshIO {
             mymajor = 2;
             myminor = 0;
             useprotocol = 2;
+	    System.err.println("SSH protocol version 2 is not supported, but your remote server only speaks v2!");
+	    return "SSH protocol version 2 is not implemented.\n\rYou have two choices:\n\r- Change the server to support SSH Protocol 1 too.\n\r- Get another applet, check http://www.jcraft.com/jsch/\n\r".getBytes();
           } else {
             if (false && (remoteminor == 99)) {
               mymajor = 2;
