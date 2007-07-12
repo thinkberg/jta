@@ -25,15 +25,14 @@
 
 package de.mud.jta.plugin;
 
-import de.mud.jta.Plugin;
 import de.mud.jta.FilterPlugin;
+import de.mud.jta.Plugin;
 import de.mud.jta.PluginBus;
 import de.mud.jta.PluginConfig;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.OnlineStatusListener;
 
 import java.io.IOException;
-
 import java.util.Vector;
 
 /**
@@ -48,18 +47,22 @@ import java.util.Vector;
  * connect.
  * The script is very basic but is a very good example how to
  * write a plugin for <B>JTA - Telnet/SSH for the JAVA(tm) platform</B>.
- * <P>
+ * <p/>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
- * @version $Id$
  * @author Matthias L. Jugel, Marcus Mei�ner
+ * @version $Id$
  */
 public class Script extends Plugin implements FilterPlugin {
 
-  /** debugging level */
+  /**
+   * debugging level
+   */
   private final static int debug = 0;
 
-  /** the script after parsing, saved for reinitialization */
+  /**
+   * the script after parsing, saved for reinitialization
+   */
   private Vector savedScript;
 
   /**
@@ -72,6 +75,7 @@ public class Script extends Plugin implements FilterPlugin {
       public void online() {
         setup(savedScript);
       }
+
       public void offline() {
         // ignore disconnection
       }
@@ -81,48 +85,51 @@ public class Script extends Plugin implements FilterPlugin {
       public void setConfiguration(PluginConfig config) {
         savedScript = new Vector();
         String s = config.getProperty("Script", id, "script");
-        if(s != null) {
-	  // check if the script is stored in a file
-	  if(s.charAt(0) == '@') {
-	    Script.this.error("@file not implemented yet");
-	  }
-	  // parse the script and set up  
-	  if(debug > 0) Script.this.error(s);
-	  String pair[] = null;
+        if (s != null) {
+          // check if the script is stored in a file
+          if (s.charAt(0) == '@') {
+            Script.this.error("@file not implemented yet");
+          }
+          // parse the script and set up
+          if (debug > 0) Script.this.error(s);
+          String pair[] = null;
           int old = -1, idx = s.indexOf('|');
-          while(idx >= 0) {
-	    if(pair == null) {
-	      pair = new String[2];
+          while (idx >= 0) {
+            if (pair == null) {
+              pair = new String[2];
               pair[0] = s.substring(old + 1, idx);
-	      if(debug > 0) System.out.print("match("+pair[0]+") -> ");
-	    } else {
-              pair[1] = s.substring(old + 1, idx)+"\n";
-	      if(debug > 0) System.out.print(pair[1]);
-	      savedScript.addElement(pair);
-	      pair = null;
-	    }
+              if (debug > 0) System.out.print("match(" + pair[0] + ") -> ");
+            } else {
+              pair[1] = s.substring(old + 1, idx) + "\n";
+              if (debug > 0) System.out.print(pair[1]);
+              savedScript.addElement(pair);
+              pair = null;
+            }
             old = idx;
             idx = s.indexOf('|', old + 1);
           }
-          if(pair != null) {
-	    pair[1] = s.substring(old + 1)+"\n";
-	    savedScript.addElement(pair);
-	    if(debug > 0) System.out.print(pair[1]);
-	  } else
-	    Script.this.error("unmatched pairs of script elements");
-	   // set up the script
-	  //  setup(savedScript);
+          if (pair != null) {
+            pair[1] = s.substring(old + 1) + "\n";
+            savedScript.addElement(pair);
+            if (debug > 0) System.out.print(pair[1]);
+          } else
+            Script.this.error("unmatched pairs of script elements");
+          // set up the script
+          //  setup(savedScript);
         }
       }
     });
   }
 
-  /** holds the data source for input and output */
+  /**
+   * holds the data source for input and output
+   */
   protected FilterPlugin source;
 
   /**
    * Set the filter source where we can read data from and where to
    * write the script answer to.
+   *
    * @param plugin the filter plugin we use as source
    */
   public void setFilterSource(FilterPlugin plugin) {
@@ -135,14 +142,15 @@ public class Script extends Plugin implements FilterPlugin {
 
   /**
    * Read an array of bytes from the back end and put it through the
-   * script parser to see if it matches. It will send the answer 
+   * script parser to see if it matches. It will send the answer
    * immediately to the filter source if a match occurs.
+   *
    * @param b the array where to read the bytes in
    * @return the amount of bytes actually read
    */
   public int read(byte[] b) throws IOException {
     int n = source.read(b);
-    if(n > 0) match(b, n);
+    if (n > 0) match(b, n);
     return n;
   }
 
@@ -154,31 +162,33 @@ public class Script extends Plugin implements FilterPlugin {
   // the actual scripting code follows:
   // =================================================================
 
-  private int matchPos;		// current position in the match
-  private Vector script;	// the actual script
-  private byte[] match;		// the current bytes to look for
-  private boolean done = true;	// no script!
+  private int matchPos;    // current position in the match
+  private Vector script;  // the actual script
+  private byte[] match;    // the current bytes to look for
+  private boolean done = true;  // no script!
 
   /**
    * Setup the parser using the passed script. The script contains for
    * every element a two-element array of String where element zero
    * contains the match and element one the answer.
+   *
    * @param script the script
    */
   private void setup(Vector script) {
     // clone script to make sure we do not change the original
-    this.script = (Vector)script.clone();
-    if(debug > 0) 
-      System.err.println("Script: script contains "+script.size()+" elements");
+    this.script = (Vector) script.clone();
+    if (debug > 0)
+      System.err.println("Script: script contains " + script.size() + " elements");
 
     // If the first element is empty, just send the value string.
-    match = ((String[])this.script.firstElement())[0].getBytes();
+    match = ((String[]) this.script.firstElement())[0].getBytes();
     if (match.length == 0) {
-	try {
-	    write(found());
-	} catch (Exception e){
-	    // Ignore any errors here
-	};
+      try {
+        write(found());
+      } catch (Exception e) {
+        // Ignore any errors here
+      }
+      ;
     }
 
     reset();
@@ -189,18 +199,19 @@ public class Script extends Plugin implements FilterPlugin {
    * Try to match the byte array s against the most current script match.
    * It will write the answer immediatly  if the script matches and
    * will return instantly when all the script work is done.
-   * @param s the array of bytes to match against
+   *
+   * @param s      the array of bytes to match against
    * @param length the amount of bytes in the array
    */
   private void match(byte[] s, int length) throws IOException {
-    for(int i = 0; !done && i < length; i++) {
-      if(s[i] == match[matchPos]) {
+    for (int i = 0; !done && i < length; i++) {
+      if (s[i] == match[matchPos]) {
         // the whole thing matched so, return the match answer 
         // and reset to use the next match
-        if(++matchPos >= match.length)
+        if (++matchPos >= match.length)
           write(found());
       } else // if the current character did not match reset
-         reset();
+        reset();
     }
   }
 
@@ -208,17 +219,18 @@ public class Script extends Plugin implements FilterPlugin {
    * This method is called when a script match was found and will
    * setup the next match to be used and return the answer for the
    * just found one.
+   *
    * @return the answer to the found match
    */
   private byte[] found() {
-    if(debug > 0) System.err.println("Script: found '"+new String(match)+"'");
+    if (debug > 0) System.err.println("Script: found '" + new String(match) + "'");
     // we have matched the string, so remember the answer ...
-    byte[] answer = ((String[])script.firstElement())[1].getBytes();
+    byte[] answer = ((String[]) script.firstElement())[1].getBytes();
     // remove the matched element
     script.removeElementAt(0);
     // set the next match if applicable
-    if(!script.isEmpty()) {
-      match = ((String[])script.firstElement())[0].getBytes();
+    if (!script.isEmpty()) {
+      match = ((String[]) script.firstElement())[0].getBytes();
       reset();
     } else
       done = true;

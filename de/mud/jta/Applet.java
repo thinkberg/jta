@@ -31,17 +31,8 @@ import de.mud.jta.event.ReturnFocusRequest;
 import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.SoundListener;
 
-import javax.swing.JApplet;
-import javax.swing.JFrame;
-import javax.swing.RootPaneContainer;
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Component;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
-import java.awt.MenuShortcut;
-import java.awt.PrintJob;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,11 +59,11 @@ import java.util.Vector;
  * This is the <I>Applet</I> implementation for the software. It initializes
  * the system and adds all needed components, such as the telnet backend and
  * the terminal front end.
- * <P>
+ * <p/>
  * <B>Maintainer:</B> Matthias L. Jugel
  *
- * @version $Id$
  * @author Matthias L. Jugel, Marcus Meissner
+ * @version $Id$
  */
 public class Applet extends JApplet {
 
@@ -81,20 +72,32 @@ public class Applet extends JApplet {
   private String frameTitle = null;
   private RootPaneContainer appletFrame;
 
-  /** holds the defaults */
+  /**
+   * holds the defaults
+   */
   private Properties options = new Properties();
 
-  /** hold the common part of the jta */
+  /**
+   * hold the common part of the jta
+   */
   private Common pluginLoader;
 
-  /** hold the host and port for our connection */
+  /**
+   * hold the host and port for our connection
+   */
   private String host, port;
 
-  /** disconnect on leave, this is to force applets to break the connection */
+  /**
+   * disconnect on leave, this is to force applets to break the connection
+   */
   private boolean disconnect = true;
-  /** connect on startup, this is to force applets to connect on detach */
+  /**
+   * connect on startup, this is to force applets to connect on detach
+   */
   private boolean connect = false;
-  /** close the window (if it exists) after the connection is lost */
+  /**
+   * close the window (if it exists) after the connection is lost
+   */
   private boolean disconnectCloseWindow = true;
 
   private Plugin focussedPlugin;
@@ -110,7 +113,7 @@ public class Applet extends JApplet {
     if (pluginLoader == null) {
       try {
         options.load(Applet.class
-                     .getResourceAsStream("/de/mud/jta/default.conf"));
+                .getResourceAsStream("/de/mud/jta/default.conf"));
       } catch (Exception e) {
         try {
           URL url = new URL(getCodeBase() + "default.conf");
@@ -119,7 +122,7 @@ public class Applet extends JApplet {
           System.err.println("jta: cannot load default.conf");
           System.err.println("jta: try extracting it from the jar file");
           System.err.println("jta: expected file here: "
-                             + getCodeBase() + "default.conf");
+                  + getCodeBase() + "default.conf");
         }
       }
 
@@ -191,12 +194,12 @@ public class Applet extends JApplet {
 
       if ((new Boolean(options.getProperty("Applet.detach"))).booleanValue()) {
         if (frameTitle == null) {
-          appletFrame = (RootPaneContainer)new JFrame("jta: " + host + (port.equals("23")?"":" " + port));
+          appletFrame = (RootPaneContainer) new JFrame("jta: " + host + (port.equals("23") ? "" : " " + port));
         } else {
-          appletFrame = (RootPaneContainer)new JFrame(frameTitle);
+          appletFrame = (RootPaneContainer) new JFrame(frameTitle);
         }
       } else {
-        appletFrame = (RootPaneContainer)this;
+        appletFrame = (RootPaneContainer) this;
       }
       appletFrame.getContentPane().setLayout(new BorderLayout());
 
@@ -245,11 +248,11 @@ public class Applet extends JApplet {
               enable.invoke(privilegeManager,
                             new Object[]{privileges.elementAt(i)});
               System.out.println("Applet: access for '" +
-                                 privileges.elementAt(i) + "' allowed");
+                      privileges.elementAt(i) + "' allowed");
 
             } catch (Exception e) {
               System.err.println("Applet: access for '" +
-                                 privileges.elementAt(i) + "' denied");
+                      privileges.elementAt(i) + "' denied");
             }
 
         // set up the clipboard
@@ -258,8 +261,8 @@ public class Applet extends JApplet {
           System.err.println("Applet: acquired system clipboard: " + clipboard);
         } catch (Exception e) {
           System.err.println("Applet: system clipboard access denied: " +
-                             ((e instanceof InvocationTargetException) ?
-                              ((InvocationTargetException) e).getTargetException() : e));
+                  ((e instanceof InvocationTargetException) ?
+                          ((InvocationTargetException) e).getTargetException() : e));
           // e.printStackTrace();
         } finally {
           if (clipboard == null) {
@@ -293,7 +296,7 @@ public class Applet extends JApplet {
             } else {
               if (frameTitle == null)
                 ((JFrame) appletFrame)
-                        .setTitle("jta: " + host + (port.equals("23")?"":" " + port));
+                        .setTitle("jta: " + host + (port.equals("23") ? "" : " " + port));
               if ((new Boolean(options.getProperty("Applet.detach.fullscreen"))
                       .booleanValue()))
                 ((JFrame) appletFrame)
@@ -302,7 +305,7 @@ public class Applet extends JApplet {
                 ((JFrame) appletFrame).pack();
               ((JFrame) appletFrame).show();
               if (port == null || port.length() <= 0)
-		port = "23";
+                port = "23";
               getAppletContext().showStatus("Trying " + host + " " + port + " ...");
               pluginLoader.broadcast(new SocketRequest(host,
                                                        Integer.parseInt(port)));
@@ -316,39 +319,39 @@ public class Applet extends JApplet {
         getContentPane().add("Center", close);
 
         // add a menu bar
-        MenuBar mb = new MenuBar();
-        Menu file = new Menu("File");
-        file.setShortcut(new MenuShortcut(KeyEvent.VK_F, true));
-        MenuItem tmp;
-        file.add(tmp = new MenuItem("Connect"));
+        JMenuBar mb = new JMenuBar();
+        JMenu file = new JMenu("File");
+        file.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, 0));
+        JMenuItem tmp;
+        file.add(tmp = new JMenuItem("Connect"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             pluginLoader.broadcast(new SocketRequest(host,
                                                      Integer.parseInt(port)));
           }
         });
-        file.add(tmp = new MenuItem("Disconnect"));
+        file.add(tmp = new JMenuItem("Disconnect"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             pluginLoader.broadcast(new SocketRequest());
           }
         });
-        file.add(new MenuItem("-"));
-        file.add(tmp = new MenuItem("Print"));
+        file.add(new JMenuItem("-"));
+        file.add(tmp = new JMenuItem("Print"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             if (pluginLoader.getComponents().get("Terminal") != null) {
               PrintJob printJob =
                       appletFrame.getContentPane().getToolkit()
-                      .getPrintJob((JFrame) appletFrame, "JTA Terminal", null);
+                              .getPrintJob((JFrame) appletFrame, "JTA Terminal", null);
               ((Component) pluginLoader.getComponents().get("Terminal"))
                       .print(printJob.getGraphics());
               printJob.end();
             }
           }
         });
-        file.add(new MenuItem("-"));
-        file.add(tmp = new MenuItem("Exit"));
+        file.add(new JMenuItem("-"));
+        file.add(tmp = new JMenuItem("Exit"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             ((JFrame) appletFrame).setVisible(false);
@@ -358,9 +361,9 @@ public class Applet extends JApplet {
         });
         mb.add(file);
 
-        Menu edit = new Menu("Edit");
-        edit.setShortcut(new MenuShortcut(KeyEvent.VK_E, true));
-        edit.add(tmp = new MenuItem("Copy"));
+        JMenu edit = new JMenu("Edit");
+        edit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 0));
+        edit.add(tmp = new JMenuItem("Copy"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             if (debug > 2)
@@ -369,7 +372,7 @@ public class Applet extends JApplet {
               ((VisualTransferPlugin) focussedPlugin).copy(clipboard);
           }
         });
-        edit.add(tmp = new MenuItem("Paste"));
+        edit.add(tmp = new JMenuItem("Paste"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent evt) {
             if (debug > 2)
@@ -384,13 +387,13 @@ public class Applet extends JApplet {
         names = menuList.keySet().iterator();
         while (names.hasNext()) {
           String name = (String) names.next();
-	  Object o = menuList.get(name);
-          if (o instanceof Menu) mb.add((Menu) o);
+          Object o = menuList.get(name);
+          if (o instanceof JMenu) mb.add((JMenu) o);
         }
 
-        Menu help = new Menu("Help");
-        help.setShortcut(new MenuShortcut(KeyEvent.VK_HELP, true));
-        help.add(tmp = new MenuItem("General"));
+        JMenu help = new JMenu("Help");
+        help.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_HELP, 0));
+        help.add(tmp = new JMenuItem("General"));
         tmp.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
             Help.show(appletFrame.getContentPane(), options.getProperty("Help.url"));
@@ -401,7 +404,7 @@ public class Applet extends JApplet {
         // only add the menubar if the property is true
         if ((new Boolean(options.getProperty("Applet.detach.menuBar"))
                 .booleanValue()))
-          ((JFrame) appletFrame).setMenuBar(mb);
+          ((JFrame) appletFrame).setJMenuBar(mb);
 
         // add window closing event handler
         try {
@@ -451,7 +454,7 @@ public class Applet extends JApplet {
         });
 
       } else
-      // if we have no external frame use this online status listener
+        // if we have no external frame use this online status listener
         pluginLoader.registerPluginListener(new OnlineStatusListener() {
           public void online() {
             if (debug > 0) System.err.println("Terminal: online");
@@ -493,6 +496,7 @@ public class Applet extends JApplet {
   /**
    * Override any properties that are found in the configuration files
    * with possible values found as applet parameters.
+   *
    * @param options the loaded configuration file properties
    */
   private void parameterOverride(Properties options) {
