@@ -34,7 +34,7 @@ JAVAH 	=	javah
 DEBUG	=	-g
 JFLAGS	=	-classpath $(CLASSPATH):jar/org.apache.crimson.jar:jar/jdom.jar:jar/gnu-regexp-1.0.8.jar:.
 SRCDIR	=	de
-PKGNAME	=	jta20
+PKGNAME	=	jta273
 VERSION	=	`java -version 2>&1 | head -1 | \
 		 sed 's/^java version //' | sed 's/"//g'`
 DATE	=	`date +%Y%m%d-%H%M`

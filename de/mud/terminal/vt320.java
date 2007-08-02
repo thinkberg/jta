@@ -875,8 +875,11 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
     // codes.  -Marcus
     // if(((!vms && keyChar == '2') || keyChar == '@' || keyChar == ' ')
     //    && control)
-    if (((!vms && keyChar == '2') || keyChar == ' ') && control)
+    if (((!vms && keyChar == '2') || keyChar == ' ') && control) {
       write("" + (char) 0);
+      return;
+    }
+
 
     if (vms) {
       if (keyChar == 127 && !control) {
