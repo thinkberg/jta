@@ -164,4 +164,8 @@ public class SshWrapper extends Wrapper {
     }
     return n;
   }
+  public void login(String user, String pwd) throws IOException {
+    handler.setLogin(user);
+    handler.setPassword(pwd);
+  }
 }
