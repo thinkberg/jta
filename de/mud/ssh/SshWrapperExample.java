@@ -35,22 +35,24 @@ package de.mud.ssh;
  * <B>Maintainer:</B>Marcus Meissner
  *
  * @version $Id$
- * @author Matthias L. Jugel, Marcus Mei�ner
+ * @author Matthias L. Jugel, Marcus Meissner
  */
 public class SshWrapperExample {
   public static void main(String args[]) {
     SshWrapper ssh = new SshWrapper();
     try {
       byte[] buffer = new byte[256];
+      String foo;
       ssh.connect(args[0], 22);
-      ssh.login("marcus", "xxxxx");
-      ssh.setPrompt("marcus");
-
-      System.out.println("after login");
-
+      ssh.login("marcus", "password");
+      foo = ssh.waitfor("marcus");
+      System.out.println(foo);
       ssh.send("ls -l");
-      ssh.read(buffer);
-      System.out.println(new String(buffer));
+      foo = ssh.waitfor("galeere"); // my hostname
+      System.out.println(foo);
+      ssh.send("ls -l");
+      foo = ssh.waitfor("galeere"); // my hostname
+      System.out.println(foo);
     } catch (java.io.IOException e) {
       e.printStackTrace();
     }
