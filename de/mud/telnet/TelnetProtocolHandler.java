@@ -234,18 +234,28 @@ public abstract class TelnetProtocolHandler {
     if(debug > 1) 
       System.err.println("TelnetIO.handle_sb("+type+")");
     switch (type) {
-    case TELOPT_TTYPE:
+    case TELOPT_TTYPE: {
       if (sbdata.length>0 && sbdata[0]==TELQUAL_SEND) {
-        write(IACSB);write(TELOPT_TTYPE);write(TELQUAL_IS);
         /* FIXME: need more logic here if we use 
          * more than one terminal type
          */
         String ttype = getTerminalType();
         if(ttype == null) ttype = "dumb";
-        write(ttype.getBytes());
-        write(IACSE);
+        byte[] b = new byte[2+1+1+ttype.getBytes().length+2];
+	b[0] = IAC;
+	b[1] = SB;
+	b[2] = TELOPT_TTYPE;
+	b[3] = TELQUAL_IS;
+	System.arraycopy(ttype.getBytes(),0,b,4,ttype.getBytes().length);
+	b[4+ttype.getBytes().length] = IAC;
+	b[5+ttype.getBytes().length] = SE;
+	write(b);
       }
-
+    }
+    break;
+    default:
+	System.err.println("Unexpected SB " + type);
+	break;
     }
   }
 
