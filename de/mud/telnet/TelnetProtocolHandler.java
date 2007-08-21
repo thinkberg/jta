@@ -197,10 +197,7 @@ public abstract class TelnetProtocolHandler {
    */
   public void sendTelnetControl(byte code)
     throws IOException {
-    byte[] b = new byte[2];
-
-    b[0] = IAC;
-    b[1] = code;
+    byte[] b = {IAC, code};
     write(b);
   }
 
@@ -215,12 +212,11 @@ public abstract class TelnetProtocolHandler {
     	System.err.println("not allowed to send NAWS? (DONT NAWS)");
 	return;
     }
-    write(IAC);write(SB);write(TELOPT_NAWS);
-    write((byte) (columns >> 8));
-    write((byte) (columns & 0xff));
-    write((byte) (rows >> 8));
-    write((byte) (rows & 0xff));
-    write(IAC);write(SE);
+    byte b[] = {IAC, SB, TELOPT_NAWS,
+		(byte) (columns >> 8), (byte) (columns & 0xff),
+		(byte) (rows >> 8),    (byte) (rows & 0xff),
+		IAC,SE};
+    write (b);
   }
 
 
@@ -507,10 +503,9 @@ public abstract class TelnetProtocolHandler {
           Dimension size = getWindowSize();
           receivedDX[b] = DO;
           if(size == null) {
+            byte wontbuf[] = { IAC, WONT, TELOPT_NAWS }; 
             // this shouldn't happen
-            write(IAC);
-            write(WONT);
-            write(TELOPT_NAWS);
+            write(wontbuf);
             reply = WONT;
             sentWX[b] = WONT;
             break;
@@ -521,12 +516,14 @@ public abstract class TelnetProtocolHandler {
           sendbuf[1]=WILL;
           sendbuf[2]=TELOPT_NAWS;
           write(sendbuf);
-          write(IAC);write(SB);write(TELOPT_NAWS);
-          write((byte) (size.width >> 8));
-          write((byte) (size.width & 0xff));
-          write((byte) (size.height >> 8));
-          write((byte) (size.height & 0xff));
-          write(IAC);write(SE);
+	  byte nawsbuf[] = {
+                IAC,SB,TELOPT_NAWS,
+                (byte) (size.width >> 8),
+                (byte) (size.width & 0xff),
+                (byte) (size.height >> 8),
+                (byte) (size.height & 0xff),
+          	IAC,SE };
+          write (nawsbuf);
           break;
         default:
           if(debug > 2) System.err.println("<UNKNOWN,"+b+">");
@@ -568,7 +565,8 @@ public abstract class TelnetProtocolHandler {
           break;
         }
         if(reply != sentWX[b+128] || DONT != receivedDX[b+128]) {
-          write(IAC);write(reply);write(b);
+	  byte replybuf[] = {IAC, reply, b};
+          write(replybuf);
           sentWX[b+128] = reply;
           receivedDX[b+128] = DONT;
         }
