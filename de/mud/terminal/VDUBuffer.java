@@ -625,11 +625,7 @@ public class VDUBuffer {
    * @param l line that is the margin
    */
   public void setBottomMargin(int l) {
-    if (l < topMargin) {
-      bottomMargin = topMargin;
-      topMargin = l;
-    } else
-      bottomMargin = l;
+    bottomMargin = l;
     if (topMargin < 0) topMargin = 0;
     if (bottomMargin > height - 1) bottomMargin = height - 1;
   }

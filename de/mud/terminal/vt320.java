@@ -1485,7 +1485,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
               }
               if (C >= columns) {
                 if (wraparound) {
-                  if (R < rows - 1)
+                  if (R < bm)
                     R++;
                   else
                     insertLine(R, 1, SCROLL_UP);
