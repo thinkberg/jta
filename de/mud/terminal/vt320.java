@@ -1684,15 +1684,18 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
               deleteArea(C, R, columns - C, 1, attributes);
             break;
           case 'M': // RI
-            System.out.println("ESC M : R is "+R+", tm is "+tm+", bm is "+bm);
             if (R < tm) {
-                System.out.println("ESC M : R is "+R+", tm is "+tm+", above scroll region");
+                if (debug > 1)
+			System.out.println("ESC M : R is "+R+", tm is "+tm+", above scroll region");
 		R--;
 		break;
             }
-            if (R == tm) {
+            if (debug>1)
+		System.out.println("ESC M : R is "+R+", tm is "+tm+", bm is "+bm);
+            if (R == tm) { // scroll only if we are the topmargin of the scroll region. 
                 insertLine(R, 1, SCROLL_DOWN);
             } else {
+		// otherwise just go up 1 line.
 	        R--;
             }
 
