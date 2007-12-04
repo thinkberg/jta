@@ -1685,13 +1685,17 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             break;
           case 'M': // RI
             System.out.println("ESC M : R is "+R+", tm is "+tm+", bm is "+bm);
-            if (R > bm) // outside scrolling region
-              break;
-            if (R > tm) { // just go up 1 line.
-              R--;
-            } else { // scroll down
-              insertLine(R, 1, SCROLL_DOWN);
+            if (R < tm) {
+                System.out.println("ESC M : R is "+R+", tm is "+tm+", above scroll region");
+		R--;
+		break;
             }
+            if (R == tm) {
+                insertLine(R, 1, SCROLL_DOWN);
+            } else {
+	        R--;
+            }
+
             /* else do nothing ; */
             if (debug > 2)
               System.out.println("ESC M ");
@@ -2303,24 +2307,21 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             /* cursor down n (1) times */
             {
               int limit;
-              if (R < tm)
-                limit = tm - 1;
-              else if (R <= bm) {
+	      /* MARCUS: xterm and screen will NOT go past the bottom margin */
+	      if (R <= bm) {
                 limit = bm;
-              } else
+              } else {
                 limit = rows - 1;
+              }
               if (DCEvars[0] == 0)
                 R++;
               else
                 R += DCEvars[0];
               if (R > limit)
                 R = limit;
-              else {
-                if (debug > 2) System.out.println("Not limited.");
-              }
-              if (debug > 2) System.out.println("to: " + R);
               if (debug > 1)
                 System.out.println("ESC [ " + DCEvars[0] + " B (at C=" + C + ")");
+              if (debug > 2) System.out.println("to: " + R);
               break;
             }
           case 'C':
