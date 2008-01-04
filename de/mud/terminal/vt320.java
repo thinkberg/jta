@@ -1739,8 +1739,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             Sa = attributes;
             Sgx = new char[4];
             for (int i = 0; i < 4; i++) Sgx[i] = gx[i];
-            Stm = getTopMargin();
-            Sbm = getBottomMargin();
+            /* MARCUS: does not save scroll region! */
             if (debug > 1)
               System.out.println("ESC 7");
             break;
@@ -1749,10 +1748,9 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
             R = Sr;
             gl = Sgl;
             gr = Sgr;
-            for (int i = 0; i < 4; i++) gx[i] = Sgx[i];
-            setTopMargin(Stm);
-            setBottomMargin(Sbm);
             attributes = Sa;
+            for (int i = 0; i < 4; i++) gx[i] = Sgx[i];
+            /* MARCUS: does not restore scroll region! */
             if (debug > 1)
               System.out.println("ESC 8");
             break;
