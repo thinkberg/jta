@@ -788,7 +788,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
       case KeyEvent.VK_BACK_SPACE:
         writeSpecial(BackSpace[xind]);
 	if (localecho) {
-	  if (BackSpace[xind] == "\b") {
+	  if (BackSpace[xind].equals("\b")) {
 	    putString("\b \b"); // make the last char 'deleted'
 	  } else {
 	    putString(BackSpace[xind]); // echo it
