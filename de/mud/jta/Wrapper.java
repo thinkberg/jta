@@ -25,17 +25,14 @@
 
 package de.mud.jta;
 
+import de.mud.telnet.ScriptHandler;
+
+import java.awt.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.net.Socket;
-
 import java.util.Vector;
-import java.util.Properties;
-
-import java.awt.Dimension;
-
-import de.mud.telnet.ScriptHandler;
 
 /**
  * To write a program using the wrapper
@@ -132,6 +129,7 @@ public class Wrapper {
    * a prompt is set it will return the resulting data until the prompt
    * is encountered.
    * @param cmd the command
+   * @throws IOException
    * @return output of the command or null if no prompt is set
    */
   public String send(String cmd) throws IOException { return null; }
@@ -141,7 +139,8 @@ public class Wrapper {
    * that characters that are received until that happens (including
    * the string being waited for).
    *
-   * @param match the string to look for
+   * @param searchElements the strings to look for
+   * @throws IOException if an io error occurs
    * @return skipped characters
    */
 
@@ -166,7 +165,7 @@ public class Wrapper {
 	  System.err.print( current );
 	ret.append( current );
 	for ( int i = 0; i < handlers.length ; i++ ) {
-	  if ( handlers[i].match( ret.toString().getBytes(), ret.length() ) ) {
+	  if ( handlers[i].match( ret.toString().getBytes(), ret.toString().getBytes().length ) ) {
 	    return ret.toString();
 	  } // if
 	} // for
