@@ -847,7 +847,15 @@ public class SwingTerminal extends Component
         return;
       }
       selection = "";
-      // fix end.x and end.y, they can get over the border
+      // fix begin.x and begin.y, they can get over the borders
+      if (selectBegin.x < 0) selectBegin.x = 0;
+      if (selectBegin.y < 0) selectBegin.y = 0;
+      if (selectBegin.y >= buffer.charArray.length)
+        selectBegin.y = buffer.charArray.length - 1;
+      if (selectBegin.x > buffer.charArray[0].length)
+        selectBegin.x = buffer.charArray[0].length;
+
+      // fix end.x and end.y, they can also get over the borders
       if (selectEnd.x < 0) selectEnd.x = 0;
       if (selectEnd.y < 0) selectEnd.y = 0;
       if (selectEnd.y >= buffer.charArray.length)
@@ -857,6 +865,12 @@ public class SwingTerminal extends Component
 
       // NOTE: Selection includes invisible text as spaces!
       // (also leaves invisible non-whitespace selection ending as spaces)
+      if (debug > 0) System.err.println("selectEnd.x " + selectEnd.x);
+      if (debug > 0) System.err.println("selectEnd.y " + selectEnd.y);
+      if (debug > 0) System.err.println("selectBegin.x " + selectBegin.x);
+      if (debug > 0) System.err.println("selectBegin.y " + selectBegin.y);
+
+      if (selectBegin.y > selectEnd.y) System.err.println("selectBegin.y " + selectBegin.y + "larger than selectEnd.y " + selectEnd.y + "!");
 
       for (int l = selectBegin.y; l <= selectEnd.y; l++) {
 	/* reinitialize buffer every loop */
