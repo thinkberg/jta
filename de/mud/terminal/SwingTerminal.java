@@ -861,8 +861,8 @@ public class SwingTerminal extends Component
       for (int l = selectBegin.y; l <= selectEnd.y; l++) {
 	/* reinitialize buffer every loop */
         StringBuffer selectionBuf = new StringBuffer(buffer.charArray[0].length);
-        int start = (l == selectBegin.y ? start = selectBegin.x : 0);
-        int end = (l == selectEnd.y ? end = selectEnd.x : buffer.charArray[l].length);
+        int start = (l == selectBegin.y ? selectBegin.x : 0);
+        int end = (l == selectEnd.y ? selectEnd.x : buffer.charArray[l].length);
 
         boolean newlineFound = false;
         char ch = ' ';
