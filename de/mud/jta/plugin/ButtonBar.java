@@ -33,6 +33,7 @@ import de.mud.jta.VisualPlugin;
 import de.mud.jta.event.ConfigurationListener;
 import de.mud.jta.event.SocketRequest;
 import de.mud.jta.event.TelnetCommandRequest;
+import de.mud.jta.event.ReturnFocusRequest;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -470,6 +471,7 @@ public class ButtonBar extends Plugin
     if (cmd.length() > 0)
       try {
         write(cmd.getBytes());
+        bus.broadcast(new ReturnFocusRequest());
       } catch (IOException e) {
         error("send: " + e);
       }
